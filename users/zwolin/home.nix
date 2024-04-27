@@ -113,6 +113,16 @@ in {
     };
   };
 
+  programs.fzf = let
+    fd = "fd --type f";
+  in {
+    enable = true;
+
+    defaultCommand = fd;
+    changeDirWidgetCommand = fd;
+    fileWidgetCommand = fd;
+  };
+
   programs.zsh = {
     enable = true;
     enableCompletion = true;

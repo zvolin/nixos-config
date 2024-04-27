@@ -66,7 +66,7 @@
 
   services.displayManager.sddm.enable = true;
   services.displayManager.sddm.wayland.enable = true;
-  environment.sessionVariables = {
+  environment.variables = {
     # specify correct gpu for wlroots
     WLR_DRM_DEVICES = "/dev/dri/card0";
   };
@@ -118,7 +118,10 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    bat
     curl
+    fd
+    fzf
     git
     htop
     neovim
