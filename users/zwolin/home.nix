@@ -7,8 +7,9 @@ in {
   imports = [
     inputs.nixvim.homeManagerModules.nixvim
 
-    ../../home/waybar.nix
     ../../home/nixvim.nix
+    ../../home/waybar.nix
+    ../../home/wofi.nix
     # ../../home/lunarvim.nix
   ];
 
@@ -197,7 +198,7 @@ in {
       bind = [
         "${modshift}, Return, exec, ${terminal}"
         "${modshift}, C,      killactive"
-	      "${mod},      F,      exec, firefox"
+	      "${mod},      P,      exec, wofi --show run"
         # cycle workspaces
 	      "${mod},      H,      workspace, -1"
 	      "${mod},      L,      workspace, +1"

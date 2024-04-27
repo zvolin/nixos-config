@@ -39,7 +39,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
   boot.extraModprobeConfig = ''
-    options hid_apple iso_layout=0
+    options hid_apple iso_layout=0 swap_fn_leftctrl=1
   '';
 
   # networking.hostName = "nixos"; # Define your hostname.
