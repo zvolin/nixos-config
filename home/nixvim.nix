@@ -13,6 +13,10 @@
       number = true; # show line numbers
       relativenumber = true; # relative to current line
 
+      wrap = false;
+      scrolloff = 5;
+      sidescrolloff = 10;
+
       # use only spaces
       expandtab = true;
       autoindent = true;
