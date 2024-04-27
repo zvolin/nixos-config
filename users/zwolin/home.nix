@@ -7,6 +7,7 @@ in {
   imports = [
     inputs.nixvim.homeManagerModules.nixvim
 
+    ../../home/hyprland.nix
     ../../home/nixvim.nix
     ../../home/waybar.nix
     ../../home/wofi.nix
@@ -26,7 +27,6 @@ in {
   home.stateVersion = "24.05"; # Please read the comment before changing.
 
   home.packages = with pkgs; [
-    fd
     firefox
 
     (pkgs.nerdfonts.override { fonts = [ "FiraCode" ]; })
@@ -61,11 +61,6 @@ in {
   home.sessionVariables = {
     EDITOR = "nvim";
     SUDO_EDITOR = "nvim";
-
-    # for correct wayland support
-    QT_QPA_PLATFORM = "wayland";
-    MOZ_ENABLE_WAYLAND = 1;
-    GDK_BACKEND = "wayland";
   };
 
   home.pointerCursor = {
@@ -150,97 +145,6 @@ in {
 
   # prompt
   programs.starship.enable = true;
-
-  # portal - used for programs requesting things from wm, like file picker, screen sharing etc.
-  xdg.portal = {
-    enable = true;
-    xdgOpenUsePortal = true;
-
-    config = {
-      common.default = [
-        "gtk" # file picker
-        "hyprland" # everything
-      ];
-    };
-
-    extraPortals = [
-      pkgs.xdg-desktop-portal-hyprland
-      pkgs.xdg-desktop-portal-gtk
-    ];
-  };
-
-  wayland.windowManager.hyprland = let
-    mod = "SUPER";
-    modshift = "${mod}SHIFT";
-    terminal = "kitty";
-    xkb = (import ../../nix/i18n.nix {}).config.services.xserver.xkb;
-  in {
-    enable = true;
-    xwayland.enable = true;
-    systemd.enable = true;
-
-    settings = {
-      monitor = [
-        "eDP-1, preferred, auto, 1.6"
-      ];
-
-      input = {
-        kb_layout = xkb.layout;
-	      kb_variant = xkb.variant;
-      };
-
-      general = {
-        gaps_in = 6;
-	      gaps_out = 11;
-	      border_size = 1;
-	      "col.active_border" = "rgba(3472ddee) rgba(fef5fe80) 45deg";
-      };
-
-      decoration = {
-        rounding = 5;
-      };
-
-      misc = {
-      };
-
-      input.touchpad.tap-to-click = false;
-
-      bind = [
-        "${modshift}, Return, exec, ${terminal}"
-        "${modshift}, C,      killactive"
-	      "${mod},      P,      exec, wofi --show run"
-        # cycle workspaces
-	      "${mod},      H,      workspace, -1"
-	      "${mod},      L,      workspace, +1"
-	      # cycle windows
-	      "${mod},      Tab,    cyclenext"
-	      "${mod},      Tab,    bringactivetotop"
-	      "${modshift}, Tab,    swapnext"
-	      # todo: monitors
-      ] ++ (
-        # workspaces 1..10
-	      builtins.concatLists (builtins.genList (
-	          x: let
-	            key' = if x == 9 then 0 else x + 1;
-	            key = builtins.toString key';
-	            ws = builtins.toString (x + 1);
-	          in [
-	            "${mod},      ${key}, workspace, ${ws}"
-	            "${modshift}, ${key}, movetoworkspace, ${ws}"
-	          ]
-	        )
-	        10
-	      )
-      );
-
-      env = [
-      ];
-
-      exec-once = [
-        "waybar"
-      ];
-    };
-  };
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
