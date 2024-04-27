@@ -59,23 +59,29 @@
 
     plugins.lsp = {
       enable = true;
-      servers = {
-        rust-analyzer = {
-	        enable = true;
-	        installCargo = true;
-	        installRustc = true;
-	      };
-      };
     };
 
     plugins.cmp = {
       enable = true;
       autoEnableSources = true;
-      settings.sources = [
-        { name = "nvim-lsp"; }
-        { name = "path"; }
-        { name = "buffer"; }
-      ];
+      settings = {
+        snippet.expand = "function(args) require('luasnip').lsp_expand(args.body) end";
+        sources = [
+          { name = "path"; }
+          { name = "nvim_lsp"; }
+          { name = "luasnip"; }
+          {
+            name = "buffer";
+            # Words from other open buffers can also be suggested
+            option.get_bufnrs.__raw = "vim.api.nvim_list_bufs";
+          }
+        ];
+        mapping = {
+          "<Tab>" = "cmp.mapping(cmp.mapping.select_next_item(), { 'i', 's' })";
+          "<S-Tab>" = "cmp.mapping(cmp.mapping.select_prev_item(), { 'i', 's' })";
+        };
+        preselect = "cmp.PreselectMode.None";
+      };
     };
 
     plugins.which-key = {
@@ -95,8 +101,10 @@
 
     plugins = {
       neo-tree.enable = true;
+      luasnip.enable = true;
       telescope.enable = true;
       treesitter.enable = true;
+      rustaceanvim.enable = true;
     };
   };
 }
