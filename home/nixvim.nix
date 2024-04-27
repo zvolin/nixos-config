@@ -7,8 +7,7 @@
     vimAlias = true;
 
     opts = {
-      # disable for theming
-      background = "";
+      background = ""; # disable for theming
       updatetime = 100; # Faster completion
 
       number = true; # show line numbers
@@ -28,6 +27,10 @@
       ignorecase = true;
       incsearch = true;
       smartcase = true;
+
+      # splits
+      splitright = true;
+      splitbelow = true;
 
       swapfile = false; # don't care if I don't exit vim but shutdown system
       undofile = true; # Build-in persistent undo
@@ -84,6 +87,27 @@
       };
     };
 
+    plugins.neo-tree = {
+      enable = true;
+
+      window = {
+        width = 35;
+        height = 35;
+      };
+
+      popupBorderStyle = "rounded";
+
+      # auto resize windows on tree open and close
+      eventHandlers = {
+        neo_tree_window_after_open = ''
+          function(args) vim.cmd('wincmd =') end
+        '';
+        neo_tree_window_after_close = ''
+          function(args) vim.cmd('wincmd =') end
+        '';
+      };
+    };
+
     plugins.which-key = {
       enable = true;
 
@@ -100,11 +124,21 @@
     };
 
     plugins = {
-      neo-tree.enable = true;
       luasnip.enable = true;
       telescope.enable = true;
       treesitter.enable = true;
       rustaceanvim.enable = true;
     };
+
+    extraPlugins = with pkgs.vimPlugins; [
+      nvim-window-picker
+    ];
+
+    extraConfigLua = ''
+      require 'window-picker'.setup({
+        -- switch selection chars to dvorak home row
+        selection_chars = 'uhetonas';
+      })
+    '';
   };
 }
