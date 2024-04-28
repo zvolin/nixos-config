@@ -3,6 +3,9 @@
 {
   home.packages = with pkgs; [
     cliphist
+    grim
+    slurp
+    swappy
     wl-clipboard
     wofi
     wtype
@@ -74,20 +77,22 @@
       input.touchpad.tap-to-click = false;
 
       bind = [
-        "${modshift}, Return, exec, ${terminal}"
-        "${modshift}, C,      killactive"
-	      "${mod},      P,      exec, wofi --show run"
+        ''${modshift}, Return, exec, ${terminal}''
+        ''${modshift}, C,      killactive''
+	      ''${mod},      P,      exec, wofi --show run''
         # cycle workspaces
-	      "${mod},      H,      workspace, -1"
-	      "${mod},      L,      workspace, +1"
+	      ''${mod},      H,      workspace, -1''
+	      ''${mod},      L,      workspace, +1''
 	      # cycle windows
-	      "${mod},      Tab,    cyclenext"
-	      "${mod},      Tab,    bringactivetotop"
-	      "${modshift}, Tab,    swapnext"
+	      ''${mod},      Tab,    cyclenext''
+	      ''${mod},      Tab,    bringactivetotop''
+	      ''${modshift}, Tab,    swapnext''
 	      # todo: monitors
         # clipboard
-        "${mod},      V,      exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy && wtype -s 10 -M ctrl -s 10 -M shift -s 10 -k V"
-        "${modshift}, V,      exec, cliphist wipe"
+        ''${mod},      V,      exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy && wtype -s 10 -M ctrl -s 10 -M shift -s 10 -k V''
+        ''${modshift}, V,      exec, cliphist wipe''
+        # screenshot
+        ''${mod},     Slash,  exec, grim -g "$(slurp)" - | swappy -f -''
       ] ++ (
         # workspaces 1..10
 	      builtins.concatLists (builtins.genList (
