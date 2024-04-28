@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, ... }@args:
 
 
 let
@@ -33,6 +33,7 @@ in {
 
     wl-color-picker
 
+    # (pkgs.callPackage ../../home/bibata-cursors-hypr.nix { inherit args; })
     # # You can also create simple shell scripts directly inside your
     # # configuration. For example, this adds a command 'my-hello' to your
     # # environment:

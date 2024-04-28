@@ -1,10 +1,13 @@
 { lib, pkgs, config, inputs, ... }:
 
 {
-  options.services.tiny-drf.enable = lib.mkEnableOption "tiny-drf";
+  options.services.tiny-dfr.enable = lib.mkEnableOption "tiny-dfr";
 
   config = {
-    # create a systemd service for tiny-drf
+    # build tiny-dfr
+    pkgs.tiny-dfr = pkgs.callPackage ./package.nix { inherit lib pkgs inputs };
+
+    # create a systemd service for tiny-dfr
     systemd.services.tiny-dfr = {
       description = "Tiny Apple silicon touch bar daemon";
       after = [
@@ -18,7 +21,7 @@
 
       serviceConfig = {
         Restart = "always";
-        ExecStart = "${inputs.tiny-dfr.packages.${pkgs.system}.default}/bin/tiny-dfr";
+        ExecStart = "${pkgs.tiny-dfr}/bin/tiny-dfr";
       };
     };
 

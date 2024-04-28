@@ -4,16 +4,13 @@
   imports = [
     # internationalization settings
     ./i18n.nix
-    
     # user settings
     ../users/default.nix
-
     # touchbar
-    ./tiny-drf.nix
+    ./tiny-dfr/default.nix
   ];
 
-  options = {
-  };
+  options = {};
 
   config = {
     # load configuration for given users

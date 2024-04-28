@@ -55,7 +55,7 @@
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # enable touchbar
-  services.tiny-drf.enable = true;
+  services.tiny-dfr.enable = true;
 
   # Enable the X11 windowing system (for XWayland support)
   services.xserver.enable = true;
