@@ -128,6 +128,7 @@
     openssh
     rargs
     ripgrep
+    sd
     tmux
     vim
     wget
