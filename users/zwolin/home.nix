@@ -131,13 +131,6 @@ in {
       size = 20000;
     };
 
-    initExtra = ''
-      bindkey "^[[A" history-beginning-search-backward
-      bindkey "^[[B" history-beginning-search-forward
-    '';
-
-    historySubstringSearch.enable = true;
-
     antidote = {
       enable = true;
       plugins = [];
