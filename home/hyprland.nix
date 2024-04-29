@@ -2,6 +2,7 @@
 
 {
   home.packages = with pkgs; [
+    brightnessctl
     cliphist
     grim
     slurp
@@ -91,8 +92,8 @@
         # clipboard
         ''${mod},      V,      exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy && wtype -s 10 -M ctrl -s 10 -M shift -s 10 -k V''
         ''${modshift}, V,      exec, cliphist wipe''
-        # screenshot
-        ''${mod},     Slash,  exec, grim -g "$(slurp)" - | swappy -f -''
+        # media
+        '', XF86SelectiveScreenshot, exec, grim -g "$(slurp)" - | swappy -f -''
       ] ++ (
         # workspaces 1..10
 	      builtins.concatLists (builtins.genList (
@@ -108,6 +109,22 @@
 	        10
 	      )
       );
+
+      # binds working when lock active
+      bindl = [
+        '', XF86AudioMute,    exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle''
+        '', XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle''
+      ];
+
+      # binds repeated when held, working when lock active
+      bindel = [
+        '', XF86AudioRaiseVolume,  exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%+''
+        '', XF86AudioLowerVolume,  exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%-''
+        '', XF86KbdBrightnessDown, exec, brightnessctl set 1%- -d kbd_backlight''
+        '', XF86KbdBrightnessUp,   exec, brightnessctl set 1%+ -d kbd_backlight''
+        '', XF86MonBrightnessDown, exec, brightnessctl set 1%-''
+        '', XF86MonBrightnessUp,   exec, brightnessctl set 1%+''
+      ];
 
       env = [
       ];
