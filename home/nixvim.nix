@@ -49,9 +49,25 @@
       }
     ];
 
-    colorschemes.kanagawa = {
+    colorschemes.base16 = {
       enable = true;
-      settings.theme = "dragon";
+      colorscheme = "tomorrow-night";
+    };
+
+    plugins.lualine = {
+      enable = true;
+      theme = "base16";
+
+      disabledFiletypes.statusline = [ "neo-tree" ];
+
+      componentSeparators = {
+        left = "";
+        right = "";
+      };
+      sectionSeparators = {
+        left = "";
+        right = "";
+      };
     };
 
     plugins.toggleterm = {

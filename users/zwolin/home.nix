@@ -101,7 +101,7 @@ in {
       # don't ask for confirmation to close window
       confirm_os_window_close = 0;
     };
-    theme = "Japanesque"; # "Kaolin Aurora"; # Mayukai
+    theme = "Tomorrow Night"; # "Kaolin Aurora"; # Mayukai
     font = {
       name = "FiraCode Nerd Font Mono";
       package = pkgs.nerdfonts;
