@@ -1,10 +1,6 @@
 { lib, pkgs, config, ... }:
 
 let
-  bg1 = "#0d0d0d";
-  fg1 = "#fef5fe";
-  fg2 = "#3472dd";
-  pastel = n: builtins.elemAt [ "#354259" "#7d9d9c" "#c2ded1" "#9cb4cc" "#ece5c7" ] n;
   font-size = size: text: ''<span font-size="${builtins.toString size}pt">${text}</span>'';
   big = text: "${font-size 10.5 text}";
   tiny = text: "${font-size 5.5 text}";
@@ -159,8 +155,8 @@ in {
       }
 
       tooltip {
-        background: rgba(43, 48, 59, 0.5);
-        border: 1px solid rgba(100, 114, 125, 0.5);
+        background: #${config.colorScheme.palette.base01};
+        border: 1px solid #${config.colorScheme.palette.base04};
       }
 
       tooltip label {
@@ -168,8 +164,8 @@ in {
       }
 
       window#waybar {
-        color: ${fg1};
-        background: ${bg1};
+        color: #${config.colorScheme.palette.base05};
+        background: #${config.colorScheme.palette.base00};
         padding-top: 1px;
         padding-bottom: 1px;
       }
@@ -181,8 +177,8 @@ in {
       }
 
       #workspaces {
-        background: ${pastel 3};
-        color: ${pastel 0};
+        background: #${config.colorScheme.palette.base07};
+        color: #${config.colorScheme.palette.base01};
 	      margin: 4px;
         padding-left: 8px;
         padding-right: 8px;
@@ -202,7 +198,7 @@ in {
 
       #workspaces button label {
         font-size: 7.5pt;
-        color: ${pastel 0};
+        color: #${config.colorScheme.palette.base01};
       }
 
       #workspaces button.active label {
@@ -215,7 +211,7 @@ in {
       }
       
       #network, #perf, #media, #battery {
-        color: ${pastel 0};
+        color: #${config.colorScheme.palette.base01};
 	      margin-top: 3px;
 	      margin-bottom: 3px;
 	      margin-right: 4px;
@@ -230,19 +226,19 @@ in {
       }
 
       #network {
-        background: ${pastel 1};
+        background: #${config.colorScheme.palette.base06};
       }
 
       #perf {
-        background: ${pastel 2};
+        background: #${config.colorScheme.palette.base07};
       }
 
       #media {
-        background: ${pastel 3};
+        background: #${config.colorScheme.palette.base06};
       }
 
       #battery {
-        background: ${pastel 4};
+        background: #${config.colorScheme.palette.base07};
       }
     '';
   };

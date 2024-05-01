@@ -45,13 +45,13 @@
     keymaps = [
       {
         key = "<leader>e";
-	      action = "<CMD>Neotree toggle=true<CR>";
+        action = "<CMD>Neotree toggle=true<CR>";
       }
     ];
 
     colorschemes.base16 = {
       enable = true;
-      colorscheme = "tomorrow-night";
+      colorscheme = config.colorScheme.slug;
     };
 
     plugins.lualine = {

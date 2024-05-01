@@ -65,7 +65,8 @@
         gaps_in = 6;
 	      gaps_out = 11;
 	      border_size = 1;
-	      "col.active_border" = "rgba(3472ddee) rgba(fef5fe80) 45deg";
+	      "col.active_border" =
+          "rgba(${config.colorScheme.palette.base03}ee) rgba(${config.colorScheme.palette.base01}80) 45deg";
       };
 
       decoration = {

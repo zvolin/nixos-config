@@ -5,6 +5,7 @@ let
   # bibata-cursors-hypr = pkgs.callPackage ../../home-manager-modules/bibata-cursors-hypr.nix { };
 in {
   imports = [
+    inputs.nix-colors.homeManagerModules.default
     inputs.nixvim.homeManagerModules.nixvim
 
     ../../home/hyprland.nix
@@ -16,6 +17,8 @@ in {
 
   home.username = "zwolin";
   home.homeDirectory = "/home/zwolin";
+
+  colorScheme = inputs.nix-colors.colorSchemes.ayu-mirage;
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -74,11 +77,13 @@ in {
 
   qt.enable = true;
 
-  gtk = {
+  gtk = let
+    inherit (inputs.nix-colors.lib.contrib { inherit pkgs; }) gtkThemeFromScheme;
+  in {
     enable = true;
     theme = {
-      package = pkgs.flat-remix-gtk;
-      name = "Flat-Remix-GTK-Grey-Darkest";
+      package = gtkThemeFromScheme { scheme = config.colorScheme; };
+      name = config.colorScheme.slug;
     };
   
     iconTheme = {
@@ -100,8 +105,42 @@ in {
       enable_audio_bell = false;
       # don't ask for confirmation to close window
       confirm_os_window_close = 0;
+
+      background = "#${config.colorScheme.palette.base00}";
+      foreground = "#${config.colorScheme.palette.base05}";
+      selection_background = "#${config.colorScheme.palette.base05}";
+      selection_foreground = "#${config.colorScheme.palette.base00}";
+      url_color = "#${config.colorScheme.palette.base04}";
+      cursor = "#${config.colorScheme.palette.base05}";
+      active_border_color = "#${config.colorScheme.palette.base03}";
+      inactive_border_color = "#${config.colorScheme.palette.base01}";
+      active_tab_background = "#${config.colorScheme.palette.base00}";
+      active_tab_foreground = "#${config.colorScheme.palette.base05}";
+      inactive_tab_background = "#${config.colorScheme.palette.base01}";
+      inactive_tab_foreground = "#${config.colorScheme.palette.base04}";
+      tab_bar_background = "#${config.colorScheme.palette.base01}";
+      
+      # = normal
+      color0 = "#${config.colorScheme.palette.base00}";
+      color1 = "#${config.colorScheme.palette.base08}";
+      color2 = "#${config.colorScheme.palette.base0B}";
+      color3 = "#${config.colorScheme.palette.base0A}";
+      color4 = "#${config.colorScheme.palette.base0D}";
+      color5 = "#${config.colorScheme.palette.base0E}";
+      color6 = "#${config.colorScheme.palette.base0C}";
+      color7 = "#${config.colorScheme.palette.base05}";
+      
+      # = bright
+      color8 = "#${config.colorScheme.palette.base03}";
+      color9 = "#${config.colorScheme.palette.base09}";
+      color10 = "#${config.colorScheme.palette.base01}";
+      color11 = "#${config.colorScheme.palette.base02}";
+      color12 = "#${config.colorScheme.palette.base04}";
+      color13 = "#${config.colorScheme.palette.base06}";
+      color14 = "#${config.colorScheme.palette.base0F}";
+      color15 = "#${config.colorScheme.palette.base07}";
     };
-    theme = "Tomorrow Night"; # "Kaolin Aurora"; # Mayukai
+
     font = {
       name = "FiraCode Nerd Font Mono";
       package = pkgs.nerdfonts;
@@ -115,6 +154,20 @@ in {
     enable = true;
 
     defaultCommand = fd;
+    colors = {
+      bg = "#${config.colorScheme.palette.base00}";
+      "bg+" = "#${config.colorScheme.palette.base01}";
+      fg = "#${config.colorScheme.palette.base04}";
+      "fg+" = "#${config.colorScheme.palette.base06}";
+      hl = "#${config.colorScheme.palette.base0D}";
+      "hl+" = "#${config.colorScheme.palette.base0D}";
+      info = "#${config.colorScheme.palette.base0A}";
+      marker = "#${config.colorScheme.palette.base0C}";
+      header = "#${config.colorScheme.palette.base0D}";
+      prompt = "#${config.colorScheme.palette.base0A}";
+      spinner = "#${config.colorScheme.palette.base0C}";
+      pointer = "#${config.colorScheme.palette.base0C}";
+    };
     changeDirWidgetCommand = fd;
     fileWidgetCommand = fd;
   };
