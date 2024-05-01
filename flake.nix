@@ -9,6 +9,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nixos-apple-silicon = {
+      url = "github:tpwrules/nixos-apple-silicon";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixvim = {
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -33,10 +38,16 @@
       nixosConfigurations.mbp-m2 = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs; };
-        modules = [
+        modules = with inputs; [
           hosts/mbp-m2/configuration.nix
-          inputs.home-manager.nixosModules.default
-	        inputs.nixvim.nixosModules.nixvim
+
+          # Include the necessary packages and configuration for Apple Silicon support
+          nixos-apple-silicon.nixosModules.default
+          # { nixpkgs.overlays = [ nixos-apple-silicon.overlays.default ]; } # is this needed? it requires impure
+
+          home-manager.nixosModules.default
+	        nixvim.nixosModules.nixvim
+
           # ({ pkgs, inputs, ... }: {
           #   environment.systemPackages = [ inputs.tiny-dfr.${pkgs.system}.packages.default ];
           # })

@@ -8,8 +8,6 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    # Include the necessary packages and configuration for Apple Silicon support
-    ./apple-silicon-support
     # Include home-manager
     inputs.home-manager.nixosModules.default
     # include common configuration
