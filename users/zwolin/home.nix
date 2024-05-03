@@ -64,6 +64,13 @@ in {
     SUDO_EDITOR = "nvim";
   };
 
+  # todo, requires secrets?
+  # programs.git = {
+  #   enable = true;
+  #   signing.key = "";
+  #   signing.signByDefault = true;
+  # };
+
   home.pointerCursor = {
     gtk.enable = true;
     x11.enable = true;
