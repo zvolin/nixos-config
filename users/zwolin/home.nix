@@ -4,10 +4,12 @@
 let
   # bibata-cursors-hypr = pkgs.callPackage ../../home-manager-modules/bibata-cursors-hypr.nix { };
 in {
-  imports = [
-    inputs.nixvim.homeManagerModules.nixvim
+  imports = with inputs; [
+    nix-colors.homeManagerModules.default
+    nixvim.homeManagerModules.nixvim
 
     ../../home/hyprland.nix
+    ../../home/theme.nix
     ../../home/nixvim.nix
     ../../home/waybar.nix
     ../../home/wofi.nix
@@ -28,8 +30,6 @@ in {
 
   home.packages = with pkgs; [
     firefox
-
-    (pkgs.nerdfonts.override { fonts = [ "FiraCode" ]; })
 
     wl-color-picker
 
@@ -71,33 +71,9 @@ in {
   #   signing.signByDefault = true;
   # };
 
-  home.pointerCursor = {
-    gtk.enable = true;
-    x11.enable = true;
-    package = pkgs.bibata-cursors;
-    name = "Bibata-Modern-Classic";
-    size = 18;
-  };
-
   qt.enable = true;
 
-  gtk = {
-    enable = true;
-    theme = {
-      package = pkgs.flat-remix-gtk;
-      name = "Flat-Remix-GTK-Grey-Darkest";
-    };
-  
-    iconTheme = {
-      package = pkgs.gnome.adwaita-icon-theme;
-      name = "Adwaita";
-    };
-  
-    font = {
-      name = "Sans";
-      size = 11;
-    };
-  };
+  gtk.enable = true;
 
   # setup terminal emulator
   programs.kitty = {
@@ -107,12 +83,6 @@ in {
       enable_audio_bell = false;
       # don't ask for confirmation to close window
       confirm_os_window_close = 0;
-    };
-    theme = "Tomorrow Night"; # "Kaolin Aurora"; # Mayukai
-    font = {
-      name = "FiraCode Nerd Font Mono";
-      package = pkgs.nerdfonts;
-      size = 10.0;
     };
   };
 

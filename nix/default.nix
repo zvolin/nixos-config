@@ -5,9 +5,9 @@
     # internationalization settings
     ./i18n.nix
     # user settings
-    ../users/default.nix
+    ../users
     # touchbar
-    ./tiny-dfr/default.nix
+    ./tiny-dfr
   ];
 
   options = {};

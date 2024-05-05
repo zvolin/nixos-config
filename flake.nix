@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-zvolin.url = "github:zvolin/nixpkgs/update-kitty-themes";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -13,6 +14,8 @@
       url = "github:tpwrules/nixos-apple-silicon";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-colors.url = "github:Misterio77/nix-colors";
 
     nixvim = {
       url = "github:nix-community/nixvim";
@@ -31,7 +34,7 @@
     # };
   };
 
-  outputs = { self, nixpkgs, ... }@inputs:
+  outputs = { self, nixpkgs, nixpkgs-zvolin, ... }@inputs:
     let
       system = "aarch64-linux";
     in {
@@ -43,14 +46,9 @@
 
           # Include the necessary packages and configuration for Apple Silicon support
           nixos-apple-silicon.nixosModules.default
-          # { nixpkgs.overlays = [ nixos-apple-silicon.overlays.default ]; } # is this needed? it requires impure
 
           home-manager.nixosModules.default
-	        nixvim.nixosModules.nixvim
-
-          # ({ pkgs, inputs, ... }: {
-          #   environment.systemPackages = [ inputs.tiny-dfr.${pkgs.system}.packages.default ];
-          # })
+          nixvim.nixosModules.nixvim
         ];
       };
     };

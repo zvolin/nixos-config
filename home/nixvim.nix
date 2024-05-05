@@ -7,7 +7,6 @@
     vimAlias = true;
 
     opts = {
-      background = ""; # disable for theming
       updatetime = 100; # Faster completion
 
       number = true; # show line numbers
@@ -49,14 +48,8 @@
       }
     ];
 
-    colorschemes.base16 = {
-      enable = true;
-      colorscheme = "tomorrow-night";
-    };
-
     plugins.lualine = {
       enable = true;
-      theme = "base16";
 
       disabledFiletypes.statusline = [ "neo-tree" ];
 
@@ -140,6 +133,13 @@
         textObjects = true;
         windows = true;
         z = true;
+      };
+    };
+
+    plugins.nvim-colorizer = {
+      enable = true;
+      userDefaultOptions = {
+        css = true;
       };
     };
 

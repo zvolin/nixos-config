@@ -10,8 +10,9 @@
     ./hardware-configuration.nix
     # Include home-manager
     inputs.home-manager.nixosModules.default
-    # include common configuration
-    ../../nix/default.nix
+
+    ../../nix
+    ../../overlays
   ];
 
   # hardware.asahi.enable = true;

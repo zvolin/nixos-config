@@ -1,10 +1,7 @@
 { lib, pkgs, config, ... }:
 
 let
-  bg1 = "#0d0d0d";
-  fg1 = "#fef5fe";
-  fg2 = "#3472dd";
-  pastel = n: builtins.elemAt [ "#354259" "#7d9d9c" "#c2ded1" "#9cb4cc" "#ece5c7" ] n;
+  palette = config.colorScheme.palette;
   font-size = size: text: ''<span font-size="${builtins.toString size}pt">${text}</span>'';
   big = text: "${font-size 10.5 text}";
   tiny = text: "${font-size 5.5 text}";
@@ -164,12 +161,12 @@ in {
       }
 
       tooltip label {
-        color: white;
+        color: #${palette.base06};
       }
 
       window#waybar {
-        color: ${fg1};
-        background: ${bg1};
+        color: #${palette.base05};
+        background: #${palette.base00};
         padding-top: 1px;
         padding-bottom: 1px;
       }
@@ -181,8 +178,8 @@ in {
       }
 
       #workspaces {
-        background: ${pastel 3};
-        color: ${pastel 0};
+        background: #${palette.base0E};
+        color: #${palette.base02};
 	      margin: 4px;
         padding-left: 8px;
         padding-right: 8px;
@@ -202,7 +199,7 @@ in {
 
       #workspaces button label {
         font-size: 7.5pt;
-        color: ${pastel 0};
+        color: #${palette.base02};
       }
 
       #workspaces button.active label {
@@ -215,7 +212,7 @@ in {
       }
       
       #network, #perf, #media, #battery {
-        color: ${pastel 0};
+        color: #${palette.base02};
 	      margin-top: 3px;
 	      margin-bottom: 3px;
 	      margin-right: 4px;
@@ -230,19 +227,19 @@ in {
       }
 
       #network {
-        background: ${pastel 1};
+        background: #${palette.base0E};
       }
 
       #perf {
-        background: ${pastel 2};
+        background: #${palette.base0E};
       }
 
       #media {
-        background: ${pastel 3};
+        background: #${palette.base0E};
       }
 
       #battery {
-        background: ${pastel 4};
+        background: #${palette.base0E};
       }
     '';
   };

@@ -7,6 +7,7 @@
     grim
     slurp
     swappy
+    swaybg
     wl-clipboard
     wofi
     wtype
@@ -65,7 +66,6 @@
         gaps_in = 6;
 	      gaps_out = 11;
 	      border_size = 1;
-	      "col.active_border" = "rgba(3472ddee) rgba(fef5fe80) 45deg";
       };
 
       decoration = {
@@ -73,6 +73,9 @@
       };
 
       misc = {
+        disable_hyprland_logo = true;
+        disable_splash_rendering = true;
+        force_default_wallpaper = 0;
       };
 
       input.touchpad.tap-to-click = false;
