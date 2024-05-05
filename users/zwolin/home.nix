@@ -43,7 +43,7 @@ in {
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
-  # plain files is through 'home.file'. 
+  # plain files is through 'home.file'.
   home.file = {
     # "${config.xdg.dataHome}/icons/${cursor_theme}-Hypr".source = "${bibata-cursors-hypr}/share/icons/${cursor_theme}-Hypr";
 
@@ -101,7 +101,7 @@ in {
     enableCompletion = true;
     # let terminal track current dir
     enableVteIntegration = true;
-    
+
     history = {
       expireDuplicatesFirst = true;
       save = 50000;

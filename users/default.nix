@@ -23,7 +23,7 @@ in {
 
     # don't allow tweaking users outside of config
     users.mutableUsers = false;
-    
+
     # configure home manager
     home-manager = {
       # also pass inputs to home-manager modules

@@ -13,7 +13,7 @@ in
     rustc = toolchain;
   }).buildRustPackage {
     inherit pname version;
-  
+
     src = pkgs.fetchFromGitHub {
       owner = "WhatAmISupposedToPutHere";
       repo = pname;
@@ -31,7 +31,7 @@ in
       mv etc "$out/lib"
       mv share "$out"
     '';
-  
+
     nativeBuildInputs = [ pkg-config ];
     buildInputs = [ cairo gdk-pixbuf glib libinput libxml2 pango udev ];
   }

@@ -48,6 +48,15 @@
       }
     ];
 
+    autoCmd = [
+      {
+        event = [ "BufWritePre" ];
+        pattern = [ "*" ];
+        command = ":%s/\\s\\+$//e";
+        desc = "Remove trailing whitespaces";
+      }
+    ];
+
     plugins.lualine = {
       enable = true;
 

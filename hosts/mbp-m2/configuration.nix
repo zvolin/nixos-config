@@ -69,7 +69,7 @@
     # specify correct gpu for wlroots
     WLR_DRM_DEVICES = "/dev/dri/card0";
   };
-  
+
   # zsh
   programs.zsh.enable = true;
 

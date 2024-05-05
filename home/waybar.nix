@@ -210,7 +210,7 @@ in {
         padding-left: 15px;
         padding-right: 10px;
       }
-      
+
       #network, #perf, #media, #battery {
         color: #${palette.base02};
         margin-top: 3px;
@@ -220,7 +220,7 @@ in {
         padding-right: 8px;
         border-radius: 6px;
       }
-      
+
       #perf widget:not(:last-child) label,
       #media widget:not(:last-child) label {
         margin-right: 10px;
