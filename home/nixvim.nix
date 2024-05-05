@@ -44,7 +44,7 @@
     keymaps = [
       {
         key = "<leader>e";
-	      action = "<CMD>Neotree toggle=true<CR>";
+        action = "<CMD>Neotree toggle=true<CR>";
       }
     ];
 

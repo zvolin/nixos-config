@@ -49,17 +49,17 @@ in {
 
         "hyprland/window" = {
           format = "{class}# {}";
-	        max-length = 60;
+          max-length = 60;
           separate-outputs = false;
           rewrite = {
-	          # firefox rule
+            # firefox rule
             "firefox# (.*) — Mozilla Firefox" = "${big ""}  $1";
-	          # kitty rule
+            # kitty rule
             "kitty# (.*)" = "  $1";
-	          # remove the class prefix if it doesn't match any previous rules
-	          # must explicitely define that previous rules don't match, or it would
-	          # just hide them
-	          "(?!firefox|kitty).*?# (.*)" = "$1";
+            # remove the class prefix if it doesn't match any previous rules
+            # must explicitely define that previous rules don't match, or it would
+            # just hide them
+            "(?!firefox|kitty).*?# (.*)" = "$1";
           };
         };
 
@@ -82,14 +82,14 @@ in {
           tooltip-format = "{ifname} {ipaddr}";
         };
 
-	      "group/perf" = {
-	        orientation = "inherit";
-	        modules = [
-	          "cpu"
-	          "memory"
-	          "disk"
-	        ];
-	      };
+        "group/perf" = {
+          orientation = "inherit";
+          modules = [
+            "cpu"
+            "memory"
+            "disk"
+          ];
+        };
 
         # 󰾅   󰍛        
         cpu = {
@@ -110,13 +110,13 @@ in {
           path = "/";
         };
 
-	      "group/media" = {
-	        orientation = "inherit";
-	        modules = [
+        "group/media" = {
+          orientation = "inherit";
+          modules = [
             "backlight"
-	          "wireplumber"
-	        ];
-	      };
+            "wireplumber"
+          ];
+        };
 
         backlight = {
           interval = 10.0;
@@ -150,9 +150,9 @@ in {
         border: none;
         font-family: FiraCode Nerd Font;
         font-size: 8.5pt;
-	      min-height: 0px;
-	      padding: 0px;
-	      margin: 0px;
+        min-height: 0px;
+        padding: 0px;
+        margin: 0px;
       }
 
       tooltip {
@@ -180,7 +180,7 @@ in {
       #workspaces {
         background: #${palette.base0E};
         color: #${palette.base02};
-	      margin: 4px;
+        margin: 4px;
         padding-left: 8px;
         padding-right: 8px;
         border-radius: 6px;
@@ -213,9 +213,9 @@ in {
       
       #network, #perf, #media, #battery {
         color: #${palette.base02};
-	      margin-top: 3px;
-	      margin-bottom: 3px;
-	      margin-right: 4px;
+        margin-top: 3px;
+        margin-bottom: 3px;
+        margin-right: 4px;
         padding-left: 8px;
         padding-right: 8px;
         border-radius: 6px;

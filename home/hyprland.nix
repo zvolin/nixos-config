@@ -59,13 +59,13 @@
 
       input = {
         kb_layout = xkb.layout;
-	      kb_variant = xkb.variant;
+        kb_variant = xkb.variant;
       };
 
       general = {
         gaps_in = 6;
-	      gaps_out = 11;
-	      border_size = 1;
+        gaps_out = 11;
+        border_size = 1;
       };
 
       decoration = {
@@ -83,15 +83,15 @@
       bind = [
         ''${modshift}, Return, exec, ${terminal}''
         ''${modshift}, C,      killactive''
-	      ''${mod},      P,      exec, wofi --show run''
+        ''${mod},      P,      exec, wofi --show run''
         # cycle workspaces
-	      ''${mod},      H,      workspace, -1''
-	      ''${mod},      L,      workspace, +1''
-	      # cycle windows
-	      ''${mod},      Tab,    cyclenext''
-	      ''${mod},      Tab,    bringactivetotop''
-	      ''${modshift}, Tab,    swapnext''
-	      # todo: monitors
+        ''${mod},      H,      workspace, -1''
+        ''${mod},      L,      workspace, +1''
+        # cycle windows
+        ''${mod},      Tab,    cyclenext''
+        ''${mod},      Tab,    bringactivetotop''
+        ''${modshift}, Tab,    swapnext''
+        # todo: monitors
         # clipboard
         ''${mod},      V,      exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy && wtype -s 10 -M ctrl -s 10 -M shift -s 10 -k V''
         ''${modshift}, V,      exec, cliphist wipe''
@@ -99,18 +99,18 @@
         '', XF86SelectiveScreenshot, exec, grim -g "$(slurp)" - | swappy -f -''
       ] ++ (
         # workspaces 1..10
-	      builtins.concatLists (builtins.genList (
-	          x: let
-	            key' = if x == 9 then 0 else x + 1;
-	            key = builtins.toString key';
-	            ws = builtins.toString (x + 1);
-	          in [
-	            "${mod},      ${key}, workspace, ${ws}"
-	            "${modshift}, ${key}, movetoworkspace, ${ws}"
-	          ]
-	        )
-	        10
-	      )
+        builtins.concatLists (builtins.genList (
+            x: let
+              key' = if x == 9 then 0 else x + 1;
+              key = builtins.toString key';
+              ws = builtins.toString (x + 1);
+            in [
+              "${mod},      ${key}, workspace, ${ws}"
+              "${modshift}, ${key}, movetoworkspace, ${ws}"
+            ]
+          )
+          10
+        )
       );
 
       # binds working when lock active
