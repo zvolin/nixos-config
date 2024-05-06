@@ -9,6 +9,7 @@ in {
     nixvim.homeManagerModules.nixvim
 
     ../../home/hyprland.nix
+    ../../home/hyprlock.nix
     ../../home/theme.nix
     ../../home/nixvim.nix
     ../../home/waybar.nix
@@ -63,6 +64,9 @@ in {
     EDITOR = "nvim";
     SUDO_EDITOR = "nvim";
   };
+
+  # enable management of xdg directories
+  xdg.enable = true;
 
   # todo, requires secrets?
   # programs.git = {
