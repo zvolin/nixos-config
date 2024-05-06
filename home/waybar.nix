@@ -6,8 +6,6 @@ let
   big = text: "${font-size 10.5 text}";
   tiny = text: "${font-size 5.5 text}";
 in {
-  home.packages = [ pkgs.waybar ];
-
   programs.waybar = {
     enable = true;
 

@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-zvolin.url = "github:zvolin/nixpkgs/update-kitty-themes";
+    nixpkgs-master.url = "github:nixos/nixpkgs/master";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -26,15 +26,9 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # tiny-dfr.url = "github:WhatAmISupposedToPutHere/tiny-dfr";
-    # tiny-dfr = {
-    #   url = "path:/persist/etc/nixos/flakes/tiny-dfr";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-zvolin, ... }@inputs:
+  outputs = { self, nixpkgs, ... }@inputs:
     let
       system = "aarch64-linux";
     in {

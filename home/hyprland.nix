@@ -21,8 +21,8 @@
     GDK_BACKEND = "wayland";
   };
 
-  # todo: https://github.com/nix-community/home-manager/pull/5346
-  # services.cliphist.enable = true;
+  # enable clipboard history service
+  services.cliphist.enable = true;
 
   # portal - used for programs requesting things from wm, like file picker, screen sharing etc.
   xdg.portal = {
@@ -134,9 +134,6 @@
 
       exec-once = [
         "waybar"
-        # todo: https://github.com/nix-community/home-manager/pull/5346
-        "wl-paste --type text --watch cliphist store"
-        "wl-paste --type image --watch cliphist store"
       ];
     };
   };
