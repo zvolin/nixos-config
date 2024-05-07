@@ -10,6 +10,7 @@ in {
 
     ../../home/hyprland.nix
     ../../home/hyprlock.nix
+    ../../home/hypridle.nix
     ../../home/theme.nix
     ../../home/nixvim.nix
     ../../home/waybar.nix
