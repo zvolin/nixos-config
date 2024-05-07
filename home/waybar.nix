@@ -51,7 +51,7 @@ in {
           separate-outputs = false;
           rewrite = {
             # firefox rule
-            "firefox# (.*) — Mozilla Firefox" = "${big ""}  $1";
+            "firefox# (.*?)( — )?Mozilla Firefox" = "${big ""}  $1";
             # kitty rule
             "kitty# (.*)" = "  $1";
             # remove the class prefix if it doesn't match any previous rules
