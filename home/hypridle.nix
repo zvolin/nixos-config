@@ -21,30 +21,30 @@
 
       listener = [
         {
-          timeout = 150; # 2.5 min
+          timeout = 600; # 10 min
           on-timeout = "${brightnessctl} -s set 10"; # set monitor backlight to minimum, avoid 0 on OLED monitor.
           on-resume = "${brightnessctl} -r"; # monitor backlight restore.
         }
         # turn off keyboard backlight.
         {
-          timeout = 150; # 2.5min.
+          timeout = 600; # 10 min.
           on-timeout = "${brightnessctl} -sd kbd_backlight set 0";
           on-resume = "${brightnessctl} -rd kbd_backlight";
         }
         # lock screen when timeout has passed
         {
-          timeout = 300; # 5min
+          timeout = 900; # 15 min
           on-timeout = "${loginctl} lock-session";
         }
         # screen off when timeout has passed
         {
-          timeout = 330; # 5.5min
+          timeout = 750; # 12.5 min
           on-timeout = "${hyprctl} dispatch dpms off";
           on-resume = "${hyprctl} dispatch dpms on";
         }
         # suspend when timeout has passed
         {
-          timeout = 900; # 15min
+          timeout = 1200; # 20 min
           on-timeout = "${systemctl} suspend";
         }
       ];
