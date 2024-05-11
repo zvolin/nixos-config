@@ -11,7 +11,7 @@
     };
 
     nixos-apple-silicon = {
-      url = "github:tpwrules/nixos-apple-silicon";
+      url = "github:zvolin/nixos-apple-silicon/asahi-audio-2.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
