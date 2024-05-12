@@ -59,12 +59,12 @@
   # Enable the X11 windowing system (for XWayland support)
   services.xserver.enable = true;
 
-  # use sddm for display manager
   programs.hyprland.enable = true;
   programs.sway.enable = true;
 
-  services.displayManager.sddm.enable = true;
-  services.displayManager.sddm.wayland.enable = true;
+  # use sddm for display manager
+  sddm.enable = true;
+
   environment.variables = {
     # specify correct gpu for wlroots
     WLR_DRM_DEVICES = "/dev/dri/card0";

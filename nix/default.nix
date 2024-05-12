@@ -8,6 +8,8 @@
     ../users
     # touchbar
     ./tiny-dfr
+    # sddm
+    ./sddm
   ];
 
   options = {};
