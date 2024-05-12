@@ -8,6 +8,7 @@
     ./nvim-colorizer.nix
     ./nvim-window-picker.nix
     ./toggleterm.nix
+    ./treesitter.nix
     ./which-key.nix
   ];
 
@@ -15,7 +16,6 @@
     lsp.enable = true;
     luasnip.enable = true;
     telescope.enable = true;
-    treesitter.enable = true;
     rustaceanvim.enable = true;
   };
 }
