@@ -5,9 +5,15 @@
     globals.mapleader = " ";
 
     keymaps = [
+      # toggle neotree
       {
         key = "<leader>e";
         action = "<CMD>Neotree toggle=true<CR>";
+      }
+      # toggle undotree
+      {
+        key = "<leader>u";
+        action = "<CMD>UndotreeToggle<CR>";
       }
     ];
 

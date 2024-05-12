@@ -18,4 +18,8 @@
     telescope.enable = true;
     rustaceanvim.enable = true;
   };
+
+  programs.nixvim.extraPlugins = with pkgs.vimPlugins; [
+    undotree
+  ];
 }
