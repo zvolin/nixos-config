@@ -12,7 +12,7 @@ in {
     ../../home/hyprlock.nix
     ../../home/hypridle.nix
     ../../home/theme.nix
-    ../../home/nixvim.nix
+    ../../home/nixvim
     ../../home/waybar.nix
     ../../home/wofi.nix
     # ../../home/lunarvim.nix
