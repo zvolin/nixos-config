@@ -1,9 +1,6 @@
-{ config, pkgs, inputs, ... }@args:
+{ pkgs, inputs, ... }:
 
-
-let
-  # bibata-cursors-hypr = pkgs.callPackage ../../home-manager-modules/bibata-cursors-hypr.nix { };
-in {
+{
   imports = with inputs; [
     nix-colors.homeManagerModules.default
     nixvim.homeManagerModules.nixvim

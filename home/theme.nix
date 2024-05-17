@@ -1,8 +1,8 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   home.packages = with pkgs; [
-    (pkgs.nerdfonts.override { fonts = [ "FiraCode" ]; })
+    (nerdfonts.override { fonts = [ "FiraCode" ]; })
   ];
 
   wayland.windowManager.hyprland.settings = let

@@ -7,7 +7,7 @@
   options = {
   };
 
-  config = rec {
+  config = {
     # set locale
     i18n.defaultLocale = "en_US.UTF-8";
 

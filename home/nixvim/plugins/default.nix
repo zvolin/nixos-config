@@ -1,8 +1,9 @@
-{ lib, pkgs, config, ... }:
+{ pkgs, ... }:
 
 {
   imports = [
     ./cmp.nix
+    ./lsp-zero.nix
     ./lualine.nix
     ./neotree.nix
     ./nvim-colorizer.nix
@@ -13,7 +14,6 @@
   ];
 
   programs.nixvim.plugins = {
-    lsp.enable = true;
     luasnip.enable = true;
     telescope.enable = true;
     rustaceanvim.enable = true;

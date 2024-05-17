@@ -1,4 +1,4 @@
-{ lib, pkgs, config, ... }:
+{ config, ... }:
 
 {
   programs.wofi = {
