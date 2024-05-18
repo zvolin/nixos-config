@@ -35,14 +35,8 @@
       nixosConfigurations.mbp-m2 = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs; };
-        modules = with inputs; [
+        modules = [
           hosts/mbp-m2/configuration.nix
-
-          # Include the necessary packages and configuration for Apple Silicon support
-          nixos-apple-silicon.nixosModules.default
-
-          home-manager.nixosModules.default
-          nixvim.nixosModules.nixvim
         ];
       };
     };

@@ -5,11 +5,15 @@
 { lib, pkgs, inputs, ... }:
 
 {
-  imports = [
+  imports = with inputs; [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     # Include home-manager
-    inputs.home-manager.nixosModules.default
+    home-manager.nixosModules.default
+    # Include the necessary packages and configuration for Apple Silicon support
+    nixos-apple-silicon.nixosModules.default
+    darkmatter-grub-theme.nixosModule
+    nixvim.nixosModules.nixvim
 
     ../../nix
     ../../overlays
@@ -34,8 +38,9 @@
   # turn on the flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
+  # Use the grub EFI boot loader.
+  # nixos-apple-silicon layer should make it compatible with uboot automatically
+  boot.loader.grub.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
   boot.extraModprobeConfig = ''
     options hid_apple iso_layout=0 swap_fn_leftctrl=1
