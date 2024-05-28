@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 {
   home.packages = with pkgs; [
@@ -134,6 +134,7 @@
 
       exec-once = [
         "waybar"
+        "swaybg -o '*' -m fill -i ${config.stylix.image}"
       ];
     };
   };

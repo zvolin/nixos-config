@@ -15,6 +15,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    stylix = {
+      url = "github:danth/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     nix-colors.url = "github:Misterio77/nix-colors";
 
     nixvim = {

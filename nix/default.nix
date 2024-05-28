@@ -10,6 +10,8 @@
     ./tiny-dfr
     # sddm
     ./sddm
+    # stylix
+    ./stylix.nix
   ];
 
   options = {};

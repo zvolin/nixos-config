@@ -1,10 +1,11 @@
 { config, ... }:
 
 let
-  palette = config.colorScheme.palette;
-  font-size = size: text: ''<span font-size="${builtins.toString size}pt">${text}</span>'';
-  big = text: "${font-size 10.5 text}";
-  tiny = text: "${font-size 5.5 text}";
+  size = config.stylix.fonts.sizes.desktop;
+  sized = size: text: ''<span font-size="${builtins.toString size}pt">${text}</span>'';
+  big = text: "${sized (size * 1.1) text}";
+  small = text: "${sized (size * 0.8) text}";
+  tiny = text: "${sized (size * 0.6) text}";
 in {
   programs.waybar = {
     enable = true;
@@ -32,7 +33,7 @@ in {
         ];
 
         "custom/logo" = {
-          format = " ";
+          format = "${big ""}";
         };
 
         "hyprland/workspaces" = {
@@ -42,7 +43,7 @@ in {
           on-click = "activate";
           on-scroll-up = "hyprctl dispatch workspace e+1";
           on-scroll-down = "hyprctl dispatch workspace e-1";
-          format = "{name}";
+          format = "${small "{name}"}";
         };
 
         "hyprland/window" = {
@@ -63,7 +64,7 @@ in {
 
         clock = {
           interval = 1;
-          format = "${big " "}{:%d.%m.%Y %H:%M}";
+          format = "${big "  "}{:%d.%m.%Y %H:%M}";
         };
 
         tray = {
@@ -146,46 +147,44 @@ in {
     style = ''
       * {
         border: none;
-        font-family: FiraCode Nerd Font;
-        font-size: 8.5pt;
         min-height: 0px;
         padding: 0px;
         margin: 0px;
-      }
-
-      tooltip {
-        background: rgba(43, 48, 59, 0.5);
-        border: 1px solid rgba(100, 114, 125, 0.5);
+        font-family: FiraCode Nerd Font;
       }
 
       tooltip label {
-        color: #${palette.base06};
       }
 
       window#waybar {
-        color: #${palette.base05};
-        background: #${palette.base00};
         padding-top: 1px;
         padding-bottom: 1px;
       }
 
       #custom-logo {
-        font-size: 11pt;
         margin-left: 5px;
-        margin-right: 5px;
+        margin-right: 10px;
       }
 
       #workspaces {
-        background: #${palette.base0E};
-        color: #${palette.base02};
+        background: @base0D;
         margin: 4px;
         padding-left: 8px;
         padding-right: 8px;
         border-radius: 6px;
       }
 
+      #workspaces button {
+        color: @base00;
+        border-radius: 0px;
+      }
+
       /* disable default hover effect */
       #workspaces button:hover {
+        box-shadow: none;
+        text-shadow: none;
+        background: none;
+        transition: none;
         background-image: none;
       }
 
@@ -195,9 +194,16 @@ in {
         padding-left: 1px;
       }
 
-      #workspaces button label {
-        font-size: 7.5pt;
-        color: #${palette.base02};
+      /* override borders added by stylix */
+      window#waybar .modules-left #workspaces button,
+      window#waybar .modules-left #workspaces button.active,
+      window#waybar .modules-left #workspaces button.focused {
+        margin-top: 3px;
+        border-bottom-width: 2px;
+      }
+      window#waybar .modules-left #workspaces button.active,
+      window#waybar .modules-left #workspaces button.focused {
+        border-bottom-color: @base00;
       }
 
       #workspaces button.active label {
@@ -205,12 +211,12 @@ in {
       }
 
       #window {
-        padding-left: 15px;
-        padding-right: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
       }
 
       #network, #perf, #media, #battery {
-        color: #${palette.base02};
+        color: @base00;
         margin-top: 3px;
         margin-bottom: 3px;
         margin-right: 4px;
@@ -225,19 +231,19 @@ in {
       }
 
       #network {
-        background: #${palette.base0E};
+        background: @base0D;
       }
 
       #perf {
-        background: #${palette.base0E};
+        background: @base0B;
       }
 
       #media {
-        background: #${palette.base0E};
+        background: @base0D;
       }
 
       #battery {
-        background: #${palette.base0E};
+        background: @base08;
       }
     '';
   };

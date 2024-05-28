@@ -8,7 +8,6 @@
     ../../home/hyprland.nix
     ../../home/hyprlock.nix
     ../../home/hypridle.nix
-    ../../home/theme.nix
     ../../home/nixvim
     ../../home/waybar.nix
     ../../home/wofi.nix
@@ -85,6 +84,7 @@
       enable_audio_bell = false;
       # don't ask for confirmation to close window
       confirm_os_window_close = 0;
+      window_padding_width = 1;
     };
   };
 

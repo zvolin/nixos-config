@@ -8,11 +8,12 @@
   imports = with inputs; [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    # Auto theming
+    stylix.nixosModules.stylix
     # Include home-manager
     home-manager.nixosModules.default
     # Include the necessary packages and configuration for Apple Silicon support
     nixos-apple-silicon.nixosModules.default
-    darkmatter-grub-theme.nixosModule
     nixvim.nixosModules.nixvim
 
     ../../nix
@@ -130,6 +131,7 @@
     htop
     neovim
     openssh
+    plymouth
     rargs
     ripgrep
     sd
