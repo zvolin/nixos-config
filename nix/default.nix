@@ -4,14 +4,16 @@
   imports = [
     # internationalization settings
     ./i18n.nix
-    # user settings
-    ../users
-    # touchbar
-    ./tiny-dfr
+    # vim
+    ./nixvim
     # sddm
     ./sddm
     # stylix
     ./stylix.nix
+    # touchbar
+    ./tiny-dfr
+    # user settings
+    ../users
   ];
 
   options = {};

@@ -8,7 +8,6 @@
     ../../home/hyprland.nix
     ../../home/hyprlock.nix
     ../../home/hypridle.nix
-    ../../home/nixvim
     ../../home/waybar.nix
     ../../home/wofi.nix
     # ../../home/lunarvim.nix
