@@ -1,11 +1,9 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 
 {
   home.packages = [ pkgs.hyprlock ];
 
-  xdg.configFile."hypr/hyprlock.conf".text = let
-    # palette = config.colorScheme.palette;
-  in ''
+  xdg.configFile."hypr/hyprlock.conf".text = ''
     background {
       monitor =
       path = screenshot
