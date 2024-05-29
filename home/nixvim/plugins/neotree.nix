@@ -14,10 +14,16 @@
     # auto resize windows on tree open and close
     eventHandlers = {
       neo_tree_window_after_open = ''
-        function(args) vim.cmd('wincmd =') end
+        function(args)
+          vim.cmd('wincmd =')
+          reset_undotree_size()
+        end
       '';
       neo_tree_window_after_close = ''
-        function(args) vim.cmd('wincmd =') end
+        function(args)
+          vim.cmd('wincmd =')
+          reset_undotree_size()
+        end
       '';
     };
   };

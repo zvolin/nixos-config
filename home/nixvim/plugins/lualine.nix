@@ -4,7 +4,7 @@
   programs.nixvim.plugins.lualine = {
     enable = true;
 
-    disabledFiletypes.statusline = [ "neo-tree" ];
+    disabledFiletypes.statusline = [ "neo-tree" "undotree" ];
 
     componentSeparators = {
       left = "";

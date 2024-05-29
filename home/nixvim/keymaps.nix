@@ -5,28 +5,68 @@
     globals.mapleader = " ";
 
     keymaps = [
-      # toggle neotree
+      # Side panels
       {
         key = "<leader>e";
-        action = "<CMD>Neotree toggle=true<CR>";
+        action = "<cmd>Neotree toggle=true<cr>";
+        options.desc = "Toggle neotree";
       }
-      # toggle undotree
       {
         key = "<leader>u";
-        action = "<CMD>UndotreeToggle<CR>";
+        action = "<cmd>UndotreeToggle <bar> lua reset_undotree_size()<cr>";
+        options.desc = "Toggle undotree";
+      }
+      # Buffers
+      {
+        key = "<s-h>";
+        action = "<cmd>BufferLineCyclePrev<cr>";
+        options.desc = "Cycle previous buffer";
+      }
+      {
+        key = "<s-l>";
+        action = "<cmd>BufferLineCycleNext<cr>";
+        options.desc = "Cycle next buffer";
+      }
+      {
+        key = "<leader>c";
+        action = "<cmd>Bdelete<cr>";
+        options.desc = "Delete current buffer";
+      }
+      {
+        key = "<leader>bp";
+        action = "<cmd>BufferLinePick<cr>";
+        options.desc = "Pick a buffer";
+      }
+      {
+        key = "<leader>bc";
+        action = "<cmd>BufferLinePickClose<cr>";
+        options.desc = "Pick a buffer to close";
+      }
+      {
+        key = "<leader>bC";
+        action = "<cmd>BufferLineCloseOthers<cr>";
+        options.desc = "Close all other buffers";
       }
     ];
 
-    # telescope
     plugins.telescope.keymaps = {
-      "<C-p>" = {
+      "<c-p>" = {
         action = "git_files";
-        options = {
-          desc = "Telescope Git Files";
-        };
+        options.desc = "Telescope Git Files";
       };
-      "<leader>ff" = "find_files";
-      "<leader>fg" = "live_grep";
+      "<leader>ff" = {
+        action = "find_files";
+        options.desc = "Telescope find files";
+      };
+      "<leader>fg" = {
+        action = "live_grep";
+        options.desc = "Telescope live grep";
+      };
+    };
+
+    plugins.which-key.registrations = {
+      "<leader>b" = "Buffers";
+      "<leader>f" = "Find";
     };
   };
 }

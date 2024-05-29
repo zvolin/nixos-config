@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./bufferline.nix
     ./cmp.nix
     ./lsp-zero.nix
     ./lualine.nix
@@ -21,5 +22,6 @@
 
   programs.nixvim.extraPlugins = with pkgs.vimPlugins; [
     undotree
+    bufdelete-nvim
   ];
 }
