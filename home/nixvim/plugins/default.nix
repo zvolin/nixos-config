@@ -9,6 +9,7 @@
     ./neotree.nix
     ./nvim-colorizer.nix
     ./nvim-window-picker.nix
+    ./telescope.nix
     ./toggleterm.nix
     ./treesitter.nix
     ./which-key.nix
@@ -16,7 +17,6 @@
 
   programs.nixvim.plugins = {
     luasnip.enable = true;
-    telescope.enable = true;
     rustaceanvim.enable = true;
   };
 
