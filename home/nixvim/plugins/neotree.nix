@@ -7,6 +7,11 @@
     window = {
       width = 35;
       height = 35;
+
+      mappings = {
+        # overwrite default open with window picker
+        "<cr>" = "open_with_window_picker";
+      };
     };
 
     popupBorderStyle = "rounded";
