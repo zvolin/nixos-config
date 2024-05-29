@@ -126,7 +126,7 @@ in {
 
         wireplumber = {
           format = "${big " "} {volume}%";
-          format-muted = "${big ""}";
+          format-muted = "${big " "}";
           max-volume = 120;
           scroll-step = 0.2;
         };
