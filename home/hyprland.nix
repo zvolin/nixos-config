@@ -1,6 +1,11 @@
-{ pkgs, config, ... }:
+{ pkgs, lib, config, ... }:
 
-{
+let
+  opacity = {
+    active = 0.9;
+    inactive = 0.9;
+  };
+in {
   home.packages = with pkgs; [
     brightnessctl
     cliphist
@@ -42,11 +47,15 @@
     ];
   };
 
+  # enable opacity for bars with stylix
+  stylix.opacity.desktop = opacity.active;
+
   wayland.windowManager.hyprland = let
     mod = "SUPER";
     modshift = "${mod}SHIFT";
     terminal = "kitty";
     xkb = (import ../nix/i18n.nix {}).config.services.xserver.xkb;
+    colors = config.lib.stylix.colors;
   in {
     enable = true;
     xwayland.enable = true;
@@ -66,11 +75,52 @@
         gaps_in = 6;
         gaps_out = 11;
         border_size = 1;
+        "col.active_border" = lib.mkForce (lib.concatStringsSep " " [
+          "rgba(${colors.base0D}fa)"
+          "rgba(${colors.base0D}85)"
+          "rgba(${colors.base0C}55)"
+          "60deg"
+        ]);
       };
 
       decoration = {
         rounding = 5;
+        active_opacity = opacity.active;
+        inactive_opacity = opacity.inactive;
+        blur = {
+          enabled = true;
+          size = 5;
+          passes = 1;
+          popups = true;
+        };
       };
+
+      # disable blur for kitty
+      windowrule = [ "noblur,^(kitty)$" ];
+
+      # disable opacity for common streaming services
+      windowrulev2 = let
+        services = [
+          "YouTube"
+          "HBO"
+          "Prime Video"
+          "Netflix"
+          "Disney"
+          "CDA"
+          "Player.pl"
+        ];
+        titleRegex = lib.concatMapStringsSep "|" (name: "(.*${name}.*)") services;
+        browsers = [
+          "firefox"
+          "Chromium-browser"
+        ];
+        classRegex = lib.concatStringsSep "|" browsers;
+      in with opacity; with builtins; [
+        # restore stock opacity if no service title matched
+        "opacity ${toString active} override ${toString inactive} override, class:(${classRegex})"
+        # disable opacity if service opened
+        "opacity 1.0 override, title:(${titleRegex}), class:(${classRegex})"
+      ];
 
       misc = {
         disable_hyprland_logo = true;
