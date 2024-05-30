@@ -17,6 +17,7 @@
 
   programs.nixvim.plugins = {
     luasnip.enable = true;
+    project-nvim.enable = true;
     rustaceanvim.enable = true;
   };
 
