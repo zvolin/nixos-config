@@ -9,6 +9,7 @@
     ./neotree.nix
     ./nvim-colorizer.nix
     ./nvim-window-picker.nix
+    ./project.nix
     ./telescope.nix
     ./toggleterm.nix
     ./treesitter.nix
@@ -17,7 +18,6 @@
 
   programs.nixvim.plugins = {
     luasnip.enable = true;
-    project-nvim.enable = true;
     rustaceanvim.enable = true;
   };
 
