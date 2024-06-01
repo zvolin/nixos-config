@@ -129,6 +129,7 @@
     fzf
     git
     htop
+    jq
     neovim
     openssh
     plymouth
