@@ -13,6 +13,9 @@
     # ../../home/lunarvim.nix
   ];
 
+  # export manual as json
+  manual.json.enable = true;
+
   home.username = "zwolin";
   home.homeDirectory = "/home/zwolin";
 

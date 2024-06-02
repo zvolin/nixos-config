@@ -57,7 +57,8 @@ in {
       (noremap "<leader>fl" "Search loclist"    "<cmd>Telescope loclist<cr>")
       (noremap "<leader>fj" "Search jumplist"   "<cmd>Telescope jumplist<cr>")
       (noremap "<leader>fr" "Search registers"  "<cmd>Telescope registers<cr>")
-      (noremap "<leader>fp" "Find projects"     "<cmd>lua require('telescope').extensions.projects.projects{}<cr>")
+      (noremap "<leader>fp" "Find projects"     "<cmd>lua require('telescope').extensions.projects.projects()<cr>")
+      (noremap "<leader>fn" "Search NixOs man"  "<cmd>lua require('telescope').extensions.manix.manix()<cr>")
       # Git
       # Git find
       (noremap "<leader>gff"  "Find file"           "<cmd>Telescope git_files<cr>")
