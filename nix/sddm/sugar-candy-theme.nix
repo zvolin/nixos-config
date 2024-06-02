@@ -1,4 +1,4 @@
-{ stdenv, fetchgit, themeconf, ... }:
+{ stdenv, fetchFromGitHub, themeconf, ... }:
 
 stdenv.mkDerivation rec {
   pname = "sddm-sugar-candy";
@@ -6,8 +6,9 @@ stdenv.mkDerivation rec {
 
   dontWrapQtApps = true;
 
-  src = fetchgit {
-    url = "https://framagit.org/MarianArlt/${pname}.git";
+  src = fetchFromGitHub {
+    owner = "zvolin";
+    repo = pname;
     rev = version;
     hash = "sha256-XggFVsEXLYklrfy1ElkIp9fkTw4wvXbyVkaVCZq4ZLU=";
   };
