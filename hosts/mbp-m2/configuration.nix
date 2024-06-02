@@ -27,7 +27,7 @@
   # use experimental GPU driver
   hardware.asahi.useExperimentalGPUDriver = true;
   # replace the mesa driver with Asahi mesa
-  hardware.asahi.experimentalGPUInstallMode = "overlay";
+  hardware.asahi.experimentalGPUInstallMode = "replace";
   # build kernel with Rust support
   hardware.asahi.withRust = true;
   # enable opengl
