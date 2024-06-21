@@ -8,6 +8,7 @@
     ../../home/hyprland.nix
     ../../home/hyprlock.nix
     ../../home/hypridle.nix
+    ../../home/keychain.nix
     ../../home/waybar.nix
     ../../home/wofi.nix
     # ../../home/lunarvim.nix
@@ -68,11 +69,11 @@
   xdg.enable = true;
 
   # todo, requires secrets?
-  # programs.git = {
-  #   enable = true;
-  #   signing.key = "";
-  #   signing.signByDefault = true;
-  # };
+  programs.git = {
+    enable = true;
+    signing.key = "9DD9C8FD06750734";
+    signing.signByDefault = true;
+  };
 
   qt.enable = true;
 
