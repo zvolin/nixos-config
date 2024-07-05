@@ -45,7 +45,7 @@
       end)
 
       -- enable inlay hints
-      vim.lsp.inlay_hint.enable(true, { 0 })
+      vim.lsp.inlay_hint.enable(false, { 0 })
 
       -- setup signs
       lsp_zero.extend_lspconfig({

@@ -107,6 +107,9 @@ in
       (noremap "" "<leader>li" "Implementations" "<cmd>Telescope lsp_implementations<cr>")
       (noremap "" "<leader>lc" "Buffer diagnostics" "<cmd>Telescope diagnostics bufnr=0<cr>")
       (noremap "" "<leader>lC" "Workspace diagnostics" "<cmd>Telescope diagnostics<cr>")
+      (noremap "" "<leader>lh" "Toggle inlay hints"
+        "<cmd>lua vim.lsp.inlay_hint.enable(vim.lsp.inlay_hint.is_enabled(), { 0 })<cr>"
+      )
       # Terminal
       ## remap shift backspace and enter, for some reason when zsh in vi mode is used
       ## from toggleterm from kitty, it wipes current line and switches to normal mode in zsh
