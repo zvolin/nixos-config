@@ -31,8 +31,7 @@
   # build kernel with Rust support
   hardware.asahi.withRust = true;
   # enable opengl
-  hardware.opengl.enable = true;
-  hardware.opengl.driSupport.enable = true;
+  hardware.graphics.enable = true;
   # hardware.opengl.driSupport32Bit = true;
 
 
@@ -83,7 +82,6 @@
   # services.printing.enable = true;
 
   # Enable sound.
-  sound.enable = true;
   services.pipewire = {
     enable = true;
     audio.enable = true;

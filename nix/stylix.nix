@@ -6,6 +6,7 @@ let
   contrast = "6";
 in {
   stylix = {
+    enable = true;
     image = pkgs.runCommand "wallpaper.png" { } ''
       ${pkgs.imagemagick}/bin/convert "${inputImage}" -brightness-contrast ${brightness},${contrast} $out
     '';
