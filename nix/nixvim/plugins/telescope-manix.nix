@@ -13,7 +13,7 @@
         rev = version;
         hash = "sha256-Uo+4/be6rT0W8Z1dvCRXOANvoct6gJ4714flhyFzmKU=";
       };
-      cargoSha256 = "sha256-JGIAqNDMADcfcNwNRm24yBUpB4rV0cVhtw/P3Da/Tyw=";
+      cargoHash = "sha256-JGIAqNDMADcfcNwNRm24yBUpB4rV0cVhtw/P3Da/Tyw=";
     })
   ];
 

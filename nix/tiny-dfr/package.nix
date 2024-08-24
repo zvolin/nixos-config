@@ -20,7 +20,7 @@ in
       rev = "v${version}";
       hash = "sha256-oawKYrfXAQ5RFMdUCG7F12wHcnFif++44s2KsX9ns6U=";
     };
-    cargoSha256 = "sha256-QOkztErJLFXPxCb8MvaXi7jGXeI5A0q8LwZtYddzUZE=";
+    cargoHash = "sha256-QOkztErJLFXPxCb8MvaXi7jGXeI5A0q8LwZtYddzUZE=";
 
     postPatch = ''
       substituteInPlace src/*.rs --replace /usr/share $out/share
