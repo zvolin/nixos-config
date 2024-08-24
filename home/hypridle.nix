@@ -31,16 +31,16 @@
           on-timeout = "${brightnessctl} -sd kbd_backlight set 0";
           on-resume = "${brightnessctl} -rd kbd_backlight";
         }
-        # lock screen when timeout has passed
-        {
-          timeout = 900; # 15 min
-          on-timeout = "${loginctl} lock-session";
-        }
         # screen off when timeout has passed
         {
           timeout = 750; # 12.5 min
           on-timeout = "${hyprctl} dispatch dpms off";
           on-resume = "${hyprctl} dispatch dpms on";
+        }
+        # lock screen when timeout has passed
+        {
+          timeout = 900; # 15 min
+          on-timeout = "${loginctl} lock-session";
         }
         # suspend when timeout has passed
         {
