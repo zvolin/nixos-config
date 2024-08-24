@@ -10,14 +10,14 @@ in {
   programs.nixvim = {
     globals.mapleader = " ";
 
-    plugins.which-key.registrations = {
-      "<leader>b" = "+buffers";
-      "<leader>f" = "+find";
-      "<leader>g" = "+git";
-      "<leader>gf" = "+find";
-      "<leader>gfc" = "+commit";
-      "<leader>w" = "+windows";
-    };
+    plugins.which-key.settings.spec = [
+      { __unkeyed = "<leader>b";   group = "+buffers"; }
+      { __unkeyed = "<leader>f";   group = "+find"; }
+      { __unkeyed = "<leader>g";   group = "+git"; }
+      { __unkeyed = "<leader>gf";  group = "+find"; }
+      { __unkeyed = "<leader>gfc"; group = "+commit"; }
+      { __unkeyed = "<leader>w";   group = "+windows"; }
+    ];
 
     keymaps = [
       # General
