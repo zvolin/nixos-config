@@ -123,6 +123,7 @@
   environment.systemPackages = with pkgs; [
     bat
     curl
+    dig
     fd
     fzf
     git
