@@ -1,11 +1,15 @@
-{ lib, config, inputs, ... }:
+{
+  lib,
+  config,
+  inputs,
+  ...
+}:
 let
   cfg = config.user-config;
-in {
+in
+{
   # import all per-user configurations
-  imports = [
-    ./zwolin/user.nix
-  ];
+  imports = [ ./zwolin/user.nix ];
 
   options.user-config = {
     users = lib.mkOption {
@@ -27,7 +31,9 @@ in {
     # configure home manager
     home-manager = {
       # also pass inputs to home-manager modules
-      extraSpecialArgs = { inherit inputs; };
+      extraSpecialArgs = {
+        inherit inputs;
+      };
       # use system nixpkgs
       useGlobalPkgs = true;
     };

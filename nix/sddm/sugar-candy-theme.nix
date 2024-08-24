@@ -1,4 +1,9 @@
-{ stdenv, fetchFromGitHub, themeconf, ... }:
+{
+  stdenv,
+  fetchFromGitHub,
+  themeconf,
+  ...
+}:
 
 stdenv.mkDerivation rec {
   pname = "sddm-sugar-candy";

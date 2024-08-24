@@ -91,15 +91,17 @@
     };
   };
 
-  programs.fzf = let
-    fd = "fd --type f";
-  in {
-    enable = true;
+  programs.fzf =
+    let
+      fd = "fd --type f";
+    in
+    {
+      enable = true;
 
-    defaultCommand = fd;
-    changeDirWidgetCommand = fd;
-    fileWidgetCommand = fd;
-  };
+      defaultCommand = fd;
+      changeDirWidgetCommand = fd;
+      fileWidgetCommand = fd;
+    };
 
   programs.zsh = {
     enable = true;
@@ -115,7 +117,7 @@
 
     antidote = {
       enable = true;
-      plugins = [];
+      plugins = [ ];
     };
   };
 

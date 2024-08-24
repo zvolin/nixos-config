@@ -4,61 +4,82 @@
 { lib, modulesPath, ... }:
 
 {
-  imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
-    ];
+  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
   boot.initrd.availableKernelModules = [ "uas" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
-  fileSystems."/" =
-    { device = "/dev/mapper/nixos";
-      fsType = "btrfs";
-      options = [ "subvol=root" "compress=zstd" "noatime" ];
-      neededForBoot = true;
-    };
+  fileSystems."/" = {
+    device = "/dev/mapper/nixos";
+    fsType = "btrfs";
+    options = [
+      "subvol=root"
+      "compress=zstd"
+      "noatime"
+    ];
+    neededForBoot = true;
+  };
 
   boot.initrd.luks.devices."nixos".device = "/dev/nvme0n1p5";
 
-  fileSystems."/nix" =
-    { device = "/dev/mapper/nixos";
-      fsType = "btrfs";
-      options = [ "subvol=nix" "compress=zstd" "noatime" ];
-      neededForBoot = true;
-    };
+  fileSystems."/nix" = {
+    device = "/dev/mapper/nixos";
+    fsType = "btrfs";
+    options = [
+      "subvol=nix"
+      "compress=zstd"
+      "noatime"
+    ];
+    neededForBoot = true;
+  };
 
-  fileSystems."/persist" =
-    { device = "/dev/mapper/nixos";
-      fsType = "btrfs";
-      options = [ "subvol=persist" "compress=zstd" "noatime" ];
-      neededForBoot = true;
-    };
+  fileSystems."/persist" = {
+    device = "/dev/mapper/nixos";
+    fsType = "btrfs";
+    options = [
+      "subvol=persist"
+      "compress=zstd"
+      "noatime"
+    ];
+    neededForBoot = true;
+  };
 
-  fileSystems."/var/log" =
-    { device = "/dev/mapper/nixos";
-      fsType = "btrfs";
-      options = [ "subvol=log" "compress=zstd" "noatime" ];
-      neededForBoot = true;
-    };
+  fileSystems."/var/log" = {
+    device = "/dev/mapper/nixos";
+    fsType = "btrfs";
+    options = [
+      "subvol=log"
+      "compress=zstd"
+      "noatime"
+    ];
+    neededForBoot = true;
+  };
 
-  fileSystems."/home" =
-    { device = "/dev/mapper/nixos";
-      fsType = "btrfs";
-      options = [ "subvol=home" "compress=zstd" "noatime" ];
-    };
+  fileSystems."/home" = {
+    device = "/dev/mapper/nixos";
+    fsType = "btrfs";
+    options = [
+      "subvol=home"
+      "compress=zstd"
+      "noatime"
+    ];
+  };
 
-  fileSystems."/swap" =
-    { device = "/dev/mapper/nixos";
-      fsType = "btrfs";
-      options = [ "subvol=swap" "noatime" ];
-    };
+  fileSystems."/swap" = {
+    device = "/dev/mapper/nixos";
+    fsType = "btrfs";
+    options = [
+      "subvol=swap"
+      "noatime"
+    ];
+  };
 
-  fileSystems."/boot" =
-    { device = "/dev/nvme0n1p4";
-      fsType = "vfat";
-    };
+  fileSystems."/boot" = {
+    device = "/dev/nvme0n1p4";
+    fsType = "vfat";
+  };
 
   swapDevices = [ { device = "/swap/swapfile"; } ];
 

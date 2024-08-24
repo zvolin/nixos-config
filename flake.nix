@@ -34,16 +34,18 @@
     };
   };
 
-  outputs = { self, nixpkgs, ... }@inputs:
+  outputs =
+    { self, nixpkgs, ... }@inputs:
     let
       system = "aarch64-linux";
-    in {
+    in
+    {
       nixosConfigurations.mbp-m2 = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit inputs; };
-        modules = [
-          hosts/mbp-m2/configuration.nix
-        ];
+        specialArgs = {
+          inherit inputs;
+        };
+        modules = [ hosts/mbp-m2/configuration.nix ];
       };
     };
 }

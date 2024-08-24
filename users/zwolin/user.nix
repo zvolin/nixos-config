@@ -1,4 +1,9 @@
-{ lib, pkgs, config, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
 let
   cfg = config.zwolin;
 in
@@ -12,7 +17,7 @@ in
       isNormalUser = true;
       hashedPasswordFile = "/persist/users/zwolin/password";
       extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-      packages = [];
+      packages = [ ];
       shell = pkgs.zsh;
     };
 

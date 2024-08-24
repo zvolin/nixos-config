@@ -6,7 +6,8 @@ let
   big = text: "${sized (size * 1.1) text}";
   small = text: "${sized (size * 0.8) text}";
   tiny = text: "${sized (size * 0.6) text}";
-in {
+in
+{
   programs.waybar = {
     enable = true;
 
@@ -132,7 +133,18 @@ in {
         };
 
         battery = {
-          format-icons = ["󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹"];
+          format-icons = [
+            "󰁺"
+            "󰁻"
+            "󰁼"
+            "󰁽"
+            "󰁾"
+            "󰁿"
+            "󰂀"
+            "󰂁"
+            "󰂂"
+            "󰁹"
+          ];
           format = "${big "{icon}"}";
           format-charging = "${big "{icon}󱐋"}";
           interval = 15;

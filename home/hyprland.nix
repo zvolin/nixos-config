@@ -1,11 +1,17 @@
-{ pkgs, lib, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 
 let
   opacity = {
     active = 0.9;
     inactive = 0.9;
   };
-in {
+in
+{
   home.packages = with pkgs; [
     brightnessctl
     cliphist
@@ -50,142 +56,151 @@ in {
   # enable opacity for bars with stylix
   stylix.opacity.desktop = opacity.active;
 
-  wayland.windowManager.hyprland = let
-    mod = "SUPER";
-    modshift = "${mod}SHIFT";
-    terminal = "kitty";
-    xkb = (import ../nix/i18n.nix {}).config.services.xserver.xkb;
-    colors = config.lib.stylix.colors;
-  in {
-    enable = true;
-    xwayland.enable = true;
-    systemd.enable = true;
+  wayland.windowManager.hyprland =
+    let
+      mod = "SUPER";
+      modshift = "${mod}SHIFT";
+      terminal = "kitty";
+      xkb = (import ../nix/i18n.nix { }).config.services.xserver.xkb;
+      colors = config.lib.stylix.colors;
+    in
+    {
+      enable = true;
+      xwayland.enable = true;
+      systemd.enable = true;
 
-    settings = {
-      monitor = [
-        "eDP-1, preferred, auto, 1.6"
-      ];
+      settings = {
+        monitor = [ "eDP-1, preferred, auto, 1.6" ];
 
-      input = {
-        kb_layout = xkb.layout;
-        kb_variant = xkb.variant;
-      };
-
-      general = {
-        gaps_in = 6;
-        gaps_out = 11;
-        border_size = 1;
-        "col.active_border" = lib.mkForce (lib.concatStringsSep " " [
-          "rgba(${colors.base0D}fa)"
-          "rgba(${colors.base0D}85)"
-          "rgba(${colors.base0C}55)"
-          "60deg"
-        ]);
-      };
-
-      decoration = {
-        rounding = 5;
-        active_opacity = opacity.active;
-        inactive_opacity = opacity.inactive;
-        blur = {
-          enabled = true;
-          size = 5;
-          passes = 1;
-          popups = true;
+        input = {
+          kb_layout = xkb.layout;
+          kb_variant = xkb.variant;
         };
-      };
 
-      # disable blur for kitty
-      windowrule = [ "noblur,^(kitty)$" ];
-
-      # disable opacity for common streaming services
-      windowrulev2 = let
-        services = [
-          "YouTube"
-          "HBO"
-          "Prime Video"
-          "Netflix"
-          "Disney"
-          "CDA"
-          "Player.pl"
-        ];
-        titleRegex = lib.concatMapStringsSep "|" (name: "(.*${name}.*)") services;
-        browsers = [
-          "firefox"
-          "Chromium-browser"
-        ];
-        classRegex = lib.concatStringsSep "|" browsers;
-      in with opacity; with builtins; [
-        # restore stock opacity if no service title matched
-        "opacity ${toString active} override ${toString inactive} override, class:(${classRegex})"
-        # disable opacity if service opened
-        "opacity 1.0 override, title:(${titleRegex}), class:(${classRegex})"
-      ];
-
-      misc = {
-        disable_hyprland_logo = true;
-        disable_splash_rendering = true;
-        force_default_wallpaper = 0;
-      };
-
-      input.touchpad.tap-to-click = false;
-
-      bind = [
-        ''${modshift}, Return, exec, ${terminal}''
-        ''${modshift}, C,      killactive''
-        ''${mod},      P,      exec, wofi --show run''
-        # cycle workspaces
-        ''${mod},      H,      workspace, -1''
-        ''${mod},      L,      workspace, +1''
-        # cycle windows
-        ''${mod},      Tab,    cyclenext''
-        ''${mod},      Tab,    bringactivetotop''
-        ''${modshift}, Tab,    swapnext''
-        # todo: monitors
-        # clipboard
-        ''${mod},      V,      exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy && wtype -s 10 -M ctrl -s 10 -M shift -s 10 -k V''
-        ''${modshift}, V,      exec, cliphist wipe''
-        # media
-        '', XF86SelectiveScreenshot, exec, grim -g "$(slurp)" - | swappy -f -''
-      ] ++ (
-        # workspaces 1..10
-        builtins.concatLists (builtins.genList (
-            x: let
-              key' = if x == 9 then 0 else x + 1;
-              key = builtins.toString key';
-              ws = builtins.toString (x + 1);
-            in [
-              "${mod},      ${key}, workspace, ${ws}"
-              "${modshift}, ${key}, movetoworkspace, ${ws}"
+        general = {
+          gaps_in = 6;
+          gaps_out = 11;
+          border_size = 1;
+          "col.active_border" = lib.mkForce (
+            lib.concatStringsSep " " [
+              "rgba(${colors.base0D}fa)"
+              "rgba(${colors.base0D}85)"
+              "rgba(${colors.base0C}55)"
+              "60deg"
             ]
-          )
-          10
-        )
-      );
+          );
+        };
 
-      # binds working when lock active
-      bindl = [
-        '', XF86AudioMute,    exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle''
-        '', XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle''
-      ];
+        decoration = {
+          rounding = 5;
+          active_opacity = opacity.active;
+          inactive_opacity = opacity.inactive;
+          blur = {
+            enabled = true;
+            size = 5;
+            passes = 1;
+            popups = true;
+          };
+        };
 
-      # binds repeated when held, working when lock active
-      bindel = [
-        '', XF86AudioRaiseVolume,  exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%+''
-        '', XF86AudioLowerVolume,  exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%-''
-        '', XF86KbdBrightnessDown, exec, brightnessctl set 1%- -d kbd_backlight''
-        '', XF86KbdBrightnessUp,   exec, brightnessctl set 1%+ -d kbd_backlight''
-        '', XF86MonBrightnessDown, exec, brightnessctl set 1%-''
-        '', XF86MonBrightnessUp,   exec, brightnessctl set 1%+''
-      ];
+        # disable blur for kitty
+        windowrule = [ "noblur,^(kitty)$" ];
 
-      env = [
-      ];
+        # disable opacity for common streaming services
+        windowrulev2 =
+          let
+            services = [
+              "YouTube"
+              "HBO"
+              "Prime Video"
+              "Netflix"
+              "Disney"
+              "CDA"
+              "Player.pl"
+            ];
+            titleRegex = lib.concatMapStringsSep "|" (name: "(.*${name}.*)") services;
+            browsers = [
+              "firefox"
+              "Chromium-browser"
+            ];
+            classRegex = lib.concatStringsSep "|" browsers;
+          in
+          with opacity;
+          with builtins;
+          [
+            # restore stock opacity if no service title matched
+            "opacity ${toString active} override ${toString inactive} override, class:(${classRegex})"
+            # disable opacity if service opened
+            "opacity 1.0 override, title:(${titleRegex}), class:(${classRegex})"
+          ];
 
-      exec-once = [
-        "waybar"
-        "swaybg -o '*' -m fill -i ${config.stylix.image}"
-      ];
+        misc = {
+          disable_hyprland_logo = true;
+          disable_splash_rendering = true;
+          force_default_wallpaper = 0;
+        };
+
+        input.touchpad.tap-to-click = false;
+
+        bind =
+          [
+            ''${modshift}, Return, exec, ${terminal}''
+            ''${modshift}, C,      killactive''
+            ''${mod},      P,      exec, wofi --show run''
+            # cycle workspaces
+            ''${mod},      H,      workspace, -1''
+            ''${mod},      L,      workspace, +1''
+            # cycle windows
+            ''${mod},      Tab,    cyclenext''
+            ''${mod},      Tab,    bringactivetotop''
+            ''${modshift}, Tab,    swapnext''
+            # todo: monitors
+            # clipboard
+            ''${mod},      V,      exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy && wtype -s 10 -M ctrl -s 10 -M shift -s 10 -k V''
+            ''${modshift}, V,      exec, cliphist wipe''
+            # media
+            '', XF86SelectiveScreenshot, exec, grim -g "$(slurp)" - | swappy -f -''
+          ]
+          ++ (
+            # workspaces 1..10
+            builtins.concatLists (
+              builtins.genList (
+                x:
+                let
+                  key' = if x == 9 then 0 else x + 1;
+                  key = builtins.toString key';
+                  ws = builtins.toString (x + 1);
+                in
+                [
+                  "${mod},      ${key}, workspace, ${ws}"
+                  "${modshift}, ${key}, movetoworkspace, ${ws}"
+                ]
+              ) 10
+            )
+          );
+
+        # binds working when lock active
+        bindl = [
+          '', XF86AudioMute,    exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle''
+          '', XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle''
+        ];
+
+        # binds repeated when held, working when lock active
+        bindel = [
+          '', XF86AudioRaiseVolume,  exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%+''
+          '', XF86AudioLowerVolume,  exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%-''
+          '', XF86KbdBrightnessDown, exec, brightnessctl set 1%- -d kbd_backlight''
+          '', XF86KbdBrightnessUp,   exec, brightnessctl set 1%+ -d kbd_backlight''
+          '', XF86MonBrightnessDown, exec, brightnessctl set 1%-''
+          '', XF86MonBrightnessUp,   exec, brightnessctl set 1%+''
+        ];
+
+        env = [ ];
+
+        exec-once = [
+          "waybar"
+          "swaybg -o '*' -m fill -i ${config.stylix.image}"
+        ];
+      };
     };
-  };
 }

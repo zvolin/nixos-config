@@ -12,11 +12,17 @@
       close_command = "Bdelete %d";
 
       # only put bufferline after side panels
-      offsets = map (filetype: {
-        inherit filetype;
-        separator = true;
-        text-align = "left";
-      }) [ "neo-tree" "undotree" ];
+      offsets =
+        map
+          (filetype: {
+            inherit filetype;
+            separator = true;
+            text-align = "left";
+          })
+          [
+            "neo-tree"
+            "undotree"
+          ];
     };
   };
 }

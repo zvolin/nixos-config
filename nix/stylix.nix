@@ -4,7 +4,8 @@ let
   inputImage = ../home/wallpapers/aurora-night-sky.jpg;
   brightness = "-9";
   contrast = "6";
-in {
+in
+{
   stylix = {
     enable = true;
     image = pkgs.runCommand "wallpaper.png" { } ''
@@ -40,7 +41,7 @@ in {
 
     fonts = {
       monospace = {
-        package = pkgs.nerdfonts.override { fonts = ["FiraCode"]; };
+        package = pkgs.nerdfonts.override { fonts = [ "FiraCode" ]; };
         name = "FiraCode Nerd Font";
       };
       sansSerif = {

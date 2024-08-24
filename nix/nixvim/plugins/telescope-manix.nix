@@ -18,9 +18,7 @@
   ];
 
   programs.nixvim = {
-    extraPlugins = with pkgs.vimPlugins; [
-      telescope-manix
-    ];
+    extraPlugins = with pkgs.vimPlugins; [ telescope-manix ];
 
     extraConfigLua = ''
       require("telescope").load_extension("manix")

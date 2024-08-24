@@ -1,11 +1,9 @@
 { ... }:
 
 {
-  imports = [
-  ];
+  imports = [ ];
 
-  options = {
-  };
+  options = { };
 
   config = {
     # set locale

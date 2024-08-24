@@ -16,7 +16,7 @@
     ../users
   ];
 
-  options = {};
+  options = { };
 
   config = {
     # load configuration for given users

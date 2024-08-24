@@ -1,6 +1,15 @@
 {
-  pkgs, makeRustPlatform, pkg-config, cairo, gdk-pixbuf, glib, libinput,
-  libxml2, pango, udev, inputs
+  pkgs,
+  makeRustPlatform,
+  pkg-config,
+  cairo,
+  gdk-pixbuf,
+  glib,
+  libinput,
+  libxml2,
+  pango,
+  udev,
+  inputs,
 }:
 
 let
@@ -8,10 +17,11 @@ let
   version = "0.2.0";
   toolchain = inputs.fenix.packages.${pkgs.system}.stable.toolchain;
 in
-  (makeRustPlatform {
-    cargo = toolchain;
-    rustc = toolchain;
-  }).buildRustPackage {
+(makeRustPlatform {
+  cargo = toolchain;
+  rustc = toolchain;
+}).buildRustPackage
+  {
     inherit pname version;
 
     src = pkgs.fetchFromGitHub {
@@ -33,5 +43,13 @@ in
     '';
 
     nativeBuildInputs = [ pkg-config ];
-    buildInputs = [ cairo gdk-pixbuf glib libinput libxml2 pango udev ];
+    buildInputs = [
+      cairo
+      gdk-pixbuf
+      glib
+      libinput
+      libxml2
+      pango
+      udev
+    ];
   }

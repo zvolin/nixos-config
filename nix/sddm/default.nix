@@ -1,22 +1,24 @@
-{ lib, pkgs, config, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
 
 let
   cfg = config.sddm;
-in {
-  imports = [];
+in
+{
+  imports = [ ];
 
   options.sddm = {
     enable = lib.mkEnableOption "sddm";
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      bibata-cursors
-    ];
+    environment.systemPackages = with pkgs; [ bibata-cursors ];
 
-    fonts.packages = with pkgs; [
-      (nerdfonts.override { fonts = [ "FiraCode" ]; })
-    ];
+    fonts.packages = with pkgs; [ (nerdfonts.override { fonts = [ "FiraCode" ]; }) ];
 
     services.displayManager.sddm = {
       enable = true;

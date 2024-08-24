@@ -2,7 +2,12 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ lib, pkgs, inputs, ... }:
+{
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   imports = with inputs; [
@@ -34,9 +39,11 @@
   hardware.graphics.enable = true;
   # hardware.opengl.driSupport32Bit = true;
 
-
   # turn on the flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   # Use the grub EFI boot loader.
   # nixos-apple-silicon layer should make it compatible with uboot automatically
@@ -117,7 +124,6 @@
     "machine-id".source = "/persist/etc/machine-id";
   };
 
-
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -155,9 +161,7 @@
     enable = true;
     wifi.backend = "iwd";
   };
-  systemd.tmpfiles.rules = [
-    "L /var/lib/connman - - - - /persist/var/lib/connman"
-  ];
+  systemd.tmpfiles.rules = [ "L /var/lib/connman - - - - /persist/var/lib/connman" ];
 
   # Enable the OpenSSH daemon.
   services.openssh = {
