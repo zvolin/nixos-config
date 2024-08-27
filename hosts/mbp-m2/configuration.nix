@@ -82,6 +82,8 @@
     WLR_DRM_DEVICES = "/dev/dri/card0";
   };
 
+  services.logind.lidSwitch = "hibernate";
+
   # zsh
   programs.zsh.enable = true;
 

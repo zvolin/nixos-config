@@ -1,20 +1,36 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
+let
+  colors = config.lib.stylix.colors;
+in
 {
+  # before hyprlock#434 is fixed
+  programs.swaylock = {
+    enable = true;
+    settings = {
+      color = colors.base01;
+      font-size = 24;
+      indicator-idle-visible = false;
+      indicator-radius = 100;
+      line-color = colors.base0D;
+      show-failed-attempts = true;
+    };
+  };
+
   services.hypridle =
     let
       brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
       systemctl = "${pkgs.systemd}/bin/systemctl";
       loginctl = "${pkgs.systemd}/bin/loginctl";
       hyprctl = "${pkgs.hyprland}/bin/hyprctl";
-      hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
     in
+    # hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
     {
       enable = true;
       settings = {
         general = {
           # avoid starting multiple hyprlock instances.
-          lock_cmd = "pidof ${hyprlock} || ${hyprlock}";
+          lock_cmd = "pidof swaylock || swaylock";
           # lock before suspend.
           before_sleep_cmd = "${loginctl} lock-session";
           # to avoid having to press a key twice to turn on the display.
