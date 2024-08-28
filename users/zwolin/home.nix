@@ -11,7 +11,6 @@
     ../../home/keychain.nix
     ../../home/waybar.nix
     ../../home/wofi.nix
-    # ../../home/lunarvim.nix
   ];
 
   # export manual as json
