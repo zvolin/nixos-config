@@ -36,6 +36,10 @@ in
         __unkeyed = "<leader>w";
         group = "+windows";
       }
+      {
+        __unkeyed = "<leader>l";
+        group = "+lsp";
+      }
     ];
 
     keymaps = [
@@ -52,7 +56,6 @@ in
       (noremap "" "<leader>bp" "Pick a buffer" "<cmd>BufferLinePick<cr>")
       (noremap "" "<leader>bc" "Pick a buffer to close" "<cmd>BufferLinePickClose<cr>")
       (noremap "" "<leader>bC" "Close all other buffers" "<cmd>BufferLineCloseOthers<cr>")
-      (noremap "" "<leader>bC" "Close all other buffers" "<cmd>BufferLineCloseOthers<cr>")
       # Windows
       (noremap "" "<leader>wv" "Split" "<cmd>vsplit<cr>")
       (noremap "" "<leader>ww" "Focus last window" "<cmd>wincmd p<cr>")
@@ -64,7 +67,6 @@ in
       (noremap "" "<leader>wJ" "Move window down-most" "<cmd>wincmd J<cr>")
       (noremap "" "<leader>wK" "Move window up-most" "<cmd>wincmd K<cr>")
       (noremap "" "<leader>wL" "Move window right-most" "<cmd>wincmd L<cr>")
-      (noremap "" "<leader>wt" "Move window to new tab" "<cmd>wincmd T<cr>")
       (noremap "" "<leader>wo" "Close all other windows" "<cmd>only<cr>")
       (noremap "" "<leader>wd" "Hide the window" "<cmd>hide<cr>")
       (noremap "" "<leader>wr" "Rotate windows" "<cmd>wincmd r<cr>")
@@ -96,6 +98,15 @@ in
       (noremap "" "<leader>gfcv" "commit in selection" "<cmd>Telescope git_bcommits_range<cr>")
       (noremap "" "<leader>gfb" "Find branch" "<cmd>Telescope git_branches<cr>")
       (noremap "" "<leader>gfs" "Apply stash" "<cmd>Telescope git_stash<cr>")
+      # Lsp
+      (noremap "" "<leader>la" "Code actions" "<cmd>lua vim.lsp.buf.code_action()<cr>")
+      (noremap "" "<leader>lr" "References" "<cmd>Telescope lsp_references<cr>")
+      (noremap "" "<leader>ls" "Buffer symbols" "<cmd>Telescope lsp_document_symbols<cr>")
+      (noremap "" "<leader>lS" "Workspace symbols" "<cmd>Telescope lsp_workspace_symbols<cr>")
+      (noremap "" "<leader>ld" "Definitions" "<cmd>Telescope lsp_definitions<cr>")
+      (noremap "" "<leader>li" "Implementations" "<cmd>Telescope lsp_implementations<cr>")
+      (noremap "" "<leader>lc" "Buffer diagnostics" "<cmd>Telescope diagnostics bufnr=0<cr>")
+      (noremap "" "<leader>lC" "Workspace diagnostics" "<cmd>Telescope diagnostics<cr>")
       # Terminal
       ## remap shift backspace and enter, for some reason when zsh in vi mode is used
       ## from toggleterm from kitty, it wipes current line and switches to normal mode in zsh

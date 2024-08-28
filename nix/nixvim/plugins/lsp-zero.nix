@@ -4,6 +4,7 @@
   environment.systemPackages = with pkgs; [
     nil # nix
     nixd # nix
+    nixfmt-rfc-style
     pyright # python
     nodePackages.bash-language-server
     nodePackages.typescript-language-server
@@ -21,7 +22,7 @@
     extraConfigLua = ''
       local lsp_zero = require('lsp-zero')
 
-      -- enable default behavior
+      -- run when server attaches to buffer
       lsp_zero.on_attach(function(client, bufnr)
         -- bind default lsp keymaps like gd
         lsp_zero.default_keymaps({
@@ -29,19 +30,28 @@
           -- override if keymap is taken
           preserve_mappings = false
         })
+
         -- default autoformat with lsp
         lsp_zero.buffer_autoformat()
 
         -- enable inlay hints
         vim.lsp.inlay_hint.enable(true, { 0 })
+
+        -- bind nvim-navic
+        if client.server_capabilities.documentSymbolProvider and
+            client.name ~= "nixd" then -- only attach to nil for nix
+          require('nvim-navic').attach(client, bufnr)
+        end
       end)
 
       -- setup signs
-      lsp_zero.set_sign_icons({
-        error = '✘',
-        warn = '▲',
-        hint = '⚑',
-        info = '»'
+      lsp_zero.extend_lspconfig({
+        sign_text = {
+          error = '✘',
+          warn = '▲',
+          hint = '⚑',
+          info = '»'
+        },
       })
 
       -- setup language servers
@@ -55,7 +65,7 @@
       require('lspconfig').nil_ls.setup({
         settings = {
           ['nil'] = {
-            formatting = { command = { "${pkgs.nixfmt-rfc-style}/bin/nixfmt" } },
+            formatting = { command = { "nixfmt" } },
           },
         },
       })
@@ -67,11 +77,11 @@
           default_settings = {
             ['rust-analyzer'] = {
               checkOnSave = {
-                command = "clippy"
+                command = 'clippy'
               },
               cargo = {
                 -- uncomment for wasm
-                -- target = "wasm32-unknown-unknown",
+                -- target = 'wasm32-unknown-unknown',
               },
             },
           },

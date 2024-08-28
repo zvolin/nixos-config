@@ -78,9 +78,10 @@
       ''
         require("nvim-navic").setup({
           highlight = true,
-          lsp = {
-            auto_attach = true,
-          }
+          -- handled by lsp-zero
+          -- lsp = {
+          --   auto_attach = true,
+          -- }
         })
       ''
       + lib.concatStringsSep "\n" (
