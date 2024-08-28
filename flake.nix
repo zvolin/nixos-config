@@ -12,6 +12,7 @@
     nixos-apple-silicon = {
       url = "github:tpwrules/nixos-apple-silicon";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.rust-overlay.follows = "rust-overlay";
     };
 
     stylix = {
@@ -28,8 +29,8 @@
       inputs.home-manager.follows = "home-manager";
     };
 
-    fenix = {
-      url = "github:nix-community/fenix";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -47,5 +48,14 @@
         };
         modules = [ hosts/mbp-m2/configuration.nix ];
       };
+
+      devShells.${system}.default =
+        let
+          overlays = [ (import inputs.rust-overlay) ];
+          pkgs = import nixpkgs { inherit system overlays; };
+        in
+        pkgs.mkShell {
+          buildInputs = [ pkgs.rust-bin.stable.latest.default ];
+        };
     };
 }

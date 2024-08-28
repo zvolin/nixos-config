@@ -2,7 +2,6 @@
   lib,
   pkgs,
   config,
-  inputs,
   ...
 }:
 
@@ -11,7 +10,7 @@
 
   config = lib.mkIf config.services.tiny-dfr.enable (
     let
-      tiny-dfr = pkgs.callPackage ./package.nix { inherit pkgs inputs; };
+      tiny-dfr = pkgs.callPackage ./package.nix { inherit pkgs; };
     in
     {
       environment.systemPackages = [ tiny-dfr ];
