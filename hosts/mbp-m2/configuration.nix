@@ -140,6 +140,7 @@
     neovim
     openssh
     plymouth
+    docker-compose
     rargs
     ripgrep
     sd
@@ -183,6 +184,20 @@
   };
   # disable ugly x11 ssh pass prompt
   programs.ssh.askPassword = "";
+
+  # containers
+  # https://discourse.nixos.org/t/docker-ignoring-platform-when-run-in-nixos/21120
+  boot.binfmt.emulatedSystems = [
+    "i386-linux"
+    "x86_64-linux"
+  ];
+  virtualisation = {
+    containers.enable = true;
+
+    docker = {
+      enable = true;
+    };
+  };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
