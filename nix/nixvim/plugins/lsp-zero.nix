@@ -35,15 +35,15 @@
         -- default autoformat with lsp
         lsp_zero.buffer_autoformat()
 
-        -- enable inlay hints
-        vim.lsp.inlay_hint.enable(true, { 0 })
-
         -- bind nvim-navic
         if client.server_capabilities.documentSymbolProvider and
             client.name ~= "nixd" then -- only attach to nil for nix
           require('nvim-navic').attach(client, bufnr)
         end
       end)
+
+      -- enable inlay hints
+      vim.lsp.inlay_hint.enable(true, { 0 })
 
       -- setup signs
       lsp_zero.extend_lspconfig({
@@ -89,6 +89,15 @@
           },
         },
       }
+
+      -- Decorate floating windows
+      -- vim.api.nvim_set_hl(0, "FloatBorder", { link = "@function.method" })
+      local lsp_util_open_floating_preview = vim.lsp.util.open_floating_preview
+      function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
+        opts = opts or {}
+        opts.border = opts.border or 'rounded'
+        return lsp_util_open_floating_preview(contents, syntax, opts, ...)
+      end
     '';
   };
 }
