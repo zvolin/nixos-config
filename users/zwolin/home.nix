@@ -30,6 +30,7 @@
 
   home.packages = with pkgs; [
     firefox
+    ungoogled-chromium
 
     wl-color-picker
 
