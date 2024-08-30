@@ -2,6 +2,7 @@
 
 {
   environment.systemPackages = with pkgs; [
+    gopls # go
     nil # nix
     nixd # nix
     nixfmt-rfc-style
@@ -57,6 +58,7 @@
       -- setup language servers
       lsp_zero.setup_servers({
         'bashls',
+        'gopls',
         'nixd',
         'pyright',
         'tsserver',

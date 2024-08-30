@@ -36,7 +36,7 @@
   };
 
   outputs =
-    { self, nixpkgs, ... }@inputs:
+    { nixpkgs, ... }@inputs:
     let
       system = "aarch64-linux";
     in
@@ -49,13 +49,6 @@
         modules = [ hosts/mbp-m2/configuration.nix ];
       };
 
-      devShells.${system}.default =
-        let
-          overlays = [ (import inputs.rust-overlay) ];
-          pkgs = import nixpkgs { inherit system overlays; };
-        in
-        pkgs.mkShell {
-          buildInputs = [ pkgs.rust-bin.stable.latest.default ];
-        };
+      devShells.${system}.default = import ./shell.nix { inherit system nixpkgs inputs; };
     };
 }
