@@ -147,6 +147,8 @@ in
             ''${modshift}, Return, exec, ${terminal}''
             ''${modshift}, C,      killactive''
             ''${mod},      P,      exec, wofi --show run''
+            # scratchpads
+            ''${mod},      X,      togglespecialworkspace, kitty''
             # cycle workspaces
             ''${mod},      H,      workspace, -1''
             ''${mod},      L,      workspace, +1''
@@ -197,9 +199,21 @@ in
 
         env = [ ];
 
+        bezier = [
+          "custom, 0.36, 0.6, 0.94, 0.37"
+          "ease_in_expo, 0.7, 0, 0.84, 0"
+          "ease_out_expo, 0.16, 1, 0.3, 1"
+        ];
+
+        animation = [
+          # "windows, 1, 15, custom, popin"
+          "specialWorkspace, 1, 5, custom, slidefadevert -50%"
+        ];
+
         exec-once = [
           "waybar"
           "swaybg -o '*' -m fill -i ${config.stylix.image}"
+          "[workspace special:kitty silent; float; move 15% 10%; size 70% 70%] kitty"
         ];
       };
     };
