@@ -132,6 +132,7 @@
     bat
     curl
     dig
+    docker-compose
     fd
     fzf
     git
