@@ -142,7 +142,7 @@
     neovim
     openssh
     plymouth
-    docker-compose
+    python3
     rargs
     ripgrep
     sd
