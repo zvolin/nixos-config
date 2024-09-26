@@ -138,6 +138,7 @@
     git
     htop
     jq
+    ncdu
     neovim
     openssh
     plymouth
