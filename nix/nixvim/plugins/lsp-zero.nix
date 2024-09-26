@@ -12,6 +12,8 @@
   ];
 
   programs.nixvim = {
+    plugins.fidget.enable = true;
+
     extraPlugins = with pkgs.vimPlugins; [
       cmp-nvim-lsp
       lsp-zero-nvim
