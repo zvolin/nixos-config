@@ -61,4 +61,39 @@ in
       };
     };
   };
+
+  programs.nixvim.highlight = {
+    # invisible in base16 with transparency
+    TelescopePreviewLine.link = "Visual";
+    TelescopePreviewMatch.link = "Search";
+    # navic hl groups are not set in base16
+    NavicIconsFile.link = "Directory";
+    NavicIconsModule.link = "@module";
+    NavicIconsNamespace.link = "@module";
+    NavicIconsPackage.link = "@module";
+    NavicIconsClass.link = "Type";
+    NavicIconsMethod.link = "@function.method";
+    NavicIconsProperty.link = "@property";
+    NavicIconsField.link = "@variable.member";
+    NavicIconsConstructor.link = "@constructor";
+    NavicIconsEnum.link = "Type";
+    NavicIconsInterface.link = "Type";
+    NavicIconsFunction.link = "Function";
+    NavicIconsVariable.link = "@variable";
+    NavicIconsConstant.link = "Constant";
+    NavicIconsString.link = "String";
+    NavicIconsNumber.link = "Number";
+    NavicIconsBoolean.link = "Boolean";
+    NavicIconsArray.link = "Type";
+    NavicIconsObject.link = "Type";
+    NavicIconsKey.link = "Identifier";
+    NavicIconsNull.link = "Type";
+    NavicIconsEnumMember.link = "Constant";
+    NavicIconsStruct.link = "Structure";
+    NavicIconsEvent.link = "Structure";
+    NavicIconsOperator.link = "Operator";
+    NavicIconsTypeParameter.link = "Type";
+    NavicText.link = "Comment";
+    NavicSeparator.link = "Comment";
+  };
 }
