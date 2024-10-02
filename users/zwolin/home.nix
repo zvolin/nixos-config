@@ -91,17 +91,15 @@
     };
   };
 
-  programs.fzf =
-    let
-      fd = "fd --type f";
-    in
-    {
-      enable = true;
+  programs.fzf = {
+    enable = true;
 
-      defaultCommand = fd;
-      changeDirWidgetCommand = fd;
-      fileWidgetCommand = fd;
-    };
+    defaultCommand = "fd --type f";
+    defaultOptions = [
+      "--layout=reverse"
+      "--inline-info"
+    ];
+  };
 
   programs.zsh = {
     enable = true;
