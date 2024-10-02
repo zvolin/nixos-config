@@ -113,10 +113,7 @@
       size = 20000;
     };
 
-    antidote = {
-      enable = true;
-      plugins = [ ];
-    };
+    oh-my-zsh.enable = true;
   };
 
   # prompt
