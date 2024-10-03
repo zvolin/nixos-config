@@ -38,17 +38,22 @@
   outputs =
     { nixpkgs, ... }@inputs:
     let
-      system = "aarch64-linux";
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+      eachSystem = fn: nixpkgs.lib.genAttrs systems (system: fn (inputs // { inherit system; }));
     in
     {
       nixosConfigurations.mbp-m2 = nixpkgs.lib.nixosSystem {
-        inherit system;
         specialArgs = {
           inherit inputs;
         };
         modules = [ hosts/mbp-m2/configuration.nix ];
       };
 
-      devShells.${system}.default = import ./shell.nix { inherit system nixpkgs inputs; };
+      devShells = eachSystem (inputs: {
+        default = import ./shell.nix inputs;
+      });
     };
 }

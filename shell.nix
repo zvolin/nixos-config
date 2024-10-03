@@ -1,10 +1,11 @@
 {
   system,
   nixpkgs,
-  inputs,
+  rust-overlay,
+  ...
 }:
 let
-  overlays = [ (import inputs.rust-overlay) ];
+  overlays = [ (import rust-overlay) ];
   pkgs = import nixpkgs { inherit system overlays; };
 in
 pkgs.mkShell {
