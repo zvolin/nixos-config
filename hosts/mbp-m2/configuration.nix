@@ -23,6 +23,9 @@
 
     ../../nix
     ../../overlays
+
+    # user of this host
+    ../../home/users/zvolin
   ];
 
   # hardware.asahi.enable = true;
