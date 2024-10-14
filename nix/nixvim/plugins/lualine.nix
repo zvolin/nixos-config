@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   programs.nixvim = {
@@ -21,6 +21,16 @@
         left = "";
         right = "";
       };
+
+      # show relative path to the file
+      sections.lualine_c = [
+        {
+          name = "filename";
+          extraConfig = {
+            path = 1;
+          };
+        }
+      ];
 
       # add navic to the top winbar
       winbar.lualine_c = [
