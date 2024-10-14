@@ -147,6 +147,7 @@ in
             ''${modshift}, Return, exec, ${terminal}''
             ''${modshift}, C,      killactive''
             ''${mod},      P,      exec, wofi --show run''
+            ''${modshift}, L,      exec, swaylock''
             # scratchpads
             ''${mod},      X,      togglespecialworkspace, kitty''
             # cycle workspaces
