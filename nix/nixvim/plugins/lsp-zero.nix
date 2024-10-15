@@ -63,7 +63,7 @@
         'gopls',
         'nixd',
         'pyright',
-        'tsserver',
+        'ts_ls',
       })
 
       require('lspconfig').nil_ls.setup({

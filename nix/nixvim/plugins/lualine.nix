@@ -5,48 +5,48 @@
     plugins.lualine = {
       enable = true;
 
-      # have single statusline instead per-window
-      globalstatus = true;
-      # exclude side panels
-      disabledFiletypes.statusline = [
-        "neo-tree"
-        "undotree"
-      ];
+      settings = {
+        # have single statusline instead per-window
+        globalstatus = true;
+        # exclude side panels
+        disabledFiletypes.statusline = [
+          "neo-tree"
+          "undotree"
+        ];
 
-      componentSeparators = {
-        left = "";
-        right = "";
-      };
-      sectionSeparators = {
-        left = "";
-        right = "";
-      };
+        componentSeparators = {
+          left = "";
+          right = "";
+        };
+        sectionSeparators = {
+          left = "";
+          right = "";
+        };
 
-      # show relative path to the file
-      sections.lualine_c = [
-        {
-          name = "filename";
-          extraConfig = {
+        # show relative path to the file
+        sections.lualine_c = [
+          {
+            __unkeyed-1 = "filename";
             path = 1;
-          };
-        }
-      ];
+          }
+        ];
 
-      # add navic to the top winbar
-      winbar.lualine_c = [
-        {
-          name = "navic";
-          # always set hl group to have uniform line color, even if navic has no output
-          # offset the output by the width of number column
-          fmt = ''function(text) return "%#NavicText#     " .. text end'';
-        }
-      ];
-      inactiveWinbar.lualine_c = [
-        {
-          name = "navic";
-          fmt = ''function(text) return "%#NavicText#" end'';
-        }
-      ];
+        # add navic to the top winbar
+        winbar.lualine_c = [
+          {
+            __unkeyed-1 = "navic";
+            # always set hl group to have uniform line color, even if navic has no output
+            # offset the output by the width of number column
+            fmt = ''function(text) return "%#NavicText#     " .. text end'';
+          }
+        ];
+        inactiveWinbar.lualine_c = [
+          {
+            __unkeyed-1 = "navic";
+            fmt = ''function(text) return "%#NavicText#" end'';
+          }
+        ];
+      };
     };
 
     extraPlugins = with pkgs.vimPlugins; [ nvim-navic ];
