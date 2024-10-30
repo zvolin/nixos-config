@@ -6,44 +6,47 @@
       enable = true;
 
       settings = {
-        # have single statusline instead per-window
-        globalstatus = true;
-        # exclude side panels
-        disabledFiletypes.statusline = [
-          "neo-tree"
-          "undotree"
-        ];
+        options = {
+          # have single statusline instead per-window
+          globalstatus = true;
+          # exclude side panels
+          disabled_filetypes = [
+            "neo-tree"
+            "undotree"
+          ];
 
-        componentSeparators = {
-          left = "";
-          right = "";
-        };
-        sectionSeparators = {
-          left = "";
-          right = "";
+          component_separators = {
+            left = "";
+            right = "";
+          };
+          section_separators = {
+            left = "";
+            right = "";
+          };
         };
 
         # show relative path to the file
         sections.lualine_c = [
           {
-            __unkeyed-1 = "filename";
-            path = 1;
+            __unkeyed = "filename";
+            path = 3;
           }
         ];
 
         # add navic to the top winbar
         winbar.lualine_c = [
           {
-            __unkeyed-1 = "navic";
-            # always set hl group to have uniform line color, even if navic has no output
-            # offset the output by the width of number column
-            fmt = ''function(text) return "%#NavicText#     " .. text end'';
+            __unkeyed = "navic";
+            color = "NavicText";
+            padding = 5;
+            fmt = "function(text) if (text == nil or text == '') then return ' ' else return text end end";
           }
         ];
-        inactiveWinbar.lualine_c = [
+        inactive_winbar.lualine_x = [
           {
-            __unkeyed-1 = "navic";
-            fmt = ''function(text) return "%#NavicText#" end'';
+            __unkeyed = "filename";
+            path = 1;
+            color = "NavicText";
           }
         ];
       };
