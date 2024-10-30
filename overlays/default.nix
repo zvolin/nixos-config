@@ -6,5 +6,6 @@
     # (import ./kitty-themes.nix { inherit inputs; })
     # (import ./waybar.nix { inherit inputs; })
     # (import ./hyprland.nix { })
+    (import ./kitty.nix { })
   ];
 }
