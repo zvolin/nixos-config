@@ -192,6 +192,7 @@
 
   # containers
   # https://discourse.nixos.org/t/docker-ignoring-platform-when-run-in-nixos/21120
+  boot.binfmt.preferStaticEmulators = true;
   boot.binfmt.emulatedSystems = [
     "i386-linux"
     "x86_64-linux"
