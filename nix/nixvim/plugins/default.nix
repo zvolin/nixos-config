@@ -4,6 +4,7 @@
   imports = [
     ./bufferline.nix
     ./cmp.nix
+    ./comment.nix
     ./lsp-zero.nix
     ./lualine.nix
     ./neotree.nix

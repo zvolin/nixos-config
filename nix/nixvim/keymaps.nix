@@ -11,36 +11,23 @@ in
   programs.nixvim = {
     globals.mapleader = " ";
 
-    plugins.which-key.settings.spec = [
-      {
-        __unkeyed = "<leader>b";
-        group = "+buffers";
-      }
-      {
-        __unkeyed = "<leader>f";
-        group = "+find";
-      }
-      {
-        __unkeyed = "<leader>g";
-        group = "+git";
-      }
-      {
-        __unkeyed = "<leader>gf";
-        group = "+find";
-      }
-      {
-        __unkeyed = "<leader>gfc";
-        group = "+commit";
-      }
-      {
-        __unkeyed = "<leader>w";
-        group = "+windows";
-      }
-      {
-        __unkeyed = "<leader>l";
-        group = "+lsp";
-      }
-    ];
+    plugins.which-key.settings.spec =
+      let
+        group = bind: group: {
+          __unkeyed = bind;
+          inherit group;
+        };
+      in
+      [
+        (group "<leader>b" "+buffers")
+        (group "<leader>b" "+buffers")
+        (group "<leader>f" "+find")
+        (group "<leader>g" "+git")
+        (group "<leader>gf" "+find")
+        (group "<leader>gfc" "+commit")
+        (group "<leader>w" "+windows")
+        (group "<leader>l" "+lsp")
+      ];
 
     keymaps = [
       # General
@@ -115,6 +102,13 @@ in
       ## from toggleterm from kitty, it wipes current line and switches to normal mode in zsh
       (noremap "t" "<s-bs>" "Fix shift-backspace wiping cmd" "<bs>")
       (noremap "t" "<s-cr>" "Fix shift-enter wiping cmd" "<cr>")
+      # Commenting code
+      (noremap "n" "<leader>/" "Toggle comment"
+        "<cmd> lua require('Comment.api').toggle.linewise.current(); vim.cmd('normal j')<CR>"
+      )
+      (noremap "v" "<leader>/" "Toggle comment"
+        "<cmd> lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>"
+      )
     ];
   };
 }
