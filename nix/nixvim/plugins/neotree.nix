@@ -6,6 +6,14 @@
     neo-tree = {
       enable = true;
 
+      filesystem = {
+        followCurrentFile = {
+          enabled = true;
+          leaveDirsOpen = true;
+        };
+        useLibuvFileWatcher = true;
+      };
+
       window = {
         width = 35;
         height = 35;

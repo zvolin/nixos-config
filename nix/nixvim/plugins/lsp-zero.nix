@@ -60,6 +60,7 @@
       -- setup language servers
       lsp_zero.setup_servers({
         'bashls',
+        'clangd',
         'gopls',
         'nixd',
         'pyright',
@@ -78,6 +79,8 @@
       vim.g.rustaceanvim = {
         server = {
           capabilities = lsp_zero.get_capabilities(),
+          -- https://github.com/hrsh7th/cmp-nvim-lsp/issues/72
+          -- capabilities = vim.lsp.protocol.make_client_capabilities(),
           default_settings = {
             ['rust-analyzer'] = {
               checkOnSave = {

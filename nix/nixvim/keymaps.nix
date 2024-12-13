@@ -103,12 +103,8 @@ in
       (noremap "t" "<s-bs>" "Fix shift-backspace wiping cmd" "<bs>")
       (noremap "t" "<s-cr>" "Fix shift-enter wiping cmd" "<cr>")
       # Commenting code
-      (noremap "n" "<leader>/" "Toggle comment"
-        "<cmd> lua require('Comment.api').toggle.linewise.current(); vim.cmd('normal j')<CR>"
-      )
-      (noremap "v" "<leader>/" "Toggle comment"
-        "<cmd> lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>"
-      )
+      (noremap "n" "<leader>/" "Toggle comment" "<Plug>(comment_toggle_linewise_current)")
+      (noremap "v" "<leader>/" "Toggle comment" "<Plug>(comment_toggle_linewise_visual)")
     ];
   };
 }

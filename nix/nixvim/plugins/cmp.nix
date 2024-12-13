@@ -22,13 +22,12 @@
         }
       ];
       mapping = {
-        "<CR>" = "cmp.mapping.confirm({ select = false })";
+        "<CR>" = "cmp.mapping.confirm({ select = true })";
         "<Tab>" = "require('lsp-zero').cmp_action().luasnip_supertab()";
         "<S-Tab>" = "require('lsp-zero').cmp_action().luasnip_shift_supertab()";
         "<C-j>" = "cmp.mapping.scroll_docs(-4)";
         "<C-k>" = "cmp.mapping.scroll_docs(4)";
       };
-      formatting.__raw = "require('lsp-zero').cmp_format({ details = false })";
       window = {
         completion.__raw = "cmp.config.window.bordered()";
         documentation.__raw = "cmp.config.window.bordered()";
