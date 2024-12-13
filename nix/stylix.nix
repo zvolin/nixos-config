@@ -41,7 +41,7 @@ in
 
     fonts = {
       monospace = {
-        package = pkgs.nerdfonts.override { fonts = [ "FiraCode" ]; };
+        package = pkgs.nerd-fonts.fira-code;
         name = "FiraCode Nerd Font";
       };
       sansSerif = {
@@ -60,6 +60,8 @@ in
         popups = 8;
       };
     };
+
+    targets.nixvim.plugin = "base16-nvim";
   };
 
   programs.nixvim.highlight = {

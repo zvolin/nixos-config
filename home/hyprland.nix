@@ -35,24 +35,6 @@ in
   # enable clipboard history service
   services.cliphist.enable = true;
 
-  # portal - used for programs requesting things from wm, like file picker, screen sharing etc.
-  xdg.portal = {
-    enable = true;
-    xdgOpenUsePortal = true;
-
-    config = {
-      common.default = [
-        "gtk" # file picker
-        "hyprland" # everything
-      ];
-    };
-
-    extraPortals = [
-      pkgs.xdg-desktop-portal-hyprland
-      pkgs.xdg-desktop-portal-gtk
-    ];
-  };
-
   # enable opacity for bars with stylix
   stylix.opacity.desktop = opacity.active;
 
@@ -60,14 +42,32 @@ in
     let
       mod = "SUPER";
       modshift = "${mod}SHIFT";
-      terminal = "kitty";
       xkb = (import ../nix/i18n.nix { }).config.services.xserver.xkb;
       colors = config.lib.stylix.colors;
+      terminal = lib.getExe pkgs.kitty;
+      brightnessctl = lib.getExe pkgs.brightnessctl;
+      cliphist = lib.getExe pkgs.cliphist;
+      cliphist-paste = pkgs.writeShellScript "cliphist-paste" ''
+        ${cliphist} list |
+          ${wofi} --dmenu |
+          ${cliphist} decode |
+          ${wl-copy} && ${wtype} -s 10 -M ctrl -s 10 -M shift -s 10 -k V
+      '';
+      grim = lib.getExe pkgs.grim;
+      slurp = lib.getExe pkgs.slurp;
+      swappy = lib.getExe pkgs.swappy;
+      swaybg = lib.getExe pkgs.swaybg;
+      swaylock = lib.getExe pkgs.swaylock;
+      wofi = lib.getExe pkgs.wofi;
+      wpctl = lib.getExe pkgs.wireplumber;
+      waybar = lib.getExe pkgs.waybar;
+      wl-copy = "{pkgs.wl-clipboard}/bin/wl-copy";
+      wtype = lib.getExe pkgs.wtype;
     in
     {
       enable = true;
       xwayland.enable = true;
-      systemd.enable = true;
+      systemd.enable = false;
 
       settings = {
         monitor = [ "eDP-1, preferred, auto, 1.6" ];
@@ -144,10 +144,10 @@ in
 
         bind =
           [
-            ''${modshift}, Return, exec, ${terminal}''
+            ''${modshift}, Return, exec, uwsm app -- ${terminal}''
             ''${modshift}, C,      killactive''
-            ''${mod},      P,      exec, wofi --show run''
-            ''${modshift}, L,      exec, swaylock''
+            ''${mod},      P,      exec, uwsm app -- ${wofi} --show run''
+            ''${modshift}, L,      exec, uwsm app -- ${swaylock}''
             # scratchpads
             ''${mod},      X,      togglespecialworkspace, kitty''
             # cycle workspaces
@@ -159,10 +159,10 @@ in
             ''${modshift}, Tab,    swapnext''
             # todo: monitors
             # clipboard
-            ''${mod},      V,      exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy && wtype -s 10 -M ctrl -s 10 -M shift -s 10 -k V''
-            ''${modshift}, V,      exec, cliphist wipe''
+            ''${mod},      V,      exec, uwsm app -- ${cliphist-paste}''
+            ''${modshift}, V,      exec, uwsm app -- ${cliphist} wipe''
             # media
-            '', XF86SelectiveScreenshot, exec, grim -g "$(slurp)" - | swappy -f -''
+            '', XF86SelectiveScreenshot, exec, uwsm app -- ${grim} -g "$(${slurp})" - | ${swappy} -f -''
           ]
           ++ (
             # workspaces 1..10
@@ -184,18 +184,18 @@ in
 
         # binds working when lock active
         bindl = [
-          '', XF86AudioMute,    exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle''
-          '', XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle''
+          '', XF86AudioMute,    exec, uwsm app -- ${wpctl} set-mute @DEFAULT_AUDIO_SINK@ toggle''
+          '', XF86AudioMicMute, exec, uwsm app -- ${wpctl} set-mute @DEFAULT_AUDIO_SOURCE@ toggle''
         ];
 
         # binds repeated when held, working when lock active
         bindel = [
-          '', XF86AudioRaiseVolume,  exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%+''
-          '', XF86AudioLowerVolume,  exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%-''
-          '', XF86KbdBrightnessDown, exec, brightnessctl set 1%- -d kbd_backlight''
-          '', XF86KbdBrightnessUp,   exec, brightnessctl set 1%+ -d kbd_backlight''
-          '', XF86MonBrightnessDown, exec, brightnessctl set 1%-''
-          '', XF86MonBrightnessUp,   exec, brightnessctl set 1%+''
+          '', XF86AudioRaiseVolume,  exec, uwsm app -- ${wpctl} set-volume @DEFAULT_AUDIO_SINK@ 1%+''
+          '', XF86AudioLowerVolume,  exec, uwsm app -- ${wpctl} set-volume @DEFAULT_AUDIO_SINK@ 1%-''
+          '', XF86KbdBrightnessDown, exec, uwsm app -- ${brightnessctl} set 1%- -d kbd_backlight''
+          '', XF86KbdBrightnessUp,   exec, uwsm app -- ${brightnessctl} set 1%+ -d kbd_backlight''
+          '', XF86MonBrightnessDown, exec, uwsm app -- ${brightnessctl} set 1%-''
+          '', XF86MonBrightnessUp,   exec, uwsm app -- ${brightnessctl} set 1%+''
         ];
 
         env = [ ];
@@ -212,9 +212,9 @@ in
         ];
 
         exec-once = [
-          "waybar"
-          "swaybg -o '*' -m fill -i ${config.stylix.image}"
-          "[workspace special:kitty silent; float; move 15% 10%; size 70% 70%] kitty"
+          "${waybar}"
+          "${swaybg} -o '*' -m fill -i ${config.stylix.image}"
+          "[workspace special:kitty silent; float; move 15% 10%; size 70% 70%] ${terminal}"
         ];
       };
     };

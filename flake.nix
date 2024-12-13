@@ -33,6 +33,11 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    xremap = {
+      url = "github:xremap/nix-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -57,3 +62,6 @@
       });
     };
 }
+
+# TODO:
+# - neotree discover on <leader>e?

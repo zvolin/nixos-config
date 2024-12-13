@@ -24,6 +24,8 @@
     ../../nix
     ../../overlays
 
+    ./xremap.nix
+
     # user of this host
     ../../home/users/zvolin
   ];
@@ -74,7 +76,10 @@
   # Enable the X11 windowing system (for XWayland support)
   services.xserver.enable = true;
 
-  programs.hyprland.enable = true;
+  programs.hyprland = {
+    enable = true;
+    withUWSM = true;
+  };
   programs.sway.enable = true;
 
   # use sddm for display manager
@@ -204,6 +209,7 @@
       enable = true;
     };
   };
+  programs.wireshark.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

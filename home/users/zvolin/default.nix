@@ -15,7 +15,10 @@
   users.users.zwolin = {
     isNormalUser = true;
     hashedPasswordFile = "/persist/users/zwolin/password";
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [
+      "wheel"
+      "wireshark"
+    ]; # Enable ‘sudo’ for the user.
     packages = [ ];
     shell = pkgs.zsh;
   };
