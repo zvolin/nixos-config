@@ -6,6 +6,7 @@
     ./i18n.nix
     # vim
     ./nixvim
+    ./nvf
     # sddm
     ./sddm.nix
     # stylix
