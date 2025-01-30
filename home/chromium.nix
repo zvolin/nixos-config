@@ -3,7 +3,7 @@
 {
   programs.chromium = {
     enable = true;
-    package = pkgs.brave;
+    package = pkgs.chromium;
 
     commandLineArgs = [
       "--ozone-platform-hint=auto" # wayland support

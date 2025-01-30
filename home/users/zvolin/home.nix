@@ -14,8 +14,10 @@
     ../../hypridle.nix
     ../../keychain.nix
     ../../kitty.nix
+    ../../latex.nix
     ../../waybar.nix
     ../../wofi.nix
+    ../../zathura.nix
     ../../zsh.nix
   ];
 

@@ -70,7 +70,7 @@
       require('lspconfig').nil_ls.setup({
         settings = {
           ['nil'] = {
-            formatting = { command = { "nixfmt" } },
+            formatting = { command = { 'nixfmt' } },
           },
         },
       })
@@ -78,17 +78,16 @@
       -- pass the capabilities to rustaceanvim to not conflict
       vim.g.rustaceanvim = {
         server = {
-          capabilities = lsp_zero.get_capabilities(),
-          -- https://github.com/hrsh7th/cmp-nvim-lsp/issues/72
-          -- capabilities = vim.lsp.protocol.make_client_capabilities(),
+          capabilities = require('cmp_nvim_lsp').default_capabilities(),
           default_settings = {
             ['rust-analyzer'] = {
               checkOnSave = {
                 command = 'clippy'
               },
               cargo = {
+                features = 'all',
                 -- uncomment for wasm
-                -- target = 'wasm32-unknown-unknown',
+                target = 'wasm32-unknown-unknown',
               },
             },
           },

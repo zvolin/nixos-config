@@ -1,7 +1,7 @@
 { ... }:
 
 {
-  programs.nixvim.plugins.nvim-colorizer = {
+  programs.nixvim.plugins.colorizer = {
     enable = true;
     # userDefaultOptions = {
     #   css = true;

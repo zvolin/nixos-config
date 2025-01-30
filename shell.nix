@@ -19,6 +19,7 @@ pkgs.mkShell {
     pkg-config
     protobuf
     python3
+    (lib.hiPrio rust-bin.nightly.latest.rust-analyzer)
     (rust-bin.stable.latest.default.override {
       targets = [ "wasm32-unknown-unknown" ];
     })

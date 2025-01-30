@@ -139,6 +139,7 @@
   environment.systemPackages = with pkgs; [
     bat
     curl
+    devenv
     dig
     docker-compose
     fd

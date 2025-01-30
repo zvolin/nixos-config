@@ -15,14 +15,14 @@
         }
         {
           name = "buffer";
-          keyword_length = 3;
+          keyword_length = 4;
           # Words from other open buffers can also be suggested
           # (raw is needed so it passes function and not string)
           option.get_bufnrs.__raw = "vim.api.nvim_list_bufs";
         }
       ];
       mapping = {
-        "<CR>" = "cmp.mapping.confirm({ select = true })";
+        "<CR>" = "cmp.mapping.confirm({ select = false })";
         "<Tab>" = "require('lsp-zero').cmp_action().luasnip_supertab()";
         "<S-Tab>" = "require('lsp-zero').cmp_action().luasnip_shift_supertab()";
         "<C-j>" = "cmp.mapping.scroll_docs(-4)";

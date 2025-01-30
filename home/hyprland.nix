@@ -13,6 +13,8 @@ let
 in
 {
   home.packages = with pkgs; [
+    obs-studio
+    vlc
     brightnessctl
     cliphist
     grim
@@ -59,7 +61,7 @@ in
       swaybg = lib.getExe pkgs.swaybg;
       swaylock = lib.getExe pkgs.swaylock;
       wofi = lib.getExe pkgs.wofi;
-      wpctl = lib.getExe pkgs.wireplumber;
+      wpctl = lib.getExe' pkgs.wireplumber "wpctl";
       waybar = lib.getExe pkgs.waybar;
       wl-copy = "{pkgs.wl-clipboard}/bin/wl-copy";
       wtype = lib.getExe pkgs.wtype;

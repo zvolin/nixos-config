@@ -16,12 +16,18 @@
     isNormalUser = true;
     hashedPasswordFile = "/persist/users/zwolin/password";
     extraGroups = [
+      "docker"
       "wheel"
       "wireshark"
     ]; # Enable ‘sudo’ for the user.
     packages = [ ];
     shell = pkgs.zsh;
   };
+
+  # for devenv
+  nix.extraOptions = ''
+    trusted-users = root zwolin
+  '';
 
   home-manager.users = {
     "zwolin" = import ./home.nix;
