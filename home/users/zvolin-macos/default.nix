@@ -1,11 +1,11 @@
 { pkgs, inputs, ... }:
 {
   imports = with inputs; [
-    home-manager.nixosModules.default
+    home-manager.darwinModules.default
+
+    ../../../nix/homebrew.nix
   ];
 
-  # todo?: move to nix/home-manager.nix
-  users.mutableUsers = false;
   # configure home manager
   home-manager = {
     # also pass inputs to home-manager modules
@@ -16,15 +16,21 @@
     useGlobalPkgs = true;
   };
 
-  users.users.zwolin = {
-    isNormalUser = true;
-    hashedPasswordFile = "/persist/users/zwolin/password";
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-    packages = [ ];
+  users.users."zwolin" = {
     shell = pkgs.zsh;
+    home = "/Users/zwolin";
   };
 
   home-manager.users = {
     "zwolin" = import ./home.nix;
+  };
+
+  homebrew-user = "zwolin";
+
+  homebrew = {
+    casks = [
+      "firefox"
+      "slack"
+    ];
   };
 }

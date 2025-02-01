@@ -15,8 +15,6 @@
     ./hardware-configuration.nix
     # Auto theming
     stylix.nixosModules.stylix
-    # Include home-manager
-    home-manager.nixosModules.default
     # Include the necessary packages and configuration for Apple Silicon support
     nixos-apple-silicon.nixosModules.default
     nixvim.nixosModules.nixvim

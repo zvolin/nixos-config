@@ -2,22 +2,14 @@
 
 {
   imports = [
-    ../../chromium.nix
-    ../../firefox.nix
+    # ../../firefox.nix
     ../../fzf.nix
     ../../git.nix
-    ../../hyprland.nix
-    ../../hyprlock.nix
-    ../../hypridle.nix
-    ../../keychain.nix
     ../../kitty.nix
-    ../../waybar.nix
-    ../../wofi.nix
     ../../zsh.nix
   ];
 
   home.username = "zwolin";
-  home.homeDirectory = "/home/zwolin";
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -33,10 +25,4 @@
 
   # export manual as json
   manual.json.enable = true;
-  # enable management of xdg directories
-  xdg.enable = true;
-
-  # enable qt and gtk configs
-  qt.enable = true;
-  gtk.enable = true;
 }
