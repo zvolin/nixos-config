@@ -158,6 +158,10 @@
     tmux
     vim
     wget
+    (pkgs.writeShellScriptBin "reboot-macos" ''
+      sudo ${lib.getExe pkgs.asahi-bless} --set-boot-macos --yes
+      reboot
+    '')
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
