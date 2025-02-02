@@ -143,6 +143,8 @@ in
         };
 
         input.touchpad.tap-to-click = false;
+        gestures.workspace_swipe = true;
+        gestures.workspace_swipe_distance = 200;
 
         bind =
           [
