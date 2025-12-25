@@ -33,13 +33,43 @@
           }
         ];
 
+        # hardtime training mode indicator
+        sections.lualine_x = [
+          {
+            __unkeyed.__raw = ''
+              function()
+                if require("hardtime").is_plugin_enabled then
+                  return "󰀘 Training"
+                else
+                  return "󰀘 <leader>th"
+                end
+              end
+            '';
+            color.__raw = ''
+              function()
+                if require("hardtime").is_plugin_enabled then
+                  return { fg = "#a6e3a1" }  -- green when active
+                else
+                  return { fg = "#6c7086" }  -- dim gray when inactive
+                end
+              end
+            '';
+          }
+        ];
+
         # add navic to the top winbar
         winbar.lualine_c = [
           {
             __unkeyed = "navic";
             color = "NavicText";
             padding = 5;
-            fmt = "function(text) if (text == nil or text == '') then return ' ' else return text end end";
+          }
+        ];
+        # add navic to the top winbar
+        winbar.lualine_x = [
+          {
+            __unkeyed = "filename";
+            path = 0;
           }
         ];
         inactive_winbar.lualine_x = [

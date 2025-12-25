@@ -27,6 +27,7 @@ in
         (group "<leader>gfc" "+commit")
         (group "<leader>w" "+windows")
         (group "<leader>l" "+lsp")
+        (group "<leader>t" "+toggles")
       ];
 
     keymaps = [
@@ -92,19 +93,34 @@ in
       (noremap "" "<leader>lS" "Workspace symbols" "<cmd>Telescope lsp_workspace_symbols<cr>")
       (noremap "" "<leader>ld" "Definitions" "<cmd>Telescope lsp_definitions<cr>")
       (noremap "" "<leader>li" "Implementations" "<cmd>Telescope lsp_implementations<cr>")
-      (noremap "" "<leader>lc" "Buffer diagnostics" "<cmd>Telescope diagnostics bufnr=0<cr>")
-      (noremap "" "<leader>lC" "Workspace diagnostics" "<cmd>Telescope diagnostics<cr>")
+      (noremap "" "<leader>lc" "Buffer diagnostics"
+        "<cmd>Telescope diagnostics bufnr=0 severity_limit=INFO<cr>"
+      )
+      (noremap "" "<leader>lC" "Workspace diagnostics"
+        "<cmd>Telescope diagnostics severity_limit=INFO<cr>"
+      )
       (noremap "" "<leader>lh" "Toggle inlay hints"
         "<cmd>lua vim.lsp.inlay_hint.enable(vim.lsp.inlay_hint.is_enabled(), { 0 })<cr>"
       )
-      # Terminal
       ## remap shift backspace and enter, for some reason when zsh in vi mode is used
       ## from toggleterm from kitty, it wipes current line and switches to normal mode in zsh
       (noremap "t" "<s-bs>" "Fix shift-backspace wiping cmd" "<bs>")
-      (noremap "t" "<s-cr>" "Fix shift-enter wiping cmd" "<cr>")
+      # (noremap "t" "<s-cr>" "Fix shift-enter wiping cmd" "<cr>")
       # Commenting code
       (noremap "n" "<leader>/" "Toggle comment" "<Plug>(comment_toggle_linewise_current)")
       (noremap "v" "<leader>/" "Toggle comment" "<Plug>(comment_toggle_linewise_visual)")
+    ]
+    # Terminal
+    ++ [
+      # (noremap "n" "<C-t>t" "Toggle term" "<cmd>ToggleTerm<cr>")
+      # (noremap "i" "<C-t>t" "Toggle term" "<cmd>lua _claude_toggle()<cr>")
+      # (noremap "ni" "<C-S-t>" "Toggle terminal"
+      #   ''<cmd>execute "lua _term_toggle(" .. v:count .. ")"<cr>''
+      # )
+      # (noremap "ni" "<C-S-t>" "Toggle Claude terminal"
+      #   ''<cmd>execute "lua _claude_toggle(" .. v:count .. ")"<cr>''
+      # )
+      # (noremap "t" "<C-t>" "Toggle terminal" "<cmd>lua _term_toggle()<cr>")
     ];
   };
 }
