@@ -16,10 +16,11 @@
     isNormalUser = true;
     hashedPasswordFile = "/persist/users/zwolin/password";
     extraGroups = [
-      "docker"
       "wheel"
       "wireshark"
-    ]; # Enable ‘sudo’ for the user.
+      "video" # for backlight control
+      # "docker" # don't add docker to not allow using it witohut sudo
+    ];
     packages = [ ];
     shell = pkgs.zsh;
   };

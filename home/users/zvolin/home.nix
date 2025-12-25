@@ -1,11 +1,12 @@
-{ inputs, ... }:
+{ inputs, pkgs, ... }:
 
 {
   imports = with inputs; [
     nix-colors.homeManagerModules.default
-    nixvim.homeManagerModules.nixvim
+    nixvim.homeModules.nixvim
 
     ../../chromium.nix
+    # ../../cosmic.nix
     ../../firefox.nix
     ../../fzf.nix
     ../../git.nix
@@ -19,6 +20,12 @@
     ../../wofi.nix
     ../../zathura.nix
     ../../zsh.nix
+    ../../bash.nix
+    ../../claude.nix
+    ../../mako.nix
+    ../../brightness.nix
+    ../../connman.nix
+    ../../audio.nix
   ];
 
   home.username = "zwolin";
@@ -35,6 +42,19 @@
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
+  home.packages = with pkgs; [
+    freecad
+    gh
+    codex
+  ];
+
+  home.sessionVariables = {
+    XCURSOR_SIZE = "14";
+  };
 
   # export manual as json
   manual.json.enable = true;
@@ -44,4 +64,5 @@
   # enable qt and gtk configs
   qt.enable = true;
   gtk.enable = true;
+  gtk.gtk4.theme = null;
 }
