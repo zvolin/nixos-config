@@ -14,5 +14,8 @@
       cursor_trail_decay = "0.05 0.2";
       cursor_trail_start_threshold = 4;
     };
+    keybindings = {
+      "ctrl+shift+t" = "no_op";
+    };
   };
 }

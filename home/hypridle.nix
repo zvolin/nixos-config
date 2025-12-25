@@ -1,68 +1,58 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 
-let
-  colors = config.lib.stylix.colors;
-in
 {
-  # before hyprlock#434 is fixed
-  programs.swaylock = {
-    enable = true;
-    settings = {
-      color = colors.base01;
-      font-size = 24;
-      indicator-idle-visible = false;
-      indicator-radius = 100;
-      line-color = colors.base0D;
-      show-failed-attempts = true;
-    };
-  };
-
   services.hypridle =
     let
       brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
       systemctl = "${pkgs.systemd}/bin/systemctl";
       loginctl = "${pkgs.systemd}/bin/loginctl";
       hyprctl = "${pkgs.hyprland}/bin/hyprctl";
+      hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
     in
-    # hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
     {
       enable = true;
       settings = {
         general = {
-          # avoid starting multiple hyprlock instances.
-          lock_cmd = "pidof swaylock || swaylock";
-          # lock before suspend.
+          lock_cmd = "pidof hyprlock || ${hyprlock}";
           before_sleep_cmd = "${loginctl} lock-session";
-          # to avoid having to press a key twice to turn on the display.
           after_sleep_cmd = "${hyprctl} dispatch dpms on";
+          # respect inhibit requests from media players (firefox, mpv, etc.)
+          ignore_dbus_inhibit = false;
+          ignore_systemd_inhibit = false;
         };
 
         listener = [
+          # 1. slight dim (5 min)
           {
-            timeout = 600; # 10 min
-            on-timeout = "${brightnessctl} -s set 10"; # set monitor backlight to minimum, avoid 0 on OLED monitor.
-            on-resume = "${brightnessctl} -r"; # monitor backlight restore.
+            timeout = 300;
+            on-timeout = "${brightnessctl} -s set 15%";
+            on-resume = "${brightnessctl} -r";
           }
-          # turn off keyboard backlight.
+          # 2. very dim + keyboard backlight off (9 min)
           {
-            timeout = 600; # 10 min.
-            on-timeout = "${brightnessctl} -sd kbd_backlight set 0";
-            on-resume = "${brightnessctl} -rd kbd_backlight";
+            timeout = 540;
+            on-timeout = "${brightnessctl} set 5%";
+            on-resume = "${brightnessctl} -r";
           }
-          # screen off when timeout has passed
           {
-            timeout = 750; # 12.5 min
+            timeout = 540;
+            on-timeout = "touchbar-kbd-sync off";
+            on-resume = "touchbar-kbd-sync restore";
+          }
+          # 3. lock screen (10 min)
+          {
+            timeout = 600;
+            on-timeout = "pidof hyprlock || ${hyprlock}";
+          }
+          # 4. screen off (15 min)
+          {
+            timeout = 900;
             on-timeout = "${hyprctl} dispatch dpms off";
             on-resume = "${hyprctl} dispatch dpms on";
           }
-          # lock screen when timeout has passed
+          # 5. suspend (30 min)
           {
-            timeout = 900; # 15 min
-            on-timeout = "${loginctl} lock-session";
-          }
-          # suspend when timeout has passed
-          {
-            timeout = 1200; # 20 min
+            timeout = 1800;
             on-timeout = "${systemctl} suspend";
           }
         ];

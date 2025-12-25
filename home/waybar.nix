@@ -1,8 +1,8 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 let
   size = config.stylix.fonts.sizes.desktop;
-  sized = size: text: ''<span font-size="${builtins.toString size}pt">${text}</span>'';
+  sized = size: text: ''<span font-size="${toString size}pt">${text}</span>'';
   big = text: "${sized (size * 1.1) text}";
   small = text: "${sized (size * 0.8) text}";
   tiny = text: "${sized (size * 0.6) text}";
@@ -13,9 +13,10 @@ in
 
     settings = [
       {
-        layer = "bottom";
+        layer = "top";
         fixed-center = true;
         only-active = false;
+        margin-top = -1;  # Fix 1px gap caused by fractional scaling (1.6x)
 
         modules-left = [
           "custom/logo"
@@ -48,7 +49,7 @@ in
         };
 
         "hyprland/window" = {
-          format = "{class}# {}";
+          format = "{class}# {title}";
           max-length = 60;
           separate-outputs = false;
           rewrite = {
@@ -78,7 +79,6 @@ in
           interval = 5;
           format-wifi = "${big " "}${tiny "{signalStrength}% "}{essid}";
           format-disconnected = "disconnected";
-          on-click = "";
           tooltip-format = "{ifname} {ipaddr}";
         };
 
@@ -130,6 +130,7 @@ in
           format-muted = "${big " "}";
           max-volume = 120;
           scroll-step = 0.2;
+          on-click = "kitty --class wiremix -e wiremix";
         };
 
         battery = {
@@ -151,6 +152,12 @@ in
           states = {
             warning = 30;
             critical = 15;
+            urgent = 5;
+          };
+          events = {
+            on-discharging-warning = "notify-send -r 99001 -u normal 'Battery Low' '30% remaining'";
+            on-discharging-critical = "notify-send -r 99002 -u critical 'Battery Critical' '15% remaining'";
+            on-discharging-urgent = "notify-send -r 99003 -u critical 'Battery Urgent' '5% remaining - plug in now'";
           };
         };
       }
@@ -200,10 +207,9 @@ in
         background-image: none;
       }
 
-      /* add 'jumping' of hovered label */
-      #workspaces button:hover:not(.active) label {
-        padding-bottom: 2px;
-        padding-left: 1px;
+      /* hover: regular foreground */
+      #workspaces button:hover:not(.active) {
+        color: @base05;
       }
 
       /* override borders added by stylix */
