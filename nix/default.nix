@@ -6,13 +6,10 @@
     ./i18n.nix
     # vim
     ./nixvim
-    ./nvf
-    # sddm
-    ./sddm.nix
     # stylix
     ./stylix.nix
     # touchbar
-    ./tiny-dfr
+    ./tiny-dfr.nix
   ];
 
   options = { };
