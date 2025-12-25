@@ -3,6 +3,7 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
 {
+  config,
   lib,
   pkgs,
   inputs,
@@ -30,30 +31,36 @@
     ../../home/users/zvolin
   ];
 
-  # hardware.asahi.enable = true;
+  nixpkgs.config.allowUnfreePredicate =
+    pkg:
+    builtins.elem (lib.getName pkg) [
+      "claude-code"
+    ];
+
   # specify path to peripheral firmware files.
   # this is required for flakes to work.
   hardware.asahi.peripheralFirmwareDirectory = ./firmware;
-  # use experimental GPU driver
-  hardware.asahi.useExperimentalGPUDriver = true;
-  # replace the mesa driver with Asahi mesa
-  hardware.asahi.experimentalGPUInstallMode = "replace";
-  # build kernel with Rust support
-  hardware.asahi.withRust = true;
   # enable opengl
   hardware.graphics.enable = true;
-  # hardware.opengl.driSupport32Bit = true;
 
-  # turn on the flakes
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
+  nix.settings = {
+    # turn on the flakes
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+    # binary cache for apple silicon
+    extra-substituters = [
+      "https://nixos-apple-silicon.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nixos-apple-silicon.cachix.org-1:8psDu5SA5dAD7qA0zMy5UT292TxeEPzIz8VVEr2Js20="
+    ];
+  };
 
   # Use the grub EFI boot loader.
   # nixos-apple-silicon layer should make it compatible with uboot automatically
   boot.loader.grub.enable = true;
-  boot.loader.efi.canTouchEfiVariables = false;
   boot.extraModprobeConfig = ''
     options hid_apple iso_layout=0 swap_fn_leftctrl=1
   '';
@@ -80,17 +87,64 @@
     enable = true;
     withUWSM = true;
   };
+
+  # Enable D-Bus activation for notification daemon
+  services.dbus.packages = [ pkgs.mako ];
   programs.sway.enable = true;
 
-  # use sddm for display manager
-  sddm.enable = true;
+  # COSMIC desktop
+  # services.desktopManager.cosmic.enable = true;
+  # services.displayManager.cosmic-greeter.enable = true;
+
+  # display manager - greetd with tuigreet
+  services.greetd =
+    let
+      tuigreet = "${pkgs.tuigreet}/bin/tuigreet";
+      desktops = "${config.services.displayManager.sessionData.desktops}/share";
+    in
+    {
+      enable = true;
+      settings.default_session = {
+        command = lib.concatStringsSep " " [
+          "${tuigreet}"
+          "--time"
+          "--remember"
+          "--remember-user-session"
+          "--asterisks"
+          "--user-menu"
+          "--sessions ${desktops}/wayland-sessions:${desktops}/xsessions"
+        ];
+        user = "greeter";
+      };
+    };
+
+  # ensure tuigreet cache directory exists with correct permissions
+  systemd.tmpfiles.settings."10-tuigreet" = {
+    "/persist/var/cache/tuigreet" = {
+      d = {
+        user = "greeter";
+        group = "greeter";
+        mode = "0755";
+      };
+    };
+  };
 
   environment.variables = {
     # specify correct gpu for wlroots
     WLR_DRM_DEVICES = "/dev/dri/card0";
   };
 
-  services.logind.lidSwitch = "suspend";
+  # services.logind.settings.Login = {
+  #   HandlePowerKey = "ignore"; # short press: no action (Hyprland handles DPMS wake)
+  #   HandlePowerKeyLongPress = "poweroff"; # long press: shutdown
+  #   HandleLidSwitch = "suspend";
+  # };
+
+  # compressed in-memory swap
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+  };
 
   # zsh
   programs.zsh.enable = true;
@@ -152,7 +206,7 @@
     openssh
     plymouth
     python3
-    rargs
+    # rargs
     ripgrep
     sd
     tmux
@@ -179,7 +233,11 @@
     enable = true;
     wifi.backend = "iwd";
   };
-  systemd.tmpfiles.rules = [ "L /var/lib/connman - - - - /persist/var/lib/connman" ];
+
+  systemd.tmpfiles.rules = [
+    "L /var/lib/connman - - - - /persist/var/lib/connman"
+    "L /var/cache/tuigreet - - - - /persist/var/cache/tuigreet"
+  ];
 
   # Enable the OpenSSH daemon.
   services.openssh = {
@@ -220,7 +278,21 @@
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+
+  # Use the iptables for managing firewall rules
+  networking.nftables.enable = false;
+  networking.firewall = {
+    enable = true;
+
+    # allow packets from the docker bridge interfaces
+    # https://github.com/NixOS/nixpkgs/issues/417641#issuecomment-2984475281
+    extraCommands = "
+      iptables -I nixos-fw 1 -i br+ -j ACCEPT
+    ";
+    extraStopCommands = "
+      iptables -D nixos-fw -i br+ -j ACCEPT
+    ";
+  };
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
