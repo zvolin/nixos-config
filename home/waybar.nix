@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   size = config.stylix.fonts.sizes.desktop;
@@ -130,7 +130,7 @@ in
           format-muted = "${big " "}";
           max-volume = 120;
           scroll-step = 0.2;
-          on-click = "kitty --class wiremix -e wiremix";
+          on-click = "${lib.getExe config.terminal} --class wiremix -e wiremix";
         };
 
         battery = {

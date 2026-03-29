@@ -5,27 +5,28 @@
     nix-colors.homeManagerModules.default
     nixvim.homeModules.nixvim
 
+    ../../audio.nix
+    ../../bash.nix
+    ../../brightness.nix
     ../../chromium.nix
+    ../../claude.nix
+    ../../connman.nix
     # ../../cosmic.nix
     ../../firefox.nix
     ../../fzf.nix
     ../../git.nix
     ../../hyprland.nix
-    ../../hyprlock.nix
     ../../hypridle.nix
+    ../../hyprlock.nix
     ../../keychain.nix
     ../../kitty.nix
     ../../latex.nix
+    ../../mako.nix
+    ../../terminal.nix
     ../../waybar.nix
     ../../wofi.nix
     ../../zathura.nix
     ../../zsh.nix
-    ../../bash.nix
-    ../../claude.nix
-    ../../mako.nix
-    ../../brightness.nix
-    ../../connman.nix
-    ../../audio.nix
   ];
 
   home.username = "zwolin";

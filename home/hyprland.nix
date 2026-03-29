@@ -46,7 +46,7 @@ in
       modshift = "${mod}SHIFT";
       xkb = (import ../nix/i18n.nix { }).config.services.xserver.xkb;
       colors = config.lib.stylix.colors;
-      terminal = lib.getExe pkgs.kitty;
+      terminal = lib.getExe config.terminal;
       brightnessctl = lib.getExe pkgs.brightnessctl;
       brightness-init = pkgs.writeShellScript "brightness-init" ''
         if [ "$(cat /sys/class/power_supply/macsmc-ac/online)" = "1" ]; then
