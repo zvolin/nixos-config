@@ -31,6 +31,7 @@
     extraConfigLua = ''
       local toggleterm = require("toggleterm")
       local terminal = require("toggleterm.terminal")
+      local ui = require("toggleterm.ui")
 
       local claude_terms = {}
       local claude_last_opened = 1
@@ -59,7 +60,7 @@
           local name = "-" .. term.id .. "-"
           if term.display_name ~= name then
             term.display_name = name
-            term:open()
+            ui.update_float(term)
           end
         end
       end
