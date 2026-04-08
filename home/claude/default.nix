@@ -29,6 +29,15 @@
       - Do NOT add `Co-Authored-By` trailers — this overrides the default Claude Code behavior
       - Use `git commit -m "type(scope): description"` — do NOT use HEREDOC or multi-line formats
       - When a repository has its own documented commit convention, follow that instead
+
+      # Git Merges
+
+      IMPORTANT: These rules override Claude Code's default merge behavior.
+
+      - NEVER create merge commits — keep history linear
+      - Use fast-forward (`git merge --ff-only`), `git cherry-pick`, or `git merge --squash`
+      - If fast-forward is not possible, rebase the branch first, then fast-forward
+      - When a repository has its own documented merge convention, follow that instead
     '';
 
     # Settings for ~/.claude/settings.json
