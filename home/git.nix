@@ -5,11 +5,12 @@
     enable = true;
 
     ignores = [
+      "**/.claude/worktrees/"
       "**/.claude/settings.local.json"
       "**/docs/plans/"
       "**/docs/insights/"
       "**/.direnv"
-      "**/CLAUDE.md"
+      "**/CLAUDE.local.md"
       "**/HANDOFF.md"
     ];
 
