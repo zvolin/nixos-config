@@ -144,6 +144,9 @@
       "Bash(make *)"
       "Bash(just *)"
       "Bash(cmake *)"
+
+      # AI
+      "Bash(codex *)"
     ]
     ++ [
       # Web access
