@@ -6,6 +6,8 @@
     settings = {
       scrollback_lines = 20000;
       enable_audio_bell = false;
+      # disable all terminal-initiated notifications
+      filter_notification = "all";
       # don't ask for confirmation to close window
       confirm_os_window_close = 0;
       window_padding_width = 1;

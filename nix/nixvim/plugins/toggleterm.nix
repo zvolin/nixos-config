@@ -77,11 +77,14 @@
           term = nil
         end
         if not term then
+          local project = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+          local name = "vim:" .. project .. " #" .. id
           claude_terms[id] = terminal.Terminal:new({
             cmd = "claude",
             id = 1000 + id,
             display_name = "-claude" .. id .. "-",
             hidden = true,
+            env = { CLAUDE_SESSION_NAME = name },
           })
         end
 
