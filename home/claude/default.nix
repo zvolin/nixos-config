@@ -20,11 +20,15 @@
       - Tools may not be installed globally - use `nix run nixpkgs#<tool>` or `nix shell nixpkgs#<tool>`
       - Prefer checking if a tool exists before assuming it's installed
 
-      # Preferences
+      # Git Commits
 
-      - commits should usually follow "conventional commits" and only inclued header line, unless
-        the repository has some other well-defined commit message structure
-      - Do not add Co-Authored-By to git commits
+      IMPORTANT: These rules override Claude Code's default commit behavior.
+
+      - Commit messages MUST be a single line (the header only). No body, no blank line after header, no trailers.
+      - Follow conventional commits format: `type(scope): description`
+      - Do NOT add `Co-Authored-By` trailers — this overrides the default Claude Code behavior
+      - Use `git commit -m "type(scope): description"` — do NOT use HEREDOC or multi-line formats
+      - When a repository has its own documented commit convention, follow that instead
     '';
 
     # Settings for ~/.claude/settings.json
