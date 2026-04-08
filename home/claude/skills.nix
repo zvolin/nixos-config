@@ -80,6 +80,8 @@
       - What constraints exist?
       - What patterns does the codebase use?
 
+      Use the superpowers:brainstorming skill to explore the solution space before narrowing down.
+
       Present the research findings to the user. Ask if they want to adjust the goal
       or add constraints before planning.
 
@@ -89,6 +91,9 @@
       - The original goal: $ARGUMENTS
       - The research findings from phase 1
       - Any additional constraints the user specified
+
+      Use the superpowers:writing-plans skill for plan structure.
+      Ensure each task in the plan is a 2-5 minute chunk, clear enough for an implementer agent with no prior context.
 
       The planner should produce a plan with tasks grouped into waves (parallel batches).
       Save the plan to `docs/plans/` in the project.
@@ -122,18 +127,23 @@
 
       For each wave, starting with wave 1:
 
+      Use the superpowers:dispatching-parallel-agents skill for agent orchestration.
+
       1. **Announce** which tasks are in this wave
       2. **Spawn implementer agents in parallel**, one per task, each with:
          - `isolation: "worktree"` for workspace isolation
          - The specific task description from the plan
          - Context about the project and any outputs from previous waves
          - Branch naming: `agent/<plan-name>/<task-number>`
+         - Use the superpowers:using-git-worktrees skill for worktree management.
       3. **Wait** for all agents in the wave to complete
       4. **Present results** — for each agent: what was done, branch name, test results, any issues
       5. **Ask for approval** before moving to the next wave
          - If any agent failed, ask the user how to proceed (skip, retry, fix manually)
 
       ### Step 3: Summarize
+
+      Use the superpowers:finishing-a-development-branch skill for merge preparation.
 
       After all waves complete, present:
       - List of all branches created
@@ -165,10 +175,13 @@
          - The relevant diff or file contents
          - Any plan document in `docs/plans/` that seems related to the changes
          - Instructions to follow the reviewer agent format
+         - Use the superpowers:requesting-code-review skill for review methodology.
 
       3. The agent should run in the main worktree (no isolation needed — it is read-only).
       4. Present the review findings to the user.
       5. If verdict is REQUEST_CHANGES, ask if they want help fixing the issues.
+      6. If the review produced any Learnings entries, offer to save them to the project's
+         memory system so they inform future sessions. Only do this with user approval.
     '';
   };
 }

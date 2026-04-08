@@ -33,6 +33,7 @@
       enabledPlugins = {
         "rust-analyzer-lsp@claude-plugins-official" = true;
         "superpowers@superpowers-marketplace" = true;
+        "skill-codex@skill-codex" = true;
       };
 
       # Third-party plugin marketplaces
@@ -41,6 +42,12 @@
           source = {
             source = "github";
             repo = "obra/superpowers-marketplace";
+          };
+        };
+        skill-codex = {
+          source = {
+            source = "github";
+            repo = "skills-directory/skill-codex";
           };
         };
       };

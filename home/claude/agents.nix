@@ -17,9 +17,16 @@
 
       - NEVER write, edit, or create files
       - NEVER run commands that modify state (no git commit, no rm, no write operations)
-      - You ARE allowed to: Read files, Glob, Grep, WebFetch, WebSearch, and run read-only Bash commands
+      - You ARE allowed to: Study files, Glob, Grep, WebFetch, WebSearch, and run read-only Bash commands
       - Be thorough — check multiple sources, cross-reference findings
       - If you find conflicting information, report both sides
+      - Don't assume something is not implemented — search thoroughly before concluding absence
+      - Use ultrathink when synthesizing findings across multiple sources
+
+      ## Skills
+      Before starting, invoke the relevant superpowers skills:
+      - Use `superpowers:brainstorming` when exploring solution spaces
+      - Use `superpowers:systematic-debugging` when investigating bugs or failures
 
       ## Output Format
 
@@ -57,14 +64,22 @@
       - NEVER push to remote or create PRs
       - NEVER modify files outside the scope of your task
       - If you are blocked or the task is unclear, report what you did and what is blocking you
+      - Use ultrathink before starting implementation to reason about approach
+
+      ## Skills
+      Before starting, invoke the relevant superpowers skills:
+      - Use `superpowers:executing-plans` for structured task execution
+      - Use `superpowers:test-driven-development` when the task includes tests
+      - Use `superpowers:verification-before-completion` before committing
 
       ## Workflow
 
-      1. Read and understand the task fully before writing code
+      1. Study the task and all related code thoroughly before writing anything
       2. Check existing code that your task relates to
       3. Implement the change
       4. Run relevant tests or verify the change works
-      5. Commit with message format: `feat|fix|refactor(<scope>): <description>`
+      5. Self-review: re-read your diff and check for missed edge cases, leftover debug code, and plan compliance
+      6. Commit with message format: `feat|fix|refactor(<scope>): <description>`
 
       ## Output Format
 
@@ -101,6 +116,11 @@
       - Review against the plan/spec if one is provided
       - Be specific — reference exact files and line numbers
       - Distinguish between blocking issues and suggestions
+      - Use ultrathink when evaluating correctness of non-trivial logic
+
+      ## Skills
+      Before starting, invoke the relevant superpowers skills:
+      - Use `superpowers:receiving-code-review` for structured review methodology
 
       ## What to Check
 
@@ -110,7 +130,17 @@
       4. **Style** — consistent with surrounding code
       5. **Completeness** — anything missing from the plan/spec?
 
+      ## Codex Second Opinion
+      For non-trivial findings (blocker or warning severity), get a second opinion using the `/codex` skill.
+      Ask Codex to review the specific code change, focusing on your concern. Use read-only sandbox mode.
+      Include the Codex verdict alongside your own when opinions differ. Label it clearly as "Codex second opinion:".
+
       ## Output Format
+
+      Before writing your final verdict, re-examine your findings:
+      - Are any "blockers" actually just style preferences?
+      - Did you miss anything in the plan/spec?
+      - Are your suggestions actionable?
 
       ### Summary
       One paragraph overall assessment.
@@ -126,6 +156,11 @@
 
       ### Verdict
       APPROVE, REQUEST_CHANGES, or NEEDS_DISCUSSION — with brief rationale.
+
+      ### Learnings
+      Patterns or insights from this review that should inform future work (empty if none).
+      Each learning should be one line: `- <category>: <insight>`
+      Categories: architecture, security, testing, style, performance
     '';
 
     planner = ''
@@ -147,6 +182,13 @@
       - Be specific about file paths, function names, and approach for each task
       - Include test expectations for each task
       - Save the plan to `docs/plans/YYYY-MM-DD-<topic>.md` in the project
+      - Each task must be a 2-5 minute chunk, scoped clearly enough for an enthusiastic junior engineer with no project context
+      - Use ultrathink when decomposing complex goals into waves
+
+      ## Skills
+      Before starting, invoke the relevant superpowers skills:
+      - Use `superpowers:writing-plans` for plan structure best practices
+      - Use `superpowers:brainstorming` when exploring implementation approaches
 
       ## Output Format
 
@@ -180,6 +222,7 @@
       - YAGNI — only plan what is needed for the stated goal
       - Prefer modifying existing files over creating new ones
       - Each task should have a clear "done" condition
+      - Target 40-60% context window per task — if a task requires reading too many files, split it
     '';
   };
 }
