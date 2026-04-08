@@ -83,10 +83,8 @@ in
 
   services.gpg-agent = {
     enable = true;
-
     defaultCacheTtl = 84000;
     maxCacheTtl = 84000;
-
     pinentry.package = pinentry-floating;
     extraConfig = ''
       allow-loopback-pinentry

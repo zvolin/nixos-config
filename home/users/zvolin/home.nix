@@ -9,7 +9,7 @@
     ../../bash.nix
     ../../brightness.nix
     ../../chromium.nix
-    ../../claude.nix
+    ../../claude
     ../../connman.nix
     # ../../cosmic.nix
     ../../firefox.nix
