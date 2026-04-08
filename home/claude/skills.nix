@@ -231,6 +231,13 @@
       5. If verdict is REQUEST_CHANGES, ask if they want help fixing the issues.
       6. If the review produced any Learnings entries, offer to save them to the project's
          memory system so they inform future sessions. Only do this with user approval.
+      7. **Post-merge cleanup** — if the user merges the reviewed branch:
+         - Delete the merged branch locally: `git branch -d <branch>`
+         - If the branch was a feature branch aggregating agent work, also clean up:
+           - Any remaining agent worktrees: `git worktree remove <path>` for each
+           - Any remaining agent branches: `git branch -d <branch>` for each
+         - Confirm cleanup: "Cleaned up branch `<name>` and N agent worktrees/branches."
+         - If any branch cannot be deleted (unmerged changes), warn the user instead of force-deleting
     '';
 
     learn = ''
