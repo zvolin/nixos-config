@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, config, ... }:
 
 {
   services.mako = {
@@ -6,6 +6,12 @@
     settings = {
       default-timeout = 5000;
       border-radius = 8;
+      padding = "8,10";
+      max-icon-size = 32;
+      width = 400;
+      margin = 12;
+      format = "<b>%s</b>\\n<span size=\"2pt\"> </span>\\n%b";
+      font = lib.mkForce "${config.stylix.fonts.monospace.name} ${toString config.stylix.fonts.sizes.popups}";
     };
   };
 

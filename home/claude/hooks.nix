@@ -1,5 +1,14 @@
-{ ... }:
+{ pkgs, ... }:
 
+let
+  claude-icon-ico = pkgs.fetchurl {
+    url = "https://claude.ai/favicon.ico";
+    sha256 = "1qw5w3c2v6clyv608kizpppyz501v29cnmlmibz51szgif15asl1";
+  };
+  claude-icon = pkgs.runCommand "claude-icon.png" { } ''
+    ${pkgs.imagemagick}/bin/convert "${claude-icon-ico}[0]" -resize 128x128 $out
+  '';
+in
 {
   programs.claude-code.settings.hooks = {
     Notification = [
@@ -21,7 +30,7 @@
                   title="Claude Code"
                 fi
               fi
-              notify-send "$title" "$message"
+              notify-send -i ${claude-icon} "$title" "$message"
             '';
           }
         ];
