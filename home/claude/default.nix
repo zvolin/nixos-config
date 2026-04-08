@@ -3,7 +3,7 @@
 {
   imports = [
     ./agents.nix
-    ./commands.nix
+    ./skills.nix
     ./hooks.nix
     ./permissions.nix
     ./statusline.nix
