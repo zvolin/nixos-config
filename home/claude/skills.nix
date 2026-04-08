@@ -154,9 +154,14 @@
          - Use the superpowers:using-git-worktrees skill for worktree management.
       3. **Wait** for all agents in the wave to complete
       4. **Present results** — for each agent: what was done, branch name, test results, any issues
-      5. **Ask for approval** before moving to the next wave
+      5. **Clean up worktrees** — after presenting results and before asking for approval:
+         - For each agent that returned DONE: remove its worktree with `git worktree remove <path>`
+         - Do NOT remove worktrees for agents that returned DONE_WITH_CONCERNS, NEEDS_CONTEXT, or BLOCKED
+           (the user may want to inspect or retry)
+         - List any worktrees that were kept and why
+      6. **Ask for approval** before moving to the next wave
          - Handle agent status codes:
-           - **DONE** — mark task complete, proceed
+           - **DONE** — mark task complete, delete the task branch (`git branch -d <branch>`), proceed
            - **DONE_WITH_CONCERNS** — show concerns to user, ask whether to proceed or address them
            - **NEEDS_CONTEXT** — present what the agent needs, provide it or skip
            - **BLOCKED** — show blocker, ask user how to proceed (skip, fix manually, retry with more context)
