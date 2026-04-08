@@ -5,7 +5,7 @@
   programs.claude-code.skills = {
     handoff = ''
       ---
-      description: Generate a handoff document for continuing work in a fresh session
+      description: Use when ending a session and need to preserve context for the next one
       ---
 
       ## Context
@@ -32,7 +32,7 @@
 
     research = ''
       ---
-      description: Spawn a researcher agent to investigate a topic
+      description: Use when you need to investigate a topic, gather context, or understand something before acting
       argument-hint: <topic or question>
       ---
 
@@ -44,15 +44,25 @@
 
       1. Spawn a researcher agent (subagent_type: "general-purpose") with the following prompt:
 
-         "You are acting as a researcher agent. Follow the researcher agent instructions.
-          Investigate the following topic: $ARGUMENTS
+         "You are a research specialist. Investigate the following topic thoroughly: $ARGUMENTS
 
-          Context:
-          - Current directory: the project root
-          - Git status: check with git status
-          - Recent changes: check with git log --oneline -10
+          ## Rules
+          - NEVER write, edit, or create files
+          - NEVER run commands that modify state
+          - Be thorough — check multiple sources, cross-reference findings
+          - Use ultrathink when synthesizing findings
 
-          Return your findings in the structured format specified in your agent instructions."
+          ## Context
+          - Git status: !`git status --short`
+          - Recent changes: !`git log --oneline -10`
+          - Current branch: !`git branch --show-current`
+
+          ## Output Format
+          Structure your response as:
+          ### Findings — key discoveries, organized by subtopic
+          ### Relevant Files — paths and brief descriptions
+          ### Constraints & Gotchas — non-obvious limitations
+          ### Open Questions — things to investigate further"
 
       2. The agent should run in the main worktree (no isolation needed — it is read-only).
       3. Present the agent's findings to the user.
@@ -61,9 +71,15 @@
 
     design = ''
       ---
-      description: Research a goal then produce an implementation plan
+      description: Use when you have a goal that needs research and an implementation plan before coding
       argument-hint: <goal description>
       ---
+
+      ## Context
+
+      - Git status: !`git status --short`
+      - Recent commits: !`git log --oneline -5`
+      - Current branch: !`git branch --show-current`
 
       ## Task
 
@@ -103,7 +119,7 @@
 
     implement = ''
       ---
-      description: Execute an implementation plan using parallel agents in worktrees
+      description: Use when you have a saved plan document ready for execution
       argument-hint: <path to plan document>
       ---
 
@@ -139,7 +155,11 @@
       3. **Wait** for all agents in the wave to complete
       4. **Present results** — for each agent: what was done, branch name, test results, any issues
       5. **Ask for approval** before moving to the next wave
-         - If any agent failed, ask the user how to proceed (skip, retry, fix manually)
+         - Handle agent status codes:
+           - **DONE** — mark task complete, proceed
+           - **DONE_WITH_CONCERNS** — show concerns to user, ask whether to proceed or address them
+           - **NEEDS_CONTEXT** — present what the agent needs, provide it or skip
+           - **BLOCKED** — show blocker, ask user how to proceed (skip, fix manually, retry with more context)
 
       ### Step 3: Summarize
 
@@ -151,11 +171,14 @@
       - Any unresolved issues
 
       Do NOT automatically merge branches. The user decides what to merge.
+      NEVER merge into main/master — accumulate work in a dedicated feature branch.
+
+      After presenting the summary, ask the user if they want to run `/review` on the feature branch before merging.
     '';
 
     review = ''
       ---
-      description: Spawn a reviewer agent to review code changes
+      description: Use when code changes need review — after implementation, before merge, or on request
       argument-hint: [branch, commit range, or file paths]
       ---
 
@@ -174,14 +197,80 @@
       2. Spawn a reviewer agent (subagent_type: "general-purpose") with:
          - The relevant diff or file contents
          - Any plan document in `docs/plans/` that seems related to the changes
-         - Instructions to follow the reviewer agent format
-         - Use the superpowers:requesting-code-review skill for review methodology.
+         - Use the superpowers:requesting-code-review skill for review methodology
+         - Include these instructions in the prompt:
+
+           "You are a code review specialist. Review the provided changes.
+
+            ## Rules
+            - NEVER edit, write, or create files
+            - Review against the plan/spec if provided
+            - Be specific — reference exact files and line numbers
+            - Use ultrathink when evaluating non-trivial logic
+
+            ## Review Process
+            Pass 1 — Spec Compliance: Does it do what was asked? All requirements met? No scope creep?
+            Pass 2 — Code Quality: Correctness, security, style, simplicity.
+
+            ## Codex Second Opinion
+            For blocker/warning findings, get a second opinion via /codex skill in read-only mode.
+
+            ## Output Format
+            ### Summary — one paragraph assessment
+            ### Findings — for each: File, Severity (blocker|warning|suggestion), Description, Suggestion
+            ### Verdict — APPROVE | REQUEST_CHANGES | NEEDS_DISCUSSION
+            ### Learnings — patterns for future work (category: insight)"
 
       3. The agent should run in the main worktree (no isolation needed — it is read-only).
       4. Present the review findings to the user.
       5. If verdict is REQUEST_CHANGES, ask if they want help fixing the issues.
       6. If the review produced any Learnings entries, offer to save them to the project's
          memory system so they inform future sessions. Only do this with user approval.
+    '';
+
+    learn = ''
+      ---
+      description: Use after completing a task or review to capture learnings and improve future work
+      argument-hint: [topic or "from-review"]
+      ---
+
+      ## Task
+
+      Capture and persist learnings from recent work.
+
+      ## Instructions
+
+      1. **Gather context:**
+         - If $ARGUMENTS is "from-review": read the most recent review output in conversation
+         - If $ARGUMENTS is a topic: examine recent git history and conversation for insights on that topic
+         - If $ARGUMENTS is empty: ask what area to capture learnings from
+
+      2. **Identify learnings** — look for:
+         - Patterns that worked well (repeat these)
+         - Mistakes or surprises (avoid these)
+         - Non-obvious constraints discovered
+         - Architecture decisions and their rationale
+         - Security or correctness gotchas
+
+      3. **Classify each learning:**
+         - `architecture` — structural decisions, module boundaries
+         - `security` — vulnerabilities, safe patterns
+         - `testing` — test strategies, coverage gaps
+         - `style` — conventions, readability patterns
+         - `performance` — optimization insights
+         - `process` — workflow improvements, tooling insights
+
+      4. **Present learnings** to user in this format:
+         ```
+         ### Proposed Learnings
+         - <category>: <insight>
+         - <category>: <insight>
+         ```
+
+      5. **With user approval**, save each learning to the appropriate place:
+         - Project-specific patterns → project memory file
+         - General workflow insights → feedback memory file
+         - Do NOT save things derivable from code or git history
     '';
   };
 }
