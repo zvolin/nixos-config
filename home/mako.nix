@@ -5,7 +5,8 @@
     enable = true;
     settings = {
       default-timeout = 10000;
-      border-radius = 8;
+      border-size = 1;
+      border-radius = 5;
       padding = "8,10";
       max-icon-size = 32;
       width = 400;
