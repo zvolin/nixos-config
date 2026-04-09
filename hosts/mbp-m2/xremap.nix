@@ -22,6 +22,11 @@ in
             held = "ctrl_l";
             alone = "esc";
           };
+
+          # disable physical ctrl keys to force caps lock usage
+          # muhenkan is a Japanese IME key that does nothing on non-JP systems
+          remap.ctrl_l = "muhenkan";
+          remap.ctrl_r = "muhenkan";
         }
       ];
 
