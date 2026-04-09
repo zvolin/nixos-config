@@ -45,6 +45,11 @@
       url = "path:/home/zwolin/data/tiny-dfr";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    superpowers = {
+      url = "github:obra/superpowers";
+      flake = false;
+    };
   };
 
   outputs = inputs:

@@ -1,0 +1,216 @@
+diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
+--- a/skills/brainstorming/SKILL.md	2026-04-09 23:04:24.649947721 +0200
++++ b/skills/brainstorming/SKILL.md	2026-04-09 23:06:05.523768613 +0200
+@@ -24,12 +24,14 @@
+ 1. **Explore project context** — check files, docs, recent commits
+ 2. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
+ 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
+-4. **Propose 2-3 approaches** — with trade-offs and your recommendation
+-5. **Present design** — in sections scaled to their complexity, get user approval after each section
++4. **Propose 2-3 approaches** — explicit pros/cons per approach; auto-select if one clearly dominates
++5. **Present design** — include pros/cons for choices between alternatives, get user approval after each section
+ 6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
+-7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
++7. **Spec review loop** — dispatch `spec-document-reviewer` subagent from `spec-document-reviewer-prompt.md`; loop until 0 critical/medium issues; max 10 iterations then escalate to user
+ 8. **User reviews written spec** — ask user to review the spec file before proceeding
+-9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
++9. **Choose execution strategy** — user picks: Sequential (default, writing-plans then executing-plans), Parallel subagents (writing-plans then subagent-driven-development), or Agent teams (writing-plans then coordinated team)
++10. **Agent type assignments** (skip for sequential) — multi-select table mapping tasks to agent types based on language/domain; user can override any row; saved to spec under `## Agent Assignments`
++11. **Transition to implementation** — invoke writing-plans with agent assignments, then execute with chosen strategy
+ 
+ ## Process Flow
+ 
+@@ -40,26 +42,32 @@
+     "Offer Visual Companion\n(own message, no other content)" [shape=box];
+     "Ask clarifying questions" [shape=box];
+     "Propose 2-3 approaches" [shape=box];
+-    "Present design sections" [shape=box];
++    "Present design" [shape=box];
+     "User approves design?" [shape=diamond];
+     "Write design doc" [shape=box];
+-    "Spec self-review\n(fix inline)" [shape=box];
++    "Spec review loop" [shape=box];
+     "User reviews spec?" [shape=diamond];
+-    "Invoke writing-plans skill" [shape=doublecircle];
++    "Choose execution strategy" [shape=box];
++    "Agent type assignments" [shape=box];
++    "Invoke writing-plans" [shape=doublecircle];
+ 
+     "Explore project context" -> "Visual questions ahead?";
+     "Visual questions ahead?" -> "Offer Visual Companion\n(own message, no other content)" [label="yes"];
+     "Visual questions ahead?" -> "Ask clarifying questions" [label="no"];
+     "Offer Visual Companion\n(own message, no other content)" -> "Ask clarifying questions";
+     "Ask clarifying questions" -> "Propose 2-3 approaches";
+-    "Propose 2-3 approaches" -> "Present design sections";
+-    "Present design sections" -> "User approves design?";
+-    "User approves design?" -> "Present design sections" [label="no, revise"];
++    "Propose 2-3 approaches" -> "Present design";
++    "Present design" -> "User approves design?";
++    "User approves design?" -> "Present design" [label="no, revise"];
+     "User approves design?" -> "Write design doc" [label="yes"];
+-    "Write design doc" -> "Spec self-review\n(fix inline)";
+-    "Spec self-review\n(fix inline)" -> "User reviews spec?";
++    "Write design doc" -> "Spec review loop";
++    "Spec review loop" -> "Spec review loop" [label="issues found"];
++    "Spec review loop" -> "User reviews spec?" [label="clean"];
+     "User reviews spec?" -> "Write design doc" [label="changes requested"];
+-    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
++    "User reviews spec?" -> "Choose execution strategy" [label="approved"];
++    "Choose execution strategy" -> "Agent type assignments" [label="parallel/teams"];
++    "Choose execution strategy" -> "Invoke writing-plans" [label="sequential"];
++    "Agent type assignments" -> "Invoke writing-plans";
+ }
+ ```
+ 
+@@ -80,8 +88,20 @@
+ **Exploring approaches:**
+ 
+ - Propose 2-3 different approaches with trade-offs
++- Every approach MUST list explicit **Pros** and **Cons**
+ - Present options conversationally with your recommendation and reasoning
+ - Lead with your recommended option and explain why
++- If one option dominates on all axes, auto-select it and explain why (user can override)
++
++**Pros/Cons in design documents:**
++- Architecture decisions get a "Pros / Cons / Why we chose this" block
++- Format: simple lists, no elaborate tables
++- Proportional to decision weight — a minor choice gets one line each, a major choice gets a paragraph
++
++Example:
++> **Pros:** Reproducible, version-pinned, clean patch mechanism
++> **Cons:** Must maintain patch when upstream updates
++> **Why we chose this:** The alternative (post-activation scripts) is fragile and not reproducible
+ 
+ **Presenting the design:**
+ 
+@@ -113,15 +133,13 @@
+ - Use elements-of-style:writing-clearly-and-concisely skill if available
+ - Commit the design document to git
+ 
+-**Spec Self-Review:**
+-After writing the spec document, look at it with fresh eyes:
+-
+-1. **Placeholder scan:** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
+-2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
+-3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
+-4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
+-
+-Fix any issues inline. No need to re-review — just fix and move on.
++**Spec review loop:**
++After writing the spec document:
++1. Dispatch `spec-document-reviewer` subagent using the template at `skills/brainstorming/spec-document-reviewer-prompt.md`
++2. Provide the subagent with the spec file path and precise review context — never session history
++3. If issues found, fix them and re-dispatch
++4. Loop until 0 critical/medium issues remain
++5. Max 10 iterations, then escalate to user
+ 
+ **User Review Gate:**
+ After the spec review loop passes, ask the user to review the written spec before proceeding:
+@@ -130,10 +148,33 @@
+ 
+ Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
+ 
+-**Implementation:**
+-
+-- Invoke the writing-plans skill to create a detailed implementation plan
+-- Do NOT invoke any other skill. writing-plans is the next step.
++**Choose execution strategy:**
++After user approves spec, present three options:
++- **Sequential** (default): single agent, step by step — writing-plans then executing-plans
++- **Parallel subagents**: independent tasks in parallel, no inter-agent communication — writing-plans then subagent-driven-development
++- **Agent teams**: coordinated team with shared task list and inter-agent messaging — writing-plans then coordinated team via agent teams
++
++**Agent type assignments** (parallel/teams only):
++Present a table mapping each planned task to a suggested agent type based on language/domain:
++
++| Domain / Language | Agent Type |
++|---|---|
++| Rust | systems-programming:rust-pro |
++| Go | systems-programming:golang-pro |
++| Nix / general | general-purpose |
++
++User reviews and overrides. Final assignments saved to spec under `## Agent Assignments`.
++
++**Agent teams review protocol** (teams only):
++When agent teams strategy is chosen, the team-lead enforces two-stage review gates:
++1. **Spec compliance review**: reviewer reads actual code against task requirements
++2. **Code quality review** (only after spec compliance passes): checks decomposition, patterns, quality
++3. **Final holistic review**: cross-stream review for consistency and integration
++
++**Transition to implementation:**
++- Invoke the writing-plans skill with agent assignments to create a detailed implementation plan
++- Then execute with the chosen strategy
++- Do NOT invoke any other skill. writing-plans is the next step after brainstorming.
+ 
+ ## Key Principles
+ 
+diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brainstorming/spec-document-reviewer-prompt.md
+--- a/skills/brainstorming/spec-document-reviewer-prompt.md	2026-04-09 23:04:24.649990721 +0200
++++ b/skills/brainstorming/spec-document-reviewer-prompt.md	2026-04-09 23:06:29.527466860 +0200
+@@ -16,13 +16,33 @@
+ 
+     ## What to Check
+ 
++    ### Critical Issues (must fix before proceeding)
++
+     | Category | What to Look For |
+     |----------|------------------|
+     | Completeness | TODOs, placeholders, "TBD", incomplete sections |
+     | Consistency | Internal contradictions, conflicting requirements |
+     | Clarity | Requirements ambiguous enough to cause someone to build the wrong thing |
+-    | Scope | Focused enough for a single plan — not covering multiple independent subsystems |
+-    | YAGNI | Unrequested features, over-engineering |
++    | Dependencies | External dependencies or prerequisites not mentioned |
++    | Testability | Success criteria that cannot be verified |
++
++    ### Medium Issues (should fix)
++
++    | Category | What to Look For |
++    |----------|------------------|
++    | Pros/Cons | Architecture decisions without "Pros / Cons / Why we chose this" blocks |
++    | Alternatives | Major decisions without considering alternatives |
++    | Testing | No concrete verification steps |
++    | File list | No clear list of files to be created or modified |
++    | Scope | Boundaries that could cause confusion during implementation |
++
++    ### Minor Issues (nice to fix)
++
++    | Category | What to Look For |
++    |----------|------------------|
++    | Verbosity | Sections that could be more concise |
++    | References | References to concepts not defined in the document |
++    | Ordering | Sections that would read better in a different order |
+ 
+     ## Calibration
+ 
+@@ -37,13 +57,26 @@
+ 
+     ## Spec Review
+ 
+-    **Status:** Approved | Issues Found
++    **Critical issues**: <count>
++    **Medium issues**: <count>
++    **Minor issues**: <count>
++
++    ### Critical Issues
++    - [C1] <description> — suggested fix: <fix>
++
++    ### Medium Issues
++    - [M1] <description> — suggested fix: <fix>
++
++    ### Minor Issues
++    - [m1] <description> — suggested fix: <fix>
++
++    If 0 critical and 0 medium issues:
+ 
+-    **Issues (if any):**
+-    - [Section X]: [specific issue] - [why it matters for planning]
++    **Status:** Approved
++    **No critical or medium issues found.** Spec is ready for user review.
+ 
+     **Recommendations (advisory, do not block approval):**
+     - [suggestions for improvement]
+ ```
+ 
+-**Reviewer returns:** Status, Issues (if any), Recommendations
++**Reviewer returns:** Status with severity-categorized issues, or Approved with optional recommendations.
