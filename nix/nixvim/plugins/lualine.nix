@@ -10,10 +10,16 @@
           # have single statusline instead per-window
           globalstatus = true;
           # exclude side panels
-          disabled_filetypes = [
-            "neo-tree"
-            "undotree"
-          ];
+          disabled_filetypes = {
+            statusline = [
+              "neo-tree"
+              "undotree"
+            ];
+            winbar = [
+              "neo-tree"
+              "undotree"
+            ];
+          };
 
           component_separators = {
             left = "";

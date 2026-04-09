@@ -109,18 +109,6 @@ in
       # Commenting code
       (noremap "n" "<leader>/" "Toggle comment" "<Plug>(comment_toggle_linewise_current)")
       (noremap "v" "<leader>/" "Toggle comment" "<Plug>(comment_toggle_linewise_visual)")
-    ]
-    # Terminal
-    ++ [
-      # (noremap "n" "<C-t>t" "Toggle term" "<cmd>ToggleTerm<cr>")
-      # (noremap "i" "<C-t>t" "Toggle term" "<cmd>lua _claude_toggle()<cr>")
-      # (noremap "ni" "<C-S-t>" "Toggle terminal"
-      #   ''<cmd>execute "lua _term_toggle(" .. v:count .. ")"<cr>''
-      # )
-      # (noremap "ni" "<C-S-t>" "Toggle Claude terminal"
-      #   ''<cmd>execute "lua _claude_toggle(" .. v:count .. ")"<cr>''
-      # )
-      # (noremap "t" "<C-t>" "Toggle terminal" "<cmd>lua _term_toggle()<cr>")
     ];
   };
 }
