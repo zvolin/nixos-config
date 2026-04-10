@@ -7,8 +7,10 @@
     ignores = [
       "**/.claude/worktrees/"
       "**/.claude/settings.local.json"
+      "**/.worktrees"
       "**/docs/plans/"
       "**/docs/insights/"
+      "**/docs/superpowers/"
       "**/.direnv"
       "**/CLAUDE.local.md"
       "**/HANDOFF.md"
