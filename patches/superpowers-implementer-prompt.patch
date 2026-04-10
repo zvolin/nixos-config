@@ -1,0 +1,27 @@
+diff -ruN a/skills/subagent-driven-development/implementer-prompt.md b/skills/subagent-driven-development/implementer-prompt.md
+--- a/skills/subagent-driven-development/implementer-prompt.md	2026-04-10 02:24:13.348903822 +0200
++++ b/skills/subagent-driven-development/implementer-prompt.md	2026-04-10 02:24:13.348937655 +0200
+@@ -54,6 +54,15 @@
+     - In existing codebases, follow established patterns. Improve code you're touching
+       the way a good developer would, but don't restructure things outside your task.
+ 
++    ## Document Decision Trade-offs
++
++    When you make a choice not specified in the plan (library, pattern, data structure, approach):
++    - Briefly note the alternatives you considered and why you chose this one
++    - Include in your report under "Self-review findings"
++    - If the decision is significant (affects architecture, performance, or API surface), flag your report as DONE_WITH_CONCERNS so the controller can review the trade-off
++
++    Small decisions (variable naming, loop vs map, etc.) don't need documentation.
++
+     ## When You're in Over Your Head
+ 
+     It is always OK to stop and say "this is too hard for me." Bad work is worse than
+@@ -84,6 +93,7 @@
+     - Is this my best work?
+     - Are names clear and accurate (match what things do, not how they work)?
+     - Is the code clean and maintainable?
++    - Are comments, docstrings, and error messages written in plain language? (Avoid: leverages, delves, ensures, facilitates, robust, seamless, comprehensive, streamlined)
+ 
+     **Discipline:**
+     - Did I avoid overbuilding (YAGNI)?

@@ -1,0 +1,67 @@
+diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
+--- a/skills/writing-plans/SKILL.md	2026-04-10 02:24:13.342049802 +0200
++++ b/skills/writing-plans/SKILL.md	2026-04-10 02:24:13.342093135 +0200
+@@ -7,7 +7,7 @@
+ 
+ ## Overview
+ 
+-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
++Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. KISS.
+ 
+ Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
+ 
+@@ -40,7 +40,6 @@
+ - "Run it to make sure it fails" - step
+ - "Implement the minimal code to make the test pass" - step
+ - "Run the tests and make sure they pass" - step
+-- "Commit" - step
+ 
+ ## Plan Document Header
+ 
+@@ -95,12 +94,6 @@
+ Run: `pytest tests/path/test.py::test_name -v`
+ Expected: PASS
+ 
+-- [ ] **Step 5: Commit**
+-
+-```bash
+-git add tests/path/test.py src/path/file.py
+-git commit -m "feat: add specific feature"
+-```
+ ````
+ 
+ ## No Placeholders
+@@ -113,11 +106,31 @@
+ - Steps that describe what to do without showing how (code blocks required for code steps)
+ - References to types, functions, or methods not defined in any task
+ 
++## Document Pros and Cons
++
++When a plan picks between alternatives (library, architecture pattern, data structure, approach), include a brief pros/cons/why block:
++
++> **Pros:** [advantages]
++> **Cons:** [disadvantages]
++> **Why we chose this:** [reasoning]
++
++Proportional to decision weight — a minor choice gets one line each, a major choice gets a paragraph. If one option clearly dominates, auto-select and state why.
++
++## Prose Quality
++
++All non-code text in the plan (descriptions, context, rationale) must read like it was written by a human engineer. Avoid AI-isms:
++
++- leverages, delves, ensures, facilitates, robust, seamless, comprehensive, streamlined
++- "This elegant solution" / "This powerful feature"
++- Filler hedging: "It's worth noting that", "It should be mentioned that"
++
++Write plainly. Say what it does, why, and move on.
++
+ ## Remember
+ - Exact file paths always
+-- Complete code in every step — if a step changes code, show the code
++- Complete code in the plan — every function, type, and constant must appear in full somewhere. Later steps may reference earlier-defined code by name instead of repeating it.
+ - Exact commands with expected output
+-- DRY, YAGNI, TDD, frequent commits
++- DRY, YAGNI, TDD, KISS
+ 
+ ## Self-Review
+ 

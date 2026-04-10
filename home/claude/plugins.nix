@@ -1,11 +1,18 @@
 { config, inputs, lib, pkgs, ... }:
 
 let
-  # Apply brainstorming patch to superpowers source
+  # Apply patches to superpowers source
   patchedSuperpowers = pkgs.applyPatches {
     name = "superpowers-patched";
     src = inputs.superpowers;
-    patches = [ ../../patches/superpowers-brainstorming.patch ];
+    patches = [
+      ../../patches/superpowers-brainstorming.patch
+      ../../patches/superpowers-writing-plans.patch
+      ../../patches/superpowers-executing-plans.patch
+      ../../patches/superpowers-subagent-driven-dev.patch
+      ../../patches/superpowers-code-quality-reviewer.patch
+      ../../patches/superpowers-implementer-prompt.patch
+    ];
   };
 
   # Read version from plugin.json (matching vaporif), fall back to git short rev

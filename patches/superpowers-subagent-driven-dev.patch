@@ -1,0 +1,51 @@
+diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven-development/SKILL.md
+--- a/skills/subagent-driven-development/SKILL.md	2026-04-10 02:24:13.346041563 +0200
++++ b/skills/subagent-driven-development/SKILL.md	2026-04-10 02:24:13.346085564 +0200
+@@ -55,6 +55,7 @@
+         "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
+         "Code quality reviewer subagent approves?" [shape=diamond];
+         "Implementer subagent fixes quality issues" [shape=box];
++        "Comment cleanup pass" [shape=box];
+         "Mark task complete in TodoWrite" [shape=box];
+     }
+ 
+@@ -71,12 +72,13 @@
+     "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
+     "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
+     "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
+-    "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
++    "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review (max 10)"];
+     "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
+     "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
+     "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
+-    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
+-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
++    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review (max 10)"];
++    "Code quality reviewer subagent approves?" -> "Comment cleanup pass" [label="yes, or minor only"];
++    "Comment cleanup pass" -> "Mark task complete in TodoWrite";
+     "Mark task complete in TodoWrite" -> "More tasks remain?";
+     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
+     "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
+@@ -117,6 +119,22 @@
+ 
+ **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
+ 
++## Review Loop Limits
++
++- **Max iterations:** 10 for any review loop (spec compliance or code quality). After 10 iterations with unresolved critical or important issues, escalate to the user.
++- **Minor issues don't block:** Note them in the task completion report but proceed to the next task. Do not loop on minor-only feedback.
++- **Same-issue cap:** If the same issue appears in 3 consecutive review cycles, escalate — the implementer and reviewer disagree on how to fix it.
++
++## Comment Cleanup Pass
++
++After code quality review approves (or only minor issues remain), run a quick cleanup before marking the task complete:
++
++- Strip comments that restate what the code does (`// Initialize the logger`, `// Return the result`)
++- Strip AI-obvious comments
++- Keep only comments that explain *why* something is done a non-obvious way
++
++This is a quick pass, not a full rewrite — if comments are already clean, skip it.
++
+ ## Prompt Templates
+ 
+ - `./implementer-prompt.md` - Dispatch implementer subagent

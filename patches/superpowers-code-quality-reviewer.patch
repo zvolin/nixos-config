@@ -1,0 +1,15 @@
+diff -ruN a/skills/subagent-driven-development/code-quality-reviewer-prompt.md b/skills/subagent-driven-development/code-quality-reviewer-prompt.md
+--- a/skills/subagent-driven-development/code-quality-reviewer-prompt.md	2026-04-10 02:24:13.347720568 +0200
++++ b/skills/subagent-driven-development/code-quality-reviewer-prompt.md	2026-04-10 02:24:13.347752902 +0200
+@@ -23,4 +23,11 @@
+ - Is the implementation following the file structure from the plan?
+ - Did this implementation create new files that are already large, or significantly grow existing files? (Don't flag pre-existing file sizes — focus on what this change contributed.)
+ 
++**Pass criteria:**
++- **Approve** (0 critical + 0 important issues): Implementation is ready.
++- **Request changes** (any critical or important issue): Implementer must fix and re-submit.
++- **Minor issues** are noted in the report but do not block approval.
++
++**Loop awareness:** If this is iteration 10+, state all remaining issues but recommend escalation to the controller rather than another loop.
++
+ **Code reviewer returns:** Strengths, Issues (Critical/Important/Minor), Assessment
