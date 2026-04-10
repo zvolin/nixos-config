@@ -2,7 +2,8 @@
 
 {
   programs.nixvim.plugins.colorizer = {
-    enable = true;
+    # TODO: enable but start untoggled
+    enable = false;
     # userDefaultOptions = {
     #   css = true;
     # };
