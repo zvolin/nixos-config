@@ -26,7 +26,7 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
      "Mark task complete in TodoWrite" -> "More tasks remain?";
      "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
      "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-@@ -117,6 +119,22 @@
+@@ -117,6 +119,23 @@
  
  **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
  
@@ -41,7 +41,8 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 +After code quality review approves (or only minor issues remain), run a quick cleanup before marking the task complete:
 +
 +- Strip comments that restate what the code does (`// Initialize the logger`, `// Return the result`)
-+- Strip AI-obvious comments
++- Strip AI-obvious comments (apply `humanizer` patterns — no "Ensures proper...", "Leverages...", "Facilitates...")
++- Humanize remaining comments, docstrings, and error messages — direct and specific, no filler
 +- Keep only comments that explain *why* something is done a non-obvious way
 +
 +This is a quick pass, not a full rewrite — if comments are already clean, skip it.

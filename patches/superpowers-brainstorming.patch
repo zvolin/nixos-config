@@ -106,10 +106,10 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
  
  **User Review Gate:**
  After the spec review loop passes, ask the user to review the written spec before proceeding:
-@@ -130,10 +148,33 @@
- 
+@@ -130,10 +148,57 @@
+
  Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
- 
+
 -**Implementation:**
 -
 -- Invoke the writing-plans skill to create a detailed implementation plan
@@ -141,9 +141,33 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 +- Invoke the writing-plans skill with agent assignments to create a detailed implementation plan
 +- Then execute with the chosen strategy
 +- Do NOT invoke any other skill. writing-plans is the next step after brainstorming.
- 
+
++## Humanize All Non-Code Prose
++
++Apply the `humanizer` skill to all non-code text throughout brainstorming. This includes:
++
++- **Design presentations** (approach proposals, design walkthroughs)
++- **Spec documents** (the written design doc saved to disk)
++- **Plan prose** (goal descriptions, architecture summaries, task descriptions)
++- **Questions and explanations** (clarifying questions, approach reasoning)
++
++**Does NOT apply to:** code blocks, file paths, commands, configuration snippets, structured data (tables, checklists).
++
++**How to apply:** Strip AI-isms inline as you write — don't produce slop then clean it up. Watch for:
++- Significance inflation ("pivotal", "crucial", "vital role", "testament")
++- Promotional language ("vibrant", "groundbreaking", "seamless")
++- Copula avoidance ("serves as", "stands as" instead of "is")
++- Superficial -ing phrases ("highlighting", "underscoring", "fostering")
++- Rule-of-three lists, negative parallelisms ("not just X, but Y")
++- Filler ("in order to", "it is important to note")
++- Sycophantic openers ("Great question!", "Absolutely!")
++- Generic positive conclusions ("the future looks bright")
++- Em dash overuse, excessive boldface, emoji decoration
++
++Write like a person talking to another person. Vary sentence rhythm. Have opinions. Be specific.
++
  ## Key Principles
- 
+
 diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brainstorming/spec-document-reviewer-prompt.md
 --- a/skills/brainstorming/spec-document-reviewer-prompt.md	2026-04-09 23:04:24.649990721 +0200
 +++ b/skills/brainstorming/spec-document-reviewer-prompt.md	2026-04-09 23:06:29.527466860 +0200

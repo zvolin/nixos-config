@@ -31,7 +31,7 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
  ````
  
  ## No Placeholders
-@@ -113,11 +106,31 @@
+@@ -113,11 +106,30 @@
  - Steps that describe what to do without showing how (code blocks required for code steps)
  - References to types, functions, or methods not defined in any task
  
@@ -47,13 +47,12 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
 +
 +## Prose Quality
 +
-+All non-code text in the plan (descriptions, context, rationale) must read like it was written by a human engineer. Avoid AI-isms:
++All non-code text in the plan (descriptions, context, rationale) must read like a person wrote it. Apply the `humanizer` skill patterns — strip AI-isms as you write, don't produce slop then clean it up.
 +
-+- leverages, delves, ensures, facilitates, robust, seamless, comprehensive, streamlined
-+- "This elegant solution" / "This powerful feature"
-+- Filler hedging: "It's worth noting that", "It should be mentioned that"
++**Applies to:** Goal statement, Architecture summary, task descriptions, explanatory notes.
++**Does NOT apply to:** code blocks, file paths, commands, expected output, step labels.
 +
-+Write plainly. Say what it does, why, and move on.
++Watch for: significance inflation, promotional language, copula avoidance ("serves as" instead of "is"), superficial -ing phrases, filler, generic conclusions, rule-of-three padding. Be direct and specific.
 +
  ## Remember
  - Exact file paths always

@@ -1,8 +1,14 @@
-{ ... }:
+{ inputs, ... }:
 
 {
   # Custom slash commands (stored in ~/.claude/skills/<name>/SKILL.md)
+  home.file.".claude/skills/humanizer" = {
+    source = inputs.humanizer;
+    recursive = true;
+  };
+
   programs.claude-code.skills = {
+
     handoff = ''
       ---
       description: Use when ending a session and need to preserve context for the next one

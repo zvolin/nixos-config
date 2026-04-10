@@ -21,7 +21,7 @@ diff -ruN a/skills/subagent-driven-development/implementer-prompt.md b/skills/su
      - Is this my best work?
      - Are names clear and accurate (match what things do, not how they work)?
      - Is the code clean and maintainable?
-+    - Are comments, docstrings, and error messages written in plain language? (Avoid: leverages, delves, ensures, facilitates, robust, seamless, comprehensive, streamlined)
++    - Are comments, docstrings, and error messages written in plain language? (Apply `humanizer` skill patterns — no AI-isms, no filler, no significance inflation. Specifically avoid: leverages, delves, ensures, facilitates, robust, seamless, comprehensive, streamlined)
  
      **Discipline:**
      - Did I avoid overbuilding (YAGNI)?

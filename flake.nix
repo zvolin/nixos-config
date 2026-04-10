@@ -50,6 +50,11 @@
       url = "github:obra/superpowers";
       flake = false;
     };
+
+    humanizer = {
+      url = "github:blader/humanizer";
+      flake = false;
+    };
   };
 
   outputs = inputs:

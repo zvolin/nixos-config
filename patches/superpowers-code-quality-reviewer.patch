@@ -1,7 +1,7 @@
 diff -ruN a/skills/subagent-driven-development/code-quality-reviewer-prompt.md b/skills/subagent-driven-development/code-quality-reviewer-prompt.md
 --- a/skills/subagent-driven-development/code-quality-reviewer-prompt.md	2026-04-10 02:24:13.347720568 +0200
 +++ b/skills/subagent-driven-development/code-quality-reviewer-prompt.md	2026-04-10 02:24:13.347752902 +0200
-@@ -23,4 +23,11 @@
+@@ -23,4 +23,13 @@
  - Is the implementation following the file structure from the plan?
  - Did this implementation create new files that are already large, or significantly grow existing files? (Don't flag pre-existing file sizes — focus on what this change contributed.)
  
@@ -11,5 +11,7 @@ diff -ruN a/skills/subagent-driven-development/code-quality-reviewer-prompt.md b
 +- **Minor issues** are noted in the report but do not block approval.
 +
 +**Loop awareness:** If this is iteration 10+, state all remaining issues but recommend escalation to the controller rather than another loop.
++
++**After approval:** dispatch a prose cleanup pass (see Prose Cleanup Pass in SKILL.md) to humanize comments, docstrings, and error messages, and strip AI-obvious comments before marking the task complete.
 +
  **Code reviewer returns:** Strengths, Issues (Critical/Important/Minor), Assessment

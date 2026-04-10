@@ -265,6 +265,22 @@
         "type": "github"
       }
     },
+    "humanizer": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775020197,
+        "narHash": "sha256-3yO13MKUK/zF36Sq+CACMM401BhtmYz5cZmC5FX4VQw=",
+        "owner": "blader",
+        "repo": "humanizer",
+        "rev": "8b3a17889fbf12bedae20974a3c9f9de746ed754",
+        "type": "github"
+      },
+      "original": {
+        "owner": "blader",
+        "repo": "humanizer",
+        "type": "github"
+      }
+    },
     "nix-colors": {
       "inputs": {
         "base16-schemes": "base16-schemes",
@@ -402,6 +418,7 @@
       "inputs": {
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
+        "humanizer": "humanizer",
         "nix-colors": "nix-colors",
         "nixos-apple-silicon": "nixos-apple-silicon",
         "nixpkgs": "nixpkgs",

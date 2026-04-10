@@ -6,7 +6,7 @@ diff -ruN a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
  2. Follow each step exactly (plan has bite-sized steps)
  3. Run verifications as specified
 -4. Mark as completed
-+4. Comment cleanup — strip comments that restate what the code does. Strip AI-obvious comments. Keep comments that explain *why* something is done a non-obvious way.
++4. Comment cleanup — strip comments that restate what the code does. Strip AI-obvious comments (apply `humanizer` patterns — no "Ensures proper...", "Leverages...", "Facilitates..."). Humanize remaining comments, docstrings, and error messages. Keep comments that explain *why* something is done a non-obvious way.
 +5. Mark as completed
  
  ### Step 3: Complete Development
