@@ -281,6 +281,26 @@
         "type": "github"
       }
     },
+    "mcp-servers-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775739963,
+        "narHash": "sha256-N6bOV8i74WFCplw4B9jTeit6Pm/Gn7LsnmjgkgqZBmg=",
+        "owner": "natsukium",
+        "repo": "mcp-servers-nix",
+        "rev": "253f02d9d483423580af3572e4078f0012a12422",
+        "type": "github"
+      },
+      "original": {
+        "owner": "natsukium",
+        "repo": "mcp-servers-nix",
+        "type": "github"
+      }
+    },
     "nix-colors": {
       "inputs": {
         "base16-schemes": "base16-schemes",
@@ -419,6 +439,7 @@
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "humanizer": "humanizer",
+        "mcp-servers-nix": "mcp-servers-nix",
         "nix-colors": "nix-colors",
         "nixos-apple-silicon": "nixos-apple-silicon",
         "nixpkgs": "nixpkgs",

@@ -55,6 +55,11 @@
       url = "github:blader/humanizer";
       flake = false;
     };
+
+    mcp-servers-nix = {
+      url = "github:natsukium/mcp-servers-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:

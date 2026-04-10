@@ -5,6 +5,7 @@
     ./agents.nix
     ./skills.nix
     ./hooks.nix
+    ./mcp.nix
     ./permissions.nix
     ./plugins.nix
     ./statusline.nix
@@ -39,6 +40,14 @@
       - Use fast-forward (`git merge --ff-only`), `git cherry-pick`, or `git merge --squash`
       - If fast-forward is not possible, rebase the branch first, then fast-forward
       - When a repository has its own documented merge convention, follow that instead
+
+      # MCP: Serena
+
+      When Serena MCP tools are available, prefer them over text-based search for code navigation:
+      - Use `mcp__serena__find_symbol` over grep for finding definitions
+      - Use `mcp__serena__find_referencing_symbols` over grep for finding usages
+      - Use `mcp__serena__get_symbols_overview` to understand file/module structure
+      - Fall back to grep/glob when Serena is unavailable or for non-symbol searches (strings, config values, etc.)
     '';
 
     # Settings for ~/.claude/settings.json
@@ -64,13 +73,5 @@
         CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
       };
     };
-
-    # MCP servers
-    # mcpServers = {
-    #   filesystem = {
-    #     command = "npx";
-    #     args = [ "-y" "@anthropic/mcp-filesystem-server" "/home/zwolin" ];
-    #   };
-    # };
   };
 }
