@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 let
   claude-icon-ico = pkgs.fetchurl {
@@ -7,6 +7,26 @@ let
   };
   claude-icon = pkgs.runCommand "claude-icon.png" { } ''
     ${pkgs.imagemagick}/bin/convert "${claude-icon-ico}[0]" -resize 128x128 $out
+  '';
+  claude-formatter = pkgs.writeShellScriptBin "claude-formatter" ''
+    file_path="$1"
+    [ -z "$file_path" ] || [ ! -f "$file_path" ] && exit 0
+
+    format() {
+      local cmd="$1"; shift
+      local fallback="$1"; shift
+      if command -v "$cmd" >/dev/null 2>&1; then
+        "$cmd" "$@"
+      else
+        "$fallback" "$@"
+      fi
+    }
+
+    case "$file_path" in
+      *.nix) format alejandra ${lib.getExe pkgs.alejandra} -q "$file_path" ;;
+      *.go)  format gofmt ${pkgs.go}/bin/gofmt -w "$file_path" ;;
+      *.rs)  format rustfmt ${lib.getExe pkgs.rustfmt} "$file_path" ;;
+    esac 2>/dev/null || true
   '';
 in
 {
@@ -55,6 +75,25 @@ in
           }
         ];
       }
+      # Auto-format files after every edit
+      {
+        matcher = "Edit|Write";
+        hooks = [
+          {
+            type = "command";
+            command = ''
+              file_path=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty')
+              [ -n "$file_path" ] && [ -f "$file_path" ] && ${lib.getExe claude-formatter} "$file_path"
+              exit 0
+            '';
+          }
+        ];
+      }
     ];
   };
+
+  # Permission for the auto-formatter (co-located with hook)
+  programs.claude-code.settings.permissions.allow = [
+    "Bash(${lib.getExe claude-formatter} *)"
+  ];
 }
