@@ -9,7 +9,8 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 -5. **Present design** — in sections scaled to their complexity, get user approval after each section
 +4. **Propose 2-3 approaches** — explicit pros/cons per approach; auto-select if one clearly dominates
 +5. **Present design** — include pros/cons for choices between alternatives, get user approval after each section
- 6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
+-6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
++6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`; commit unless gitignored
 -7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
 +7. **Spec review loop** — dispatch `spec-document-reviewer` subagent from `spec-document-reviewer-prompt.md`; loop until 0 critical/medium issues; max 10 iterations then escalate to user
  8. **User reviews written spec** — ask user to review the spec file before proceeding
@@ -85,7 +86,8 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
  
 @@ -113,15 +133,13 @@
  - Use elements-of-style:writing-clearly-and-concisely skill if available
- - Commit the design document to git
+-- Commit the design document to git
++- If the path is not gitignored (check with `git check-ignore -q <path>`), commit the design document to git. If it is gitignored, skip the commit — the file is saved locally and usable. Never use `git add -f`.
  
 -**Spec Self-Review:**
 -After writing the spec document, look at it with fresh eyes:
@@ -106,10 +108,13 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
  
  **User Review Gate:**
  After the spec review loop passes, ask the user to review the written spec before proceeding:
-@@ -130,10 +148,57 @@
-
+@@ -128,12 +146,59 @@
+ 
+-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
++> "Spec written to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+ 
  Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
-
+ 
 -**Implementation:**
 -
 -- Invoke the writing-plans skill to create a detailed implementation plan
@@ -141,7 +146,7 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 +- Invoke the writing-plans skill with agent assignments to create a detailed implementation plan
 +- Then execute with the chosen strategy
 +- Do NOT invoke any other skill. writing-plans is the next step after brainstorming.
-
+ 
 +## Humanize All Non-Code Prose
 +
 +Apply the `humanizer` skill to all non-code text throughout brainstorming. This includes:
@@ -167,7 +172,7 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 +Write like a person talking to another person. Vary sentence rhythm. Have opinions. Be specific.
 +
  ## Key Principles
-
+ 
 diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brainstorming/spec-document-reviewer-prompt.md
 --- a/skills/brainstorming/spec-document-reviewer-prompt.md	2026-04-09 23:04:24.649990721 +0200
 +++ b/skills/brainstorming/spec-document-reviewer-prompt.md	2026-04-09 23:06:29.527466860 +0200
