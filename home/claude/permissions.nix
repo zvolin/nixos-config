@@ -147,6 +147,13 @@
 
       # AI
       "Bash(codex *)"
+
+      # Ferrex memory (MCP)
+      "mcp__ferrex__recall"
+      "mcp__ferrex__reflect"
+      "mcp__ferrex__stats"
+      "mcp__ferrex__store"
+      "mcp__ferrex__forget"
     ]
     ++ [
       # Web access

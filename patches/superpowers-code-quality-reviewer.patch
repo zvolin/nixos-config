@@ -4,7 +4,7 @@ diff -ruN a/skills/subagent-driven-development/code-quality-reviewer-prompt.md b
 @@ -23,4 +23,13 @@
  - Is the implementation following the file structure from the plan?
  - Did this implementation create new files that are already large, or significantly grow existing files? (Don't flag pre-existing file sizes — focus on what this change contributed.)
- 
+
 +**Pass criteria:**
 +- **Approve** (0 critical + 0 important issues): Implementation is ready.
 +- **Request changes** (any critical or important issue): Implementer must fix and re-submit.

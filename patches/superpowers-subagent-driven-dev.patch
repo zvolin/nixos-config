@@ -8,7 +8,7 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 +        "Comment cleanup pass" [shape=box];
          "Mark task complete in TodoWrite" [shape=box];
      }
- 
+
 @@ -71,12 +72,13 @@
      "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
      "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
@@ -27,9 +27,9 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
      "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
      "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
 @@ -117,6 +119,23 @@
- 
+
  **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
- 
+
 +## Review Loop Limits
 +
 +- **Max iterations:** 10 for any review loop (spec compliance or code quality). After 10 iterations with unresolved critical or important issues, escalate to the user.
@@ -48,5 +48,5 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 +This is a quick pass, not a full rewrite — if comments are already clean, skip it.
 +
  ## Prompt Templates
- 
+
  - `./implementer-prompt.md` - Dispatch implementer subagent

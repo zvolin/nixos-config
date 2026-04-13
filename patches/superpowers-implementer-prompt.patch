@@ -4,7 +4,7 @@ diff -ruN a/skills/subagent-driven-development/implementer-prompt.md b/skills/su
 @@ -54,6 +54,15 @@
      - In existing codebases, follow established patterns. Improve code you're touching
        the way a good developer would, but don't restructure things outside your task.
- 
+
 +    ## Document Decision Trade-offs
 +
 +    When you make a choice not specified in the plan (library, pattern, data structure, approach):
@@ -15,13 +15,13 @@ diff -ruN a/skills/subagent-driven-development/implementer-prompt.md b/skills/su
 +    Small decisions (variable naming, loop vs map, etc.) don't need documentation.
 +
      ## When You're in Over Your Head
- 
+
      It is always OK to stop and say "this is too hard for me." Bad work is worse than
 @@ -84,6 +93,7 @@
      - Is this my best work?
      - Are names clear and accurate (match what things do, not how they work)?
      - Is the code clean and maintainable?
 +    - Are comments, docstrings, and error messages written in plain language? (Apply `humanizer` skill patterns — no AI-isms, no filler, no significance inflation. Specifically avoid: leverages, delves, ensures, facilitates, robust, seamless, comprehensive, streamlined)
- 
+
      **Discipline:**
      - Did I avoid overbuilding (YAGNI)?

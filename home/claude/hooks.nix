@@ -57,6 +57,27 @@ in
       }
     ];
 
+    PreToolUse = [
+      {
+        matcher = "mcp__ferrex__store";
+        hooks = [
+          {
+            type = "command";
+            command = ''echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask", "permissionDecisionReason": "Storing to ferrex memory. This persists across sessions."}}' '';
+          }
+        ];
+      }
+      {
+        matcher = "mcp__ferrex__forget";
+        hooks = [
+          {
+            type = "command";
+            command = ''echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask", "permissionDecisionReason": "Deleting from ferrex memory. This is irreversible."}}' '';
+          }
+        ];
+      }
+    ];
+
     # Show bash commands together with their output each time bash command is ran
     PostToolUse = [
       {

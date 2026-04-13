@@ -8,15 +8,15 @@ diff -ruN a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
 -4. Mark as completed
 +4. Comment cleanup — strip comments that restate what the code does. Strip AI-obvious comments (apply `humanizer` patterns — no "Ensures proper...", "Leverages...", "Facilitates..."). Humanize remaining comments, docstrings, and error messages. Keep comments that explain *why* something is done a non-obvious way.
 +5. Mark as completed
- 
+
  ### Step 3: Complete Development
- 
+
 @@ -44,6 +45,8 @@
  - You don't understand an instruction
  - Verification fails repeatedly
- 
+
 +**Review loop limit:** If a task fails verification 3 times in a row with the same class of error, or 5 times total regardless of error class, STOP and escalate to the user. Do not retry the same approach — something about the plan or environment is wrong.
 +
  **Ask for clarification rather than guessing.**
- 
+
  ## When to Revisit Earlier Steps

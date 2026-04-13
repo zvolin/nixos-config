@@ -2,26 +2,26 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
 --- a/skills/writing-plans/SKILL.md	2026-04-10 02:24:13.342049802 +0200
 +++ b/skills/writing-plans/SKILL.md	2026-04-10 02:24:13.342093135 +0200
 @@ -7,7 +7,7 @@
- 
+
  ## Overview
- 
+
 -Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
 +Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. KISS.
- 
+
  Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
- 
+
 @@ -40,7 +40,6 @@
  - "Run it to make sure it fails" - step
  - "Implement the minimal code to make the test pass" - step
  - "Run the tests and make sure they pass" - step
 -- "Commit" - step
- 
+
  ## Plan Document Header
- 
+
 @@ -95,12 +94,6 @@
  Run: `pytest tests/path/test.py::test_name -v`
  Expected: PASS
- 
+
 -- [ ] **Step 5: Commit**
 -
 -```bash
@@ -29,12 +29,12 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
 -git commit -m "feat: add specific feature"
 -```
  ````
- 
+
  ## No Placeholders
 @@ -113,11 +106,30 @@
  - Steps that describe what to do without showing how (code blocks required for code steps)
  - References to types, functions, or methods not defined in any task
- 
+
 +## Document Pros and Cons
 +
 +When a plan picks between alternatives (library, architecture pattern, data structure, approach), include a brief pros/cons/why block:
@@ -61,6 +61,6 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
  - Exact commands with expected output
 -- DRY, YAGNI, TDD, frequent commits
 +- DRY, YAGNI, TDD, KISS
- 
+
  ## Self-Review
- 
+

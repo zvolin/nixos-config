@@ -86,6 +86,21 @@
     },
     "crane": {
       "locked": {
+        "lastModified": 1775236976,
+        "narHash": "sha256-gCgX+AXN7K1gAIEqcLcZHxmC+QoZcwn9m6Z9r2Az+N8=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "6c23998526351a53ce734f0ac84940da988ccef1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "crane_2": {
+      "locked": {
         "lastModified": 1766774972,
         "narHash": "sha256-8qxEFpj4dVmIuPn9j9z6NTbU+hrcGjBOvaxTzre5HmM=",
         "owner": "ipetkov",
@@ -96,6 +111,50 @@
       "original": {
         "owner": "ipetkov",
         "repo": "crane",
+        "type": "github"
+      }
+    },
+    "fenix": {
+      "inputs": {
+        "nixpkgs": [
+          "ferrex",
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src"
+      },
+      "locked": {
+        "lastModified": 1775201252,
+        "narHash": "sha256-CFXf8rcU+NekWtu5fkI8x7QF9uoeJyaiNo/bvKK/lyY=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "0b88bfd10f819d000d35d296debe283db89b623b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
+      }
+    },
+    "ferrex": {
+      "inputs": {
+        "crane": "crane",
+        "fenix": "fenix",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775672770,
+        "narHash": "sha256-fIfvHxOZklERHcx2PnI5uqhjXXi9hK2p4nfi1LkHCC4=",
+        "owner": "vaporif",
+        "repo": "ferrex",
+        "rev": "d07e3f66591b806222017c7e5fcd82d79f33f2fa",
+        "type": "github"
+      },
+      "original": {
+        "owner": "vaporif",
+        "repo": "ferrex",
         "type": "github"
       }
     },
@@ -436,6 +495,7 @@
     },
     "root": {
       "inputs": {
+        "ferrex": "ferrex",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "humanizer": "humanizer",
@@ -449,6 +509,23 @@
         "superpowers": "superpowers",
         "tiny-dfr": "tiny-dfr",
         "xremap": "xremap"
+      }
+    },
+    "rust-analyzer-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775174431,
+        "narHash": "sha256-jSw1C5MuyySiCpPgjdR+H0wPR3AgPRuylLunw+yd7A0=",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
+        "rev": "9767050b2db436f5a770c5f91a548c88fd91ec71",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rust-lang",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
+        "type": "github"
       }
     },
     "rust-overlay": {
@@ -651,7 +728,7 @@
     },
     "xremap": {
       "inputs": {
-        "crane": "crane",
+        "crane": "crane_2",
         "flake-parts": "flake-parts_4",
         "nixpkgs": [
           "nixpkgs"
