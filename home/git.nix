@@ -11,6 +11,7 @@
       "**/docs/plans/"
       "**/docs/insights/"
       "**/docs/superpowers/"
+      "**/.serena/"
       "**/.direnv"
       "**/CLAUDE.local.md"
       "**/HANDOFF.md"

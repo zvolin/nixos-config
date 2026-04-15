@@ -52,9 +52,9 @@
 
       # Gitignored Docs
 
-      docs/plans/, docs/insights/, and docs/superpowers/ are globally gitignored (configured in home/git.nix).
+      docs/plans/, docs/insights/, docs/superpowers/, and .serena/ are globally gitignored (configured in home/git.nix).
       Projects that want these tracked must explicitly whitelist them in their own .gitignore.
-      This prevents polluting repositories that don't use AI tooling with auto-generated documentation.
+      This prevents polluting repositories that don't use AI tooling with auto-generated documentation or per-project Serena state (memories, caches).
 
       - Both the Grep tool (ripgrep) and the Glob tool skip gitignored paths by default. To find files in these directories, use `find`, `ls`, or `rg --no-ignore-vcs`.
       - Check with `git check-ignore -q <path>` before committing. If ignored, skip the commit. Do not use `git add -f`.
