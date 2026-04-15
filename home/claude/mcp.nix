@@ -34,7 +34,7 @@ in
   programs.claude-code.mcpServers = {
     serena = {
       command = "${wrappedSerena}/bin/serena";
-      args = [ "start-mcp-server" "--context" "claude-code" "--project-from-cwd" ];
+      args = [ "start-mcp-server" "--context" "claude-code" "--project-from-cwd" "--open-web-dashboard" "false" ];
     };
 
     ferrex = {
