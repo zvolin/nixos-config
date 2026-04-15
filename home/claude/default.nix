@@ -16,7 +16,7 @@
     enable = true;
 
     # Global CLAUDE.md instructions
-    memory.text = ''
+    context = ''
       # Environment
 
       - NixOS on Apple Silicon (Asahi kernel, aarch64-linux)
