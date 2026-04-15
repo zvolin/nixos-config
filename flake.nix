@@ -2,7 +2,10 @@
   description = "Nixos config flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
+
+    # keep the same version as apple-silicon for smooth integration and binary cache
+    nixpkgs.follows = "nixos-apple-silicon/nixpkgs";
 
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -11,11 +14,6 @@
 
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nixos-apple-silicon = {
-      url = "github:nix-community/nixos-apple-silicon";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -67,7 +65,8 @@
     };
   };
 
-  outputs = inputs:
+  outputs =
+    inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
@@ -83,8 +82,10 @@
         };
       };
 
-      perSystem = { system, ... }: {
-        devShells.default = import ./shell.nix { inherit system inputs; };
-      };
+      perSystem =
+        { system, ... }:
+        {
+          devShells.default = import ./shell.nix { inherit system inputs; };
+        };
     };
 }
