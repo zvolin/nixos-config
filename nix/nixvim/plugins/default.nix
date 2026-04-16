@@ -22,7 +22,10 @@
   programs.nixvim.plugins = {
     luasnip.enable = true;
     rustaceanvim.enable = true;
-    render-markdown.enable = true;
+    render-markdown = {
+      enable = true;
+      settings.sign.enabled = false;
+    };
   };
 
   programs.nixvim.extraPlugins = with pkgs.vimPlugins; [

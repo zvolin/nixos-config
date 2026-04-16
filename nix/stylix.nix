@@ -1,9 +1,10 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 let
   inputImage = ../home/wallpapers/aurora-night-sky.jpg;
   brightness = "-9";
   contrast = "6";
+  c = config.lib.stylix.colors.withHashtag;
 in
 {
   stylix = {
@@ -97,5 +98,50 @@ in
     NavicIconsTypeParameter.link = "Type";
     NavicText.link = "Comment";
     NavicSeparator.link = "Comment";
+    # render-markdown: per-level heading colors
+    RenderMarkdownH1 = { fg = c.base0D; bold = true; };  # blue
+    RenderMarkdownH2 = { fg = c.base0B; bold = true; };  # green
+    RenderMarkdownH3 = { fg = c.base0C; bold = true; };  # teal
+    RenderMarkdownH4 = { fg = c.base0E; bold = true; };  # mauve
+    RenderMarkdownH5 = { fg = c.base0A; bold = true; };  # yellow
+    RenderMarkdownH6 = { fg = c.base08; bold = true; };  # red
+    # same colors for treesitter (cursor line / insert mode fallback)
+    "@markup.heading.1.markdown" = { fg = c.base0D; bold = true; };
+    "@markup.heading.2.markdown" = { fg = c.base0B; bold = true; };
+    "@markup.heading.3.markdown" = { fg = c.base0C; bold = true; };
+    "@markup.heading.4.markdown" = { fg = c.base0E; bold = true; };
+    "@markup.heading.5.markdown" = { fg = c.base0A; bold = true; };
+    "@markup.heading.6.markdown" = { fg = c.base08; bold = true; };
+    # render-markdown: code, bullets, tables
+    RenderMarkdownCode = { bg = c.base01; };       # mantle
+    RenderMarkdownBullet = { fg = c.base0C; };      # teal
+    # same for treesitter (cursor line / insert mode fallback)
+    "@markup.list.markdown" = { fg = c.base0C; };            # teal
+    "@markup.list.numbered.markdown" = { fg = c.base0C; };   # teal
+    RenderMarkdownTableHead = { fg = c.base0D; };   # blue
+    RenderMarkdownTableRow = { fg = c.base07; };    # lavender
   };
+
+  # heading Bg and inline code need darken(), so they're computed in Lua
+  programs.nixvim.extraConfigLua = ''
+    do
+      local function darken(hex, pct, base)
+        local function to_rgb(h)
+          h = h:gsub("#", "")
+          return tonumber(h:sub(1,2),16), tonumber(h:sub(3,4),16), tonumber(h:sub(5,6),16)
+        end
+        local br, bg, bb = to_rgb(base)
+        local fr, fg, fb = to_rgb(hex)
+        local f = math.floor
+        return string.format("#%02x%02x%02x",
+          f(br + (fr-br)*pct), f(bg + (fg-bg)*pct), f(bb + (fb-bb)*pct))
+      end
+      local base = "${c.base00}"
+      local headings = {"${c.base0D}","${c.base0B}","${c.base0C}","${c.base0E}","${c.base0A}","${c.base08}"}
+      for i, color in ipairs(headings) do
+        vim.api.nvim_set_hl(0, "RenderMarkdownH"..i.."Bg", { fg = color, bg = darken(color, 0.03, base) })
+      end
+      vim.api.nvim_set_hl(0, "RenderMarkdownCodeInline", { bg = darken("${c.base02}", 0.35, base) })
+    end
+  '';
 }
