@@ -17,11 +17,8 @@ in
           remap.super_r = "alt_r";
           remap.alt_r = "super_r";
 
-          # capslock => ctl | esc
-          remap.capslock = {
-            held = "ctrl_l";
-            alone = "esc";
-          };
+          # capslock => ctrl
+          remap.capslock = "ctrl_l";
 
           # disable physical ctrl keys to force caps lock usage
           # muhenkan is a Japanese IME key that does nothing on non-JP systems
