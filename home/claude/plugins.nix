@@ -1,32 +1,53 @@
 { config, inputs, lib, pkgs, ... }:
 
 let
-  # Apply patches to superpowers source
-  patchedSuperpowers = pkgs.applyPatches {
-    name = "superpowers-patched";
-    src = inputs.superpowers;
-    patches = [
-      ../../patches/superpowers-brainstorming.patch
-      ../../patches/superpowers-writing-plans.patch
-      ../../patches/superpowers-executing-plans.patch
-      ../../patches/superpowers-subagent-driven-dev.patch
-      ../../patches/superpowers-code-quality-reviewer.patch
-      ../../patches/superpowers-implementer-prompt.patch
-    ];
-  };
+  patches = [
+    ../../patches/superpowers-brainstorming.patch
+    ../../patches/superpowers-writing-plans.patch
+    ../../patches/superpowers-executing-plans.patch
+    ../../patches/superpowers-subagent-driven-dev.patch
+    ../../patches/superpowers-code-quality-reviewer.patch
+    ../../patches/superpowers-implementer-prompt.patch
+  ];
 
-  # Read version from plugin.json (matching vaporif), fall back to git short rev
-  # Version is read from unpatched input intentionally — matches vaporif's readPluginVersion pattern
   revFallback =
     if (inputs.superpowers ? shortRev) then inputs.superpowers.shortRev
     else if (inputs.superpowers ? dirtyShortRev) then inputs.superpowers.dirtyShortRev
     else "unknown";
+
+  # Turns over when upstream source or any patch changes — the
+  # plugin-cache buster embedded in `version` below.
+  cacheKey = builtins.substring 0 8 (
+    builtins.hashString "sha256" (
+      builtins.concatStringsSep ":" (map toString ([ inputs.superpowers ] ++ patches))
+    )
+  );
+
   version = let
     pluginJson = "${inputs.superpowers}/.claude-plugin/plugin.json";
     parsed = builtins.tryEval (builtins.fromJSON (builtins.readFile pluginJson));
-  in if builtins.pathExists pluginJson && parsed.success
-     then parsed.value.version or revFallback
-     else revFallback;
+    baseVersion =
+      if builtins.pathExists pluginJson && parsed.success
+      then parsed.value.version or revFallback
+      else revFallback;
+  # Claude Code caches extracted plugins at cache/<marketplace>/<plugin>/<version>/,
+  # so a new string forces a fresh extract.
+  in "${baseVersion}+${cacheKey}";
+
+  patchedSuperpowers = pkgs.applyPatches {
+    name = "superpowers-patched-${version}";
+    src = inputs.superpowers;
+    inherit patches;
+    nativeBuildInputs = [ pkgs.jq ];
+    # Rewrite plugin.json's version so the served tree agrees with
+    # marketplace.json on the cache key.
+    postPatch = ''
+      jq --arg v "${version}" '.version = $v' \
+        .claude-plugin/plugin.json > .claude-plugin/plugin.json.tmp
+      mv .claude-plugin/plugin.json.tmp .claude-plugin/plugin.json
+    '';
+  };
+
   commitSha = inputs.superpowers.rev or "unknown";
 
   homeDir = config.home.homeDirectory;
@@ -83,7 +104,6 @@ let
 in
 {
   home.file = {
-    # Symlink patched superpowers into the marketplace directory
     ".claude/plugins/marketplaces/${marketplaceName}/superpowers" = {
       source = patchedSuperpowers;
     };
