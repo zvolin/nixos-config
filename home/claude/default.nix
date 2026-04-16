@@ -82,23 +82,6 @@
 
     # Settings for ~/.claude/settings.json
     settings = {
-      # Plugins
-      enabledPlugins = {
-        "rust-analyzer-lsp@claude-plugins-official" = true;
-        "skill-codex@skill-codex" = true;
-      };
-
-      # Third-party plugin marketplaces
-      extraKnownMarketplaces = {
-        skill-codex = {
-          source = {
-            source = "github";
-            repo = "skills-directory/skill-codex";
-          };
-        };
-      };
-
-      # Experimental features
       env = {
         CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
       };
