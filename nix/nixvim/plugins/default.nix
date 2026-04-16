@@ -11,7 +11,6 @@
     ./neotree.nix
     ./nvim-colorizer.nix
     ./nvim-window-picker.nix
-    ./project.nix
     # ./telescope-manix.nix
     ./telescope.nix
     ./toggleterm.nix
