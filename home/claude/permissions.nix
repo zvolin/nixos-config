@@ -1,5 +1,11 @@
 { ... }:
 
+let
+  # synthetic plugin name from home-manager claude-code module
+  mcpPrefix = "mcp__plugin_claude-code-home-manager";
+  ferrex = tool: "${mcpPrefix}_ferrex__${tool}";
+  serena = tool: "${mcpPrefix}_serena__${tool}";
+in
 {
   programs.claude-code.settings.permissions = {
     allow = [
@@ -147,13 +153,36 @@
 
       # AI
       "Bash(codex *)"
-
-      # Ferrex memory (MCP)
-      "mcp__ferrex__recall"
-      "mcp__ferrex__reflect"
-      "mcp__ferrex__stats"
-      "mcp__ferrex__store"
-      "mcp__ferrex__forget"
+    ]
+    ++ (map ferrex [
+      # Read-only
+      "recall"
+      "reflect"
+      "stats"
+      "taxonomy"
+      "timeline"
+    ])
+    ++ (map serena [
+      # Read-only
+      "find_symbol"
+      "find_referencing_symbols"
+      "get_symbols_overview"
+      "find_file"
+      "list_dir"
+      "search_for_pattern"
+      "get_current_config"
+      "check_onboarding_performed"
+      "initial_instructions"
+      "list_memories"
+      "read_memory"
+      "activate_project"
+      "open_dashboard"
+      "onboarding"
+    ])
+    ++ [
+      # Skill auto-invocation
+      "Skill(recall)"
+      "Skill(reflect)"
     ]
     ++ [
       # Web access

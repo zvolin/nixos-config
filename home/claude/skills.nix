@@ -14,7 +14,7 @@
       argument-hint: Optional info to store
       ---
 
-      Store information in ferrex memory using `mcp__ferrex__store`.
+      Store information in ferrex memory using the `ferrex__store` MCP tool.
 
       **Auto-set namespace** from project directory name.
 
@@ -49,7 +49,7 @@
       argument-hint: query [type:semantic|episodic|procedural] [entity:name] [date:7d|30d|start..end]
       ---
 
-      Search ferrex memory using `mcp__ferrex__recall`.
+      Search ferrex memory using the `ferrex__recall` MCP tool.
 
       **Parse filters from arguments.** Remaining text becomes the semantic query:
       - `type:<type>` — filter by memory type (semantic, episodic, procedural)
@@ -67,7 +67,7 @@
       - `limit`: 10 (default)
       - `validate_ids`: list of returned memory IDs (keeps access timestamps fresh)
 
-      **Execute** `mcp__ferrex__recall` with built parameters.
+      **Execute** the `ferrex__recall` MCP tool with built parameters.
 
       **Display results.** For each result:
       - Content (truncated if long)
@@ -95,7 +95,7 @@
          - Gotchas discovered (file:line refs)
          - Next steps (exactly what to do first when resuming)
 
-      2. **Store in ferrex.** Call `mcp__ferrex__store` with:
+      2. **Store in ferrex.** Call the `ferrex__store` MCP tool with:
          - `content`: full structured summary
          - `memory_type`: "episodic"
          - `namespace`: project directory name
@@ -114,13 +114,13 @@
       argument-hint: id1 [id2 id3 ...]
       ---
 
-      Delete memories from ferrex using `mcp__ferrex__forget`.
+      Delete memories from ferrex using the `ferrex__forget` MCP tool.
 
       **Parse arguments** as space-separated memory IDs.
 
-      **Before deleting:** Show a summary of each memory (via `mcp__ferrex__recall` with the IDs if needed) and ask for confirmation.
+      **Before deleting:** Show a summary of each memory (via the `ferrex__recall` MCP tool with the IDs if needed) and ask for confirmation.
 
-      **Call** `mcp__ferrex__forget` with `ids: [<parsed IDs>]`.
+      **Call** the `ferrex__forget` MCP tool with `ids: [<parsed IDs>]`.
 
       **Confirm** deletion count and IDs removed.
     '';
@@ -131,11 +131,11 @@
       argument-hint: [namespace:name|all]
       ---
 
-      Run a memory health audit using `mcp__ferrex__reflect`.
+      Run a memory health audit using the `ferrex__reflect` MCP tool.
 
       **Auto-set namespace** from project directory name, unless `namespace:all` or `namespace:<name>` specified.
 
-      **Call** `mcp__ferrex__reflect` with:
+      **Call** the `ferrex__reflect` MCP tool with:
       - `namespace`: detected or specified
       - `include_contradictions`: true
       - `include_stale`: true
