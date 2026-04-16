@@ -17,7 +17,7 @@ in
       scheme = "Catppuccin Mocha (Darker)";
       author = "https://github.com/catppuccin/catppuccin";
       base00 = "#111120"; # base - modified
-      base01 = "#0e0e1d"; # mantle - modified
+      base01 = "#0c0c1b"; # mantle - darkened toward black
       base02 = "#313244"; # surface0
       base03 = "#45475a"; # surface1
       base04 = "#585b70"; # surface2
