@@ -18,7 +18,27 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
 
  ## Plan Document Header
 
-@@ -95,12 +94,6 @@
+@@ -49,7 +48,7 @@
+ ```markdown
+ # [Feature Name] Implementation Plan
+
+-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
++> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or Agent teams to implement this plan task-by-task, per the Execution Strategy below. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+ **Goal:** [One sentence describing what this builds]
+
+@@ -57,6 +56,10 @@
+
+ **Tech Stack:** [Key technologies/libraries]
+
++## Execution Strategy
++
++[Copy verbatim from the spec's `## Execution Strategy` section. Must name exactly one of: **Parallel subagents**, **Agent teams**. Include the one-paragraph reason. Do NOT add a Sequential option — it does not exist. This is authoritative — subagent-driven-development reads from here. Do NOT ask the user to change it.]
++
+ ---
+ ```
+
+@@ -95,12 +98,6 @@
  Run: `pytest tests/path/test.py::test_name -v`
  Expected: PASS
 
@@ -31,7 +51,7 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
  ````
 
  ## No Placeholders
-@@ -113,11 +106,30 @@
+@@ -113,11 +110,32 @@
  - Steps that describe what to do without showing how (code blocks required for code steps)
  - References to types, functions, or methods not defined in any task
 
@@ -61,6 +81,36 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
  - Exact commands with expected output
 -- DRY, YAGNI, TDD, frequent commits
 +- DRY, YAGNI, TDD, KISS
++- Reuse existing utilities and dependencies before introducing new ones
++- Follow the existing conventions and style used in the project, unless there's a clear reason not to
 
  ## Self-Review
 
+@@ -133,20 +151,16 @@
+
+ ## Execution Handoff
+
+-After saving the plan, offer execution choice:
+-
+-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
+-
+-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
++The plan's `## Execution Strategy` section is authoritative. Do NOT re-ask the user. After saving the plan, announce:
+
+-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
++> "Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Strategy from spec: **<strategy>**. Proceeding with <sub-skill>."
+
+-**Which approach?"**
++Then transition directly based on the strategy:
+
+-**If Subagent-Driven chosen:**
++**Parallel subagents:**
+ - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
+ - Fresh subagent per task + two-stage review
+
+-**If Inline Execution chosen:**
+-- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
+-- Batch execution with checkpoints for review
++**Agent teams:**
++- Spawn an Agent team with the appropriate teammates
++- The team-lead enforces two-stage review gates: spec compliance review first, then code quality review after each task
