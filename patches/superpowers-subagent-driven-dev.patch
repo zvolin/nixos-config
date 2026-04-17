@@ -1,6 +1,6 @@
---- a/skills/subagent-driven-development/SKILL.md	2026-04-16 18:44:33.644732678 +0200
-+++ b/skills/subagent-driven-development/SKILL.md	2026-04-16 18:45:08.656880818 +0200
-@@ -55,15 +55,18 @@
+--- a/skills/subagent-driven-development/SKILL.md	2026-04-18 01:03:50.465227671 +0200
++++ b/skills/subagent-driven-development/SKILL.md	2026-04-18 01:13:17.588774264 +0200
+@@ -55,15 +55,19 @@
          "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
          "Code quality reviewer subagent approves?" [shape=diamond];
          "Implementer subagent fixes quality issues" [shape=box];
@@ -12,6 +12,7 @@
 +    "Set up worktree (superpowers:using-git-worktrees)" [shape=box];
      "More tasks remain?" [shape=diamond];
      "Dispatch final code reviewer subagent for entire implementation" [shape=box];
++    "Show diff command for user terminal review" [shape=box];
      "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
 -    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -20,7 +21,7 @@
      "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
      "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
      "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-@@ -71,12 +74,13 @@
+@@ -71,19 +75,27 @@
      "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
      "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
      "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
@@ -37,7 +38,9 @@
      "Mark task complete in TodoWrite" -> "More tasks remain?";
      "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
      "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-@@ -84,6 +88,12 @@
+-    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
++    "Dispatch final code reviewer subagent for entire implementation" -> "Show diff command for user terminal review";
++    "Show diff command for user terminal review" -> "Use superpowers:finishing-a-development-branch";
  }
  ```
 
@@ -50,7 +53,7 @@
  ## Model Selection
 
  Use the least powerful model that can handle each role to conserve cost and increase speed.
-@@ -117,6 +127,23 @@
+@@ -117,6 +129,37 @@
 
  **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
@@ -71,6 +74,34 @@
 +
 +This is a quick pass, not a full rewrite — if comments are already clean, skip it.
 +
++## Pre-Merge User Review
++
++After the final code reviewer approves and before invoking `finishing-a-development-branch`, give the user a ready-to-run diff command so they can review all changes from their own terminal:
++
++```
++To review the full diff before we proceed:
++
++  git diff main...<worktree-branch>
++```
++
++Replace `<worktree-branch>` with the actual branch name. Three-dot (`main...<branch>`) shows only the changes introduced on the branch, even if main has advanced. Use branch-based diff, not path-based (`git -C <worktree-path> diff`).
++
++Wait for the user to confirm before continuing to the finishing skill. If the user requests changes, address them and re-present the diff command.
++
  ## Prompt Templates
 
  - `./implementer-prompt.md` - Dispatch implementer subagent
+@@ -196,6 +239,13 @@
+ [Dispatch final code-reviewer]
+ Final reviewer: All requirements met, ready to merge
+
++You: To review the full diff before we proceed:
++
++  git diff main...feat/hook-install
++
++[User reviews, confirms]
++[Invoke finishing-a-development-branch]
++
+ Done!
+ ```
+
