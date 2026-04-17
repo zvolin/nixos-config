@@ -13,7 +13,9 @@ let
   jq = lib.getExe pkgs.jq;
 
   # Runs inside the floating terminal — bridges assuan protocol over FIFOs
+  # Waits for a "ready" signal before starting so the window is already resized
   pinentry-term = pkgs.writeShellScript "pinentry-term" ''
+    while [ ! -f "$3" ]; do sleep 0.02; done
     exec ${lib.getExe pkgs.pinentry-curses} < "$1" > "$2"
   '';
 
@@ -41,7 +43,7 @@ let
       # Spawn floating terminal with pinentry-curses
       hyprctl dispatch exec "[float; pin]" \
         "${terminal} --class ${wclass} --title GPG -o window_margin_width=3 \
-        ${pinentry-term} $tmpdir/in $tmpdir/out" > /dev/null
+        ${pinentry-term} $tmpdir/in $tmpdir/out $tmpdir/ready" > /dev/null
 
       # Poll until the window exists (hyprland v0.54: size/move broken in inline rules)
       while ! hyprctl clients -j | ${jq} -e '.[] | select(.class == "${wclass}")' > /dev/null 2>&1; do
@@ -58,8 +60,9 @@ let
         "$(( bar_h + ${gaps_out} + ${inset} ))",class:${wclass} > /dev/null
       hyprctl dispatch focuswindow class:${wclass} > /dev/null
 
-      # Let kitty recalculate its character grid after resize
+      # Let kitty recalculate its character grid after resize, then signal pinentry to start
       sleep 0.1
+      touch "$tmpdir/ready"
 
       # Bridge assuan protocol: rewrite ttyname so pinentry-curses uses
       # kitty's PTY (/dev/tty) instead of the caller's terminal
