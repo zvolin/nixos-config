@@ -183,6 +183,7 @@ in
       # Skill auto-invocation
       "Skill(recall)"
       "Skill(reflect)"
+      "Skill(humanizer)"
     ]
     ++ [
       # Web access
