@@ -153,5 +153,190 @@
 
       **After showing results:** Offer to batch-forget stale entries or help resolve contradictions.
     '';
+
+    cleanup = ''
+      ---
+      description: Clean up code in current branch - simplify, remove AI artifacts, challenge decisions
+      ---
+
+      Review and clean up all added/changed code in the current git branch compared to main.
+
+      **Steps:**
+
+      1. Get the diff: `git diff main...HEAD` to see all changes
+      2. Read surrounding code in the same files/modules to understand existing patterns
+      3. For each changed file, analyze the code for:
+
+      **Remove:**
+      - Unnecessary comments (obvious ones, TODOs that are done, redundant explanations)
+      - AI-generated artifacts ("Here's the implementation", "This function does X", excessive docstrings)
+      - Over-engineered abstractions that add complexity without value
+      - Unused imports, variables, or dead code
+      - Redundant error handling or validation
+
+      **Simplify:**
+      - Extract overly nested logic
+      - Combine duplicate code paths
+      - Reduce function parameters where possible
+      - Remove unnecessary intermediate variables
+
+      **Make Idiomatic:**
+      - Replace verbose patterns with language-specific idioms
+      - Use standard library functions where applicable
+      - Follow the conventions of the existing codebase
+      - Match naming style, error handling patterns, and structure of surrounding code
+
+      **Check Consistency:**
+      - Compare with similar code elsewhere in the repo
+      - Ensure new code matches existing patterns for the same operations
+      - Flag any deviations from established conventions
+
+      **Security Review:**
+      - Input validation and sanitization
+      - Injection vulnerabilities (SQL, command, path traversal)
+      - Authentication/authorization gaps
+      - Sensitive data exposure
+      - Race conditions or unsafe concurrency
+
+      **Performance:**
+      - Obvious inefficiencies (N+1 queries, unnecessary loops, repeated computations)
+      - Unnecessary allocations or copies
+
+      **Error Handling:**
+      - Are errors informative and actionable?
+      - Proper error propagation (not swallowing errors silently)
+
+      **Naming:**
+      - Are names clear and descriptive?
+      - Consistent with domain terminology?
+
+      **Dependencies:**
+      - Any unnecessary new dependencies introduced?
+      - Could use existing utilities instead?
+
+      **Challenge:**
+      - Is this abstraction necessary or premature?
+      - Could this be done more simply?
+      - Are there edge cases not handled?
+      - Does this duplicate existing functionality?
+
+      4. Present a brief summary of potential improvements grouped by category
+      5. Let the user decide which changes to apply — do NOT make edits automatically
+    '';
+
+    commit = ''
+      ---
+      description: Generate commit message from staged changes
+      ---
+
+      Generate a commit message for staged changes.
+
+      **Steps:**
+
+      1. Run `git diff --cached` to see staged changes
+      2. Run `git log --oneline -10` to understand commit style in this repo
+
+      **Generate commit message:**
+      - Single line only: `type(scope): description`
+      - Types: feat, fix, refactor, docs, test, chore, perf
+      - Imperative mood ("add feature" not "added feature")
+      - No period at end
+      - No body, no blank line after header, no trailers
+      - Do NOT add Co-Authored-By — this overrides the default behavior
+      - Use `git commit -m "type(scope): description"` — no HEREDOC
+
+      **Present the message** and ask the user to confirm or edit before committing.
+
+      If confirmed, run `git commit -m "<message>"`.
+    '';
+
+    pr = ''
+      ---
+      description: Generate PR title and description, create via GitHub MCP
+      ---
+
+      Generate a pull request title and description.
+
+      **Steps:**
+
+      1. Run `git log main..HEAD --oneline` to see all commits in this branch
+      2. Run `git diff main...HEAD --stat` to see files changed
+      3. Run `git diff main...HEAD` to understand the actual changes
+      4. Check for PR template in `.github/PULL_REQUEST_TEMPLATE.md`
+
+      **Generate PR content:**
+
+      **Title:** `type(scope): description` (conventional commit format)
+
+      **Description:**
+      ```
+      ## Summary
+      Brief explanation of what this PR does and why.
+
+      ## Changes
+      - Bullet points of key changes
+      - Group related changes together
+
+      ## Notes
+      Any additional context, breaking changes, or follow-up tasks.
+      ```
+
+      **Style rules:**
+      - Be specific about what changed and why
+      - Mention any breaking changes prominently
+      - Link related issues if mentioned in commits
+      - Keep it scannable
+      - If repo has a PR template, follow that structure instead
+
+      **Present the title and description** for the user to review and edit.
+
+      **After user confirms**, create the PR using the GitHub MCP `create_pull_request` tool with:
+      - owner/repo from `git remote get-url origin`
+      - head: current branch
+      - base: main (or master)
+      - title and body from above
+
+      Push the branch first if needed (`git push -u origin HEAD`).
+
+      Return the PR URL when done.
+    '';
+
+    docs = ''
+      ---
+      description: Update project documentation after code changes
+      ---
+
+      Review recent changes and update all relevant documentation.
+
+      **Steps:**
+
+      1. Get the diff: `git diff main...HEAD` to see all changes
+      2. For each category below, check if updates are needed:
+
+      **CLAUDE.md / CLAUDE.local.md** (project root or /persist/etc/nixos):
+      - Architecture section: new files, changed structure
+      - Commands section: new commands, changed workflows
+      - Key implementation details: new patterns, dependencies
+
+      **Serena Memory** (via Serena MCP `write_memory` / `edit_memory` tools):
+      - Codebase structure changes
+      - New modules or key abstractions
+      - Patterns that future sessions should know about
+
+      **Auto Memory** (`~/.claude/projects/<project>/memory/MEMORY.md`):
+      - Common pitfalls discovered
+      - Patterns that worked or failed
+      - Project-specific conventions
+
+      **Ferrex** (via `/remember`):
+      - Key decisions made and rationale (as semantic triples)
+      - Error resolutions worth remembering (as episodic)
+      - Architecture choices (as semantic triples)
+      - Workflow knowledge (as procedural)
+
+      3. Present a summary of what needs updating
+      4. Apply updates after user approval
+      5. Skip categories where nothing changed
+    '';
   };
 }

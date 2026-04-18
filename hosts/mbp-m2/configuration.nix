@@ -26,6 +26,7 @@
     ../../overlays
 
     ./xremap.nix
+    ./searxng.nix
 
     # user of this host
     ../../home/users/zvolin

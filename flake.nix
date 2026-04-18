@@ -63,6 +63,16 @@
       url = "github:natsukium/mcp-servers-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    mcp-nixos = {
+      url = "github:utensils/mcp-nixos";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    mcp-searxng = {
+      url = "github:ihor-sokoliuk/mcp-searxng/v1.0.3";
+      flake = false;
+    };
   };
 
   outputs =

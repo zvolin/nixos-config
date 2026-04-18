@@ -5,6 +5,10 @@ let
   mcpPrefix = "mcp__plugin_claude-code-home-manager";
   ferrex = tool: "${mcpPrefix}_ferrex__${tool}";
   serena = tool: "${mcpPrefix}_serena__${tool}";
+  context7 = tool: "${mcpPrefix}_context7__${tool}";
+  nixos = tool: "${mcpPrefix}_nixos__${tool}";
+  github = tool: "${mcpPrefix}_github__${tool}";
+  searxng = tool: "${mcpPrefix}_searxng__${tool}";
 in
 {
   programs.claude-code.settings.permissions = {
@@ -178,6 +182,92 @@ in
       "activate_project"
       "open_dashboard"
       "onboarding"
+    ])
+    ++ (map context7 [
+      # Read-only — library documentation lookup
+      "resolve-library-id"
+      "get-library-docs"
+    ])
+    ++ (map nixos [
+      # Read-only — NixOS/HM/darwin option search
+      "nix"
+      "nix_versions"
+    ])
+    ++ (map searxng [
+      # Read-only — web search and content extraction
+      "searxng_web_search"
+      "web_url_read"
+    ])
+    ++ (map github [
+      # Read-only — context
+      "get_me"
+      "get_teams"
+      "get_team_members"
+      # Read-only — repos
+      "get_file_contents"
+      "list_commits"
+      "get_commit"
+      "list_branches"
+      "list_tags"
+      "get_tag"
+      "list_releases"
+      "get_latest_release"
+      "get_release_by_tag"
+      "list_starred_repositories"
+      # Read-only — git
+      "get_repository_tree"
+      # Read-only — issues
+      "issue_read"
+      "list_issues"
+      "list_issue_types"
+      # Read-only — pull requests
+      "pull_request_read"
+      "list_pull_requests"
+      # Read-only — search
+      "search_repositories"
+      "search_code"
+      "search_issues"
+      "search_pull_requests"
+      "search_users"
+      "search_orgs"
+      # Read-only — code security
+      "get_code_scanning_alert"
+      "list_code_scanning_alerts"
+      # Read-only — secret protection
+      "get_secret_scanning_alert"
+      "list_secret_scanning_alerts"
+      # Read-only — dependabot
+      "get_dependabot_alert"
+      "list_dependabot_alerts"
+      # Read-only — notifications
+      "list_notifications"
+      "get_notification_details"
+      # Read-only — discussions
+      "list_discussions"
+      "get_discussion"
+      "get_discussion_comments"
+      "list_discussion_categories"
+      # Read-only — actions
+      "actions_list"
+      "actions_get"
+      "get_job_logs"
+      # Read-only — security advisories
+      "list_global_security_advisories"
+      "get_global_security_advisory"
+      "list_repository_security_advisories"
+      "list_org_repository_security_advisories"
+      # Read-only — gists
+      "list_gists"
+      "get_gist"
+      # Read-only — projects
+      "projects_list"
+      "projects_get"
+      # Read-only — labels
+      "get_label"
+      "list_label"
+      # Read-only — dynamic
+      "list_available_toolsets"
+      "get_toolset_tools"
     ])
     ++ [
       # Nix store is read-only; allow reading plugin prompts without prompting
