@@ -271,7 +271,7 @@ in
     ])
     ++ [
       # Nix store is read-only; allow reading plugin prompts without prompting
-      "Read(/nix/**)"
+      "Read(//nix/**)"
     ]
     ++ [
       # Skill auto-invocation
