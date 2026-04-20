@@ -16,7 +16,7 @@
 
       Store information in ferrex memory using the `ferrex__store` MCP tool.
 
-      **Auto-set namespace** from project directory name.
+      **Auto-set namespace** from the git repository name (basename of the repo root, not the worktree). If not in a git repo, use the basename of the working directory.
 
       **If arguments provided**, detect memory type from content:
 
@@ -33,7 +33,7 @@
          - Store as `content` with `memory_type: "episodic"`
 
       **Always set:**
-      - `namespace`: project directory name
+      - `namespace`: git repository name (basename of the repo root, not the worktree); basename of the working directory if not in a git repo
       - `entities`: at minimum the project name. Add relevant concept names (tools, modules, patterns mentioned).
       - `context`: branch name, relevant file paths
       - `confidence`: 1.0 unless the user expresses uncertainty
@@ -56,11 +56,11 @@
       - `entity:<name>` — filter by linked entity
       - `date:<range>` — time range: `7d`, `30d`, or `<ISO-8601>..<ISO-8601>`
 
-      **Auto-set namespace** from the current project directory name (basename of git root or pwd).
+      **Auto-set namespace** from the git repository name (basename of the repo root, not the worktree). If not in a git repo, use the basename of the working directory.
 
       **Build recall parameters:**
       - `query`: the semantic search text (or "recent context" if no query)
-      - `namespace`: auto-detected project name
+      - `namespace`: git repository name (basename of the repo root, not the worktree); basename of the working directory if not in a git repo
       - `types`: from type filter, if provided
       - `entities`: from entity filter, if provided
       - `time_range`: `{start, end}` in ISO-8601, from date filter
@@ -98,7 +98,7 @@
       2. **Store in ferrex.** Call the `ferrex__store` MCP tool with:
          - `content`: full structured summary
          - `memory_type`: "episodic"
-         - `namespace`: project directory name
+         - `namespace`: git repository name (basename of the repo root, not the worktree); basename of the working directory if not in a git repo
          - `entities`: project name, "checkpoint", branch name, key topics
          - `context`: affected file paths, branch name
 
@@ -133,10 +133,10 @@
 
       Run a memory health audit using the `ferrex__reflect` MCP tool.
 
-      **Auto-set namespace** from project directory name, unless `namespace:all` or `namespace:<name>` specified.
+      **Auto-set namespace** from the git repository name (basename of the repo root, not the worktree). If not in a git repo, use the basename of the working directory. Override with `namespace:all` or `namespace:<name>` if specified.
 
       **Call** the `ferrex__reflect` MCP tool with:
-      - `namespace`: detected or specified
+      - `namespace`: as determined above
       - `include_contradictions`: true
       - `include_stale`: true
       - `limit`: 20
