@@ -57,32 +57,16 @@ in
       }
     ];
 
-    # Show bash commands together with their output each time bash command is ran
+    # Auto-format files after every edit
     PostToolUse = [
-      {
-        matcher = "Bash";
-        hooks = [
-          {
-            type = "command";
-            command = ''
-              cmd=$(echo "$TOOL_INPUT" | jq -r '.command // empty')
-              output=$(echo "$TOOL_RESPONSE" | jq -r '.stdout // .output // empty')
-              if [ -n "$cmd" ]; then
-                formatted=$(printf '```bash\n$ %s\n%s\n```' "$cmd" "$output")
-                jq -n --arg msg "$formatted" '{"systemMessage": $msg}'
-              fi
-            '';
-          }
-        ];
-      }
-      # Auto-format files after every edit
       {
         matcher = "Edit|Write";
         hooks = [
           {
             type = "command";
             command = ''
-              file_path=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty')
+              input=$(cat)
+              file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty')
               [ -n "$file_path" ] && [ -f "$file_path" ] && ${lib.getExe claude-formatter} "$file_path"
               exit 0
             '';
