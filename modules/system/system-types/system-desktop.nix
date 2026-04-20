@@ -12,6 +12,5 @@
     services.xserver.enable = true;
 
     services.dbus.packages = [ pkgs.mako ];
-    programs.sway.enable = true;
   };
 }

@@ -1,7 +1,7 @@
-{ ... }:
+{ lib, ... }:
 
 {
-  flake.modules.nixos.impermanence = { lib, ... }: {
+  flake.modules.nixos.impermanence = {
     boot.initrd.postDeviceCommands = lib.mkAfter ''
       mkdir /mnt
       mount -t btrfs /dev/mapper/nixos /mnt

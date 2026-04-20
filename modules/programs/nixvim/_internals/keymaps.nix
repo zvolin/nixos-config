@@ -20,7 +20,6 @@ in
       in
       [
         (group "<leader>b" "+buffers")
-        (group "<leader>b" "+buffers")
         (group "<leader>f" "+find")
         (group "<leader>g" "+git")
         (group "<leader>gf" "+find")
@@ -34,7 +33,6 @@ in
       # General
       (noremap "ti" "hk" "Exit insert mode" "<cmd>:stopinsert<cr>")
       # Side panels
-      (noremap "" "<leader>e" "Toggle neotree" "<cmd>Neotree toggle=true<cr>")
       (noremap "" "<leader>e" "Toggle neotree" "<cmd>Neotree toggle=true<cr>")
       (noremap "" "<leader>u" "Toggle undotree" "<cmd>UndotreeToggle <bar> lua reset_undotree_size()<cr>")
       # Buffers
@@ -84,6 +82,7 @@ in
       (noremap "" "<leader>gfb" "Find branch" "<cmd>Telescope git_branches<cr>")
       (noremap "" "<leader>gfs" "Apply stash" "<cmd>Telescope git_stash<cr>")
       # Lsp
+      (noremap "" "<leader>lR" "Rename symbol" "<cmd>lua vim.lsp.buf.rename()<cr>")
       (noremap "" "<leader>la" "Code actions" "<cmd>lua vim.lsp.buf.code_action()<cr>")
       (noremap "" "<leader>lr" "References" "<cmd>Telescope lsp_references<cr>")
       (noremap "" "<leader>ls" "Buffer symbols" "<cmd>Telescope lsp_document_symbols<cr>")

@@ -14,14 +14,11 @@
       htop
       jq
       ncdu
-      neovim
       openssh
-      plymouth
       python3
       ripgrep
       sd
       tmux
-      vim
       wget
       (pkgs.writeShellScriptBin "reboot-macos" ''
         sudo ${lib.getExe pkgs.asahi-bless} --set-boot-macos --yes

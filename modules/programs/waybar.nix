@@ -175,9 +175,6 @@
             font-family: FiraCode Nerd Font;
           }
 
-          tooltip label {
-          }
-
           window#waybar {
             padding-top: 1px;
             padding-bottom: 1px;

@@ -93,10 +93,6 @@
     extraConfigLua = ''
       require("nvim-navic").setup({
         highlight = true,
-        -- handled by lsp-zero
-        -- lsp = {
-        --   auto_attach = true,
-        -- }
       })
     '';
   };

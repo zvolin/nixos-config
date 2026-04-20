@@ -53,7 +53,7 @@
 
         # Gitignored Docs
 
-        docs/plans/, docs/insights/, docs/superpowers/, and .serena/ are globally gitignored (configured in home/git.nix).
+        docs/plans/, docs/insights/, docs/superpowers/, and .serena/ are globally gitignored (configured in modules/programs/git.nix).
         Projects that want these tracked must explicitly whitelist them in their own .gitignore.
         This prevents polluting repositories that don't use AI tooling with auto-generated documentation or per-project Serena state (memories, caches).
 

@@ -9,7 +9,6 @@
     ./lsp.nix
     ./lualine.nix
     ./neotree.nix
-    ./nvim-colorizer.nix
     ./nvim-window-picker.nix
     # ./telescope-manix.nix
     ./telescope.nix

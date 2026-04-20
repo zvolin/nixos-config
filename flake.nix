@@ -2,9 +2,8 @@
   description = "Nixos config flake";
 
   inputs = {
-    nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
-
     # keep the same version as apple-silicon for smooth integration and binary cache
+    nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
     nixpkgs.follows = "nixos-apple-silicon/nixpkgs";
 
     flake-parts = {
@@ -23,8 +22,6 @@
       url = "github:danth/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    nix-colors.url = "github:Misterio77/nix-colors";
 
     nixvim = {
       url = "github:nix-community/nixvim";
@@ -77,6 +74,5 @@
     };
   };
 
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
+  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 }

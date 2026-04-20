@@ -1,9 +1,9 @@
 { ... }:
 
 {
-  flake.modules.homeManager.audio = { pkgs, lib, ... }:
+  flake.modules.homeManager.audio = { pkgs, lib, config, ... }:
     let
-      terminal = lib.getExe pkgs.kitty;
+      terminal = lib.getExe config.terminal;
       wiremix = lib.getExe pkgs.wiremix;
     in
     {

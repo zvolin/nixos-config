@@ -2,6 +2,6 @@
 
 {
   flake.modules.nixos.security = {
-    security.pam.services.swaylock = { };
+    security.pam.services.hyprlock = { };
   };
 }

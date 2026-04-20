@@ -221,8 +221,6 @@
               ", XF86MonBrightnessUp,   exec, uwsm app -- ${brightnessctl} set 1%+"
             ];
 
-            env = [ ];
-
             bezier = [
               "custom, 0.36, 0.6, 0.94, 0.37"
               "ease_in_expo, 0.7, 0, 0.84, 0"
@@ -230,7 +228,6 @@
             ];
 
             animation = [
-              # "windows, 1, 15, custom, popin"
               "specialWorkspace, 1, 5, custom, slidefadevert -50%"
             ];
 

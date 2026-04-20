@@ -5,9 +5,6 @@
     home-manager = {
       useGlobalPkgs = true;
       extraSpecialArgs = { inherit inputs; };
-      sharedModules = [
-        inputs.nix-colors.homeManagerModules.default
-      ];
     };
   };
 }
