@@ -2,9 +2,16 @@
   description = "Nixos config flake";
 
   inputs = {
-    # keep the same version as apple-silicon for smooth integration and binary cache
-    nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
-    nixpkgs.follows = "nixos-apple-silicon/nixpkgs";
+    # # keep the same version as apple-silicon for smooth integration and binary cache
+    # nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
+    # nixpkgs.follows = "nixos-apple-silicon/nixpkgs";
+
+    # use latest nixpkgs; asahi kernel will rebuild but everything else is fresh
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixos-apple-silicon = {
+      url = "github:nix-community/nixos-apple-silicon";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -63,10 +70,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    mcp-nixos = {
-      url = "github:utensils/mcp-nixos";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # TEMPORARY: no follows — our nixpkgs has broken lupa on aarch64,
+    # mcp-nixos's pinned nixpkgs builds fine. Remove when upstream fixes lupa.
+    mcp-nixos.url = "github:utensils/mcp-nixos";
 
     mcp-searxng = {
       url = "github:ihor-sokoliuk/mcp-searxng/v1.0.3";
@@ -74,5 +80,5 @@
     };
   };
 
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
+  outputs = inputs: inputs.flake-parts.lib.mkFlake {inherit inputs;} (inputs.import-tree ./modules);
 }

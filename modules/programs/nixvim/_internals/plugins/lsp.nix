@@ -1,14 +1,12 @@
-{ pkgs, ... }:
-
-{
+{pkgs, ...}: {
   environment.systemPackages = with pkgs; [
     gopls # go
     nil # nix
     nixd # nix
     nixfmt
     pyright # python
-    nodePackages.bash-language-server
-    nodePackages.typescript-language-server
+    bash-language-server
+    typescript-language-server
   ];
 
   programs.nixvim = {
