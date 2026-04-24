@@ -4,7 +4,8 @@
     nil # nix
     nixd # nix
     nixfmt
-    pyright # python
+    basedpyright # python
+    ruff # python formatting + linting
     bash-language-server
     typescript-language-server
   ];
@@ -75,10 +76,16 @@
         },
       })
 
-      vim.lsp.config('pyright', {
-        cmd = { 'pyright-langserver', '--stdio' },
+      vim.lsp.config('basedpyright', {
+        cmd = { 'basedpyright-langserver', '--stdio' },
         filetypes = { 'python' },
         root_markers = { 'pyproject.toml', 'setup.py', 'requirements.txt', '.git' },
+      })
+
+      vim.lsp.config('ruff', {
+        cmd = { 'ruff', 'server' },
+        filetypes = { 'python' },
+        root_markers = { 'pyproject.toml', 'ruff.toml', '.ruff.toml', '.git' },
       })
 
       vim.lsp.config('ts_ls', {
@@ -94,7 +101,8 @@
         'gopls',
         'nixd',
         'nil_ls',
-        'pyright',
+        'basedpyright',
+        'ruff',
         'ts_ls',
       })
 
@@ -103,6 +111,11 @@
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           local bufnr = args.buf
+
+          -- Disable ruff hover so basedpyright handles it exclusively
+          if client and client.name == 'ruff' then
+            client.server_capabilities.hoverProvider = false
+          end
 
           -- Standard vim keymaps (buffer-local, only active with LSP)
           local opts = { buffer = bufnr }
