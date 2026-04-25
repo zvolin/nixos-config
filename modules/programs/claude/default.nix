@@ -1,6 +1,4 @@
-{ ... }:
-
-{
+{...}: {
   flake.modules.homeManager.claude = {
     imports = [
       ./_internals/agents.nix
@@ -46,7 +44,8 @@
 
         Prefer MCP tools over their CLI/built-in equivalents:
         - Serena (`find_symbol`, `find_referencing_symbols`, `get_symbols_overview`) over grep for code navigation. Fall back to grep/glob for non-symbol searches.
-        - SearXNG (`searxng_web_search`, `web_url_read`) over WebSearch/WebFetch for web lookups.
+        - SearXNG `web_url_read` over WebFetch for reading specific URLs.
+        - Built-in WebSearch for general web queries (SearXNG only has wiki/reference engines — use `searxng_web_search` when targeting those specifically).
         - GitHub MCP over `gh` CLI for searching code, reading files from other repos, PRs, and issues.
         - mcp-nixos (`nix` tool) over `nixos-option` or `man` for NixOS, Home Manager, nix-darwin, and nixvim options.
         - context7 (`resolve-library-id`, then `get-library-docs`) for library documentation before guessing at APIs.
