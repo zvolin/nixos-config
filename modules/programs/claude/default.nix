@@ -9,6 +9,8 @@
       ./_internals/plugins.nix
       ./_internals/qdrant.nix
       ./_internals/statusline.nix
+      ./_internals/sandbox.nix
+      ./_internals/security.nix
     ];
 
     programs.claude-code = {

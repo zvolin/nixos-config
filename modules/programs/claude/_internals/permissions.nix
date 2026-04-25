@@ -1,6 +1,4 @@
-{ ... }:
-
-let
+{config, ...}: let
   # synthetic plugin name from home-manager claude-code module
   mcpPrefix = "mcp__plugin_claude-code-home-manager";
   ferrex = tool: "${mcpPrefix}_ferrex__${tool}";
@@ -9,281 +7,332 @@ let
   nixos = tool: "${mcpPrefix}_nixos__${tool}";
   github = tool: "${mcpPrefix}_github__${tool}";
   searxng = tool: "${mcpPrefix}_searxng__${tool}";
-in
-{
-  programs.claude-code.settings.permissions = {
-    allow = [
-      # Git (read-only operations)
-      "Bash(git status *)"
-      "Bash(git diff *)"
-      "Bash(git log *)"
-      "Bash(git show *)"
-      "Bash(git branch *)"
-      "Bash(git remote *)"
-      "Bash(git fetch *)"
-      "Bash(git ls-files *)"
-      "Bash(git rev-parse *)"
-      "Bash(git describe *)"
-      "Bash(git config --get *)"
-      "Bash(git config --list *)"
-      "Bash(git stash list *)"
-      "Bash(git blame *)"
-      "Bash(git shortlog *)"
-      "Bash(git worktree *)"
-      "Bash(git grep *)"
-      "Bash(git ls-tree *)"
-      "Bash(git cat-file *)"
-      "Bash(git for-each-ref *)"
-      "Bash(git rev-list *)"
-      "Bash(git merge-base *)"
-      "Bash(git reflog *)"
-      "Bash(git tag *)"
-      "Bash(git ls-remote *)"
-      "Bash(git cherry *)"
-      "Bash(git range-diff *)"
-      "Bash(git submodule status *)"
 
-      # File listing & info
-      "Bash(ls *)"
-      "Bash(tree *)"
-      "Bash(file *)"
-      "Bash(stat *)"
-      "Bash(wc *)"
-      "Bash(du *)"
-      "Bash(df *)"
-      "Bash(head *)"
-      "Bash(tail *)"
-      "Bash(col *)"
-      "Bash(grep *)"
-      "Bash(rg *)"
-      "Bash(find *)"
-      "Bash(fd *)"
-      "Bash(cat *)"
-      "Bash(bat *)"
-      "Bash(eza *)"
-      "Bash(readlink *)"
-      "Bash(realpath *)"
-      "Bash(basename *)"
-      "Bash(dirname *)"
+  # --- Deny list ---
+  home = config.home.homeDirectory;
+  expandTilde = path: builtins.replaceStrings ["~"] [home] path;
 
-      # Text processing
-      "Bash(sort *)"
-      "Bash(uniq *)"
-      "Bash(cut *)"
-      "Bash(tr *)"
-      "Bash(diff *)"
-      "Bash(sed *)"
-      "Bash(awk *)"
-      "Bash(jq *)"
-      "Bash(column *)"
-      "Bash(strings *)"
-      "Bash(xargs *)"
+  mkDenyTriple = path: [
+    "Read(${path})"
+    "Write(${path})"
+    "Edit(${path})"
+  ];
 
-      # Help & documentation
-      "Bash(man *)"
-      "Bash(* --help)"
-      "Bash(* --help *)"
-      "Bash(* --version)"
-      "Bash(* -h)"
-      "Bash(* -V)"
-      "Bash(which *)"
-      "Bash(whereis *)"
-      "Bash(type *)"
+  mkDirDeny = dir: mkDenyTriple "${expandTilde dir}/**";
+  mkFileDeny = file: mkDenyTriple (expandTilde file);
 
-      # Process & system info
-      "Bash(ps *)"
-      "Bash(pgrep *)"
-      "Bash(uname *)"
-      "Bash(uptime *)"
-      "Bash(whoami *)"
-      "Bash(id *)"
-      "Bash(printenv *)"
-      "Bash(date *)"
-      "Bash(hostname *)"
-      "Bash(free *)"
+  deniedDirectories = [
+    "~/.ssh"
+    "~/.aws"
+    "~/.kube"
+    "~/.gnupg"
+    "~/.config/sops"
+    "~/.config/gh" # sandbox allows gh CLI read; denied for Claude's Read/Write/Edit
+    "~/.config/gcloud"
+    "~/.config/BraveSoftware"
+    "~/.mozilla"
+    "~/.config/Signal"
+    "~/.config/discord"
+    "~/.config/Element"
+    "~/.local/share/TelegramDesktop"
+    "~/.local/share/atuin"
+    "~/.local/share/keyrings" # sandbox allows dbus/keyring access; denied for Claude's tools
+  ];
 
-      # Notifications
-      "Bash(notify-send *)"
+  deniedFiles = [
+    "~/.netrc"
+    "~/.npmrc"
+    "~/.pypirc"
+    "~/.docker/config.json"
+    "~/.zsh_history"
+    "~/.bash_history"
+  ];
 
-      # Nix
-      "Bash(nix eval *)"
-      "Bash(nix flake show *)"
-      "Bash(nix flake metadata *)"
-      "Bash(nix flake check *)"
-      "Bash(nix search *)"
-      "Bash(nix build *)"
-      "Bash(nix fmt *)"
-      "Bash(nix run *)"
-      "Bash(nix shell *)"
-      "Bash(nix develop *)"
-      "Bash(nix-info *)"
-      "Bash(nix-instantiate *)"
-      "Bash(nix-store *)"
-      "Bash(nixos-rebuild *)"
-      "Bash(alejandra *)"
-      "Bash(deadnix *)"
-      "Bash(statix *)"
+  deniedAbsolutePaths = [
+    "/run/secrets/**"
+  ];
 
-      # GitHub CLI (read operations)
-      "Bash(gh pr view *)"
-      "Bash(gh pr list *)"
-      "Bash(gh pr diff *)"
-      "Bash(gh pr checks *)"
-      "Bash(gh pr status *)"
-      "Bash(gh issue view *)"
-      "Bash(gh issue list *)"
-      "Bash(gh issue status *)"
-      "Bash(gh repo view *)"
-      "Bash(gh repo list *)"
-      "Bash(gh release view *)"
-      "Bash(gh release list *)"
-      "Bash(gh run view *)"
-      "Bash(gh run list *)"
-      "Bash(gh workflow view *)"
-      "Bash(gh workflow list *)"
-      "Bash(gh api *)"
-      "Bash(gh status *)"
-      "Bash(gh search *)"
-      "Bash(gh auth status *)"
-      "Bash(gh label *)"
-
-      # Build & test
-      "Bash(cargo *)"
-      "Bash(npm test *)"
-      "Bash(npm run *)"
-      "Bash(make *)"
-      "Bash(just *)"
-      "Bash(cmake *)"
-
-      # AI
-      "Bash(codex *)"
-    ]
-    ++ (map ferrex [
-      # Read-only
-      "recall"
-      "reflect"
-      "stats"
-      "taxonomy"
-      "timeline"
-    ])
-    ++ (map serena [
-      # Read-only
-      "find_symbol"
-      "find_referencing_symbols"
-      "get_symbols_overview"
-      "find_file"
-      "list_dir"
-      "search_for_pattern"
-      "get_current_config"
-      "check_onboarding_performed"
-      "initial_instructions"
-      "list_memories"
-      "read_memory"
-      "activate_project"
-      "open_dashboard"
-      "onboarding"
-    ])
-    ++ (map context7 [
-      # Read-only — library documentation lookup
-      "resolve-library-id"
-      "get-library-docs"
-    ])
-    ++ (map nixos [
-      # Read-only — NixOS/HM/darwin option search
-      "nix"
-      "nix_versions"
-    ])
-    ++ (map searxng [
-      # Read-only — web search and content extraction
-      "searxng_web_search"
-      "web_url_read"
-    ])
-    ++ (map github [
-      # Read-only — context
-      "get_me"
-      "get_teams"
-      "get_team_members"
-      # Read-only — repos
-      "get_file_contents"
-      "list_commits"
-      "get_commit"
-      "list_branches"
-      "list_tags"
-      "get_tag"
-      "list_releases"
-      "get_latest_release"
-      "get_release_by_tag"
-      "list_starred_repositories"
-      # Read-only — git
-      "get_repository_tree"
-      # Read-only — issues
-      "issue_read"
-      "list_issues"
-      "list_issue_types"
-      # Read-only — pull requests
-      "pull_request_read"
-      "list_pull_requests"
-      # Read-only — search
-      "search_repositories"
-      "search_code"
-      "search_issues"
-      "search_pull_requests"
-      "search_users"
-      "search_orgs"
-      # Read-only — code security
-      "get_code_scanning_alert"
-      "list_code_scanning_alerts"
-      # Read-only — secret protection
-      "get_secret_scanning_alert"
-      "list_secret_scanning_alerts"
-      # Read-only — dependabot
-      "get_dependabot_alert"
-      "list_dependabot_alerts"
-      # Read-only — notifications
-      "list_notifications"
-      "get_notification_details"
-      # Read-only — discussions
-      "list_discussions"
-      "get_discussion"
-      "get_discussion_comments"
-      "list_discussion_categories"
-      # Read-only — actions
-      "actions_list"
-      "actions_get"
-      "get_job_logs"
-      # Read-only — security advisories
-      "list_global_security_advisories"
-      "get_global_security_advisory"
-      "list_repository_security_advisories"
-      "list_org_repository_security_advisories"
-      # Read-only — gists
-      "list_gists"
-      "get_gist"
-      # Read-only — projects
-      "projects_list"
-      "projects_get"
-      # Read-only — labels
-      "get_label"
-      "list_label"
-      # Read-only — dynamic
-      "list_available_toolsets"
-      "get_toolset_tools"
-    ])
+  denyList =
+    (builtins.concatMap mkDirDeny deniedDirectories)
+    ++ (builtins.concatMap mkFileDeny deniedFiles)
+    ++ (builtins.concatMap mkDenyTriple deniedAbsolutePaths)
     ++ [
-      # Nix store is read-only; allow reading plugin prompts without prompting
-      "Read(//nix/**)"
-    ]
-    ++ [
-      # Skill auto-invocation
-      "Skill(recall)"
-      "Skill(reflect)"
-      "Skill(humanizer)"
-    ]
-    ++ [
-      # Web access
-      "Bash(curl *)"
-      "WebFetch"
-      "WebSearch"
+      # Denied bash commands (fallback if bash hook fails)
+      "Bash(git push *)"
+      "Bash(git push)"
     ];
+in {
+  programs.claude-code.settings.permissions = {
+    allow =
+      [
+        # Git (read-only operations)
+        "Bash(git status *)"
+        "Bash(git diff *)"
+        "Bash(git log *)"
+        "Bash(git show *)"
+        "Bash(git branch *)"
+        "Bash(git remote *)"
+        "Bash(git fetch *)"
+        "Bash(git ls-files *)"
+        "Bash(git rev-parse *)"
+        "Bash(git describe *)"
+        "Bash(git config --get *)"
+        "Bash(git config --list *)"
+        "Bash(git stash list *)"
+        "Bash(git blame *)"
+        "Bash(git shortlog *)"
+        "Bash(git worktree *)"
+        "Bash(git grep *)"
+        "Bash(git ls-tree *)"
+        "Bash(git cat-file *)"
+        "Bash(git for-each-ref *)"
+        "Bash(git rev-list *)"
+        "Bash(git merge-base *)"
+        "Bash(git reflog *)"
+        "Bash(git tag *)"
+        "Bash(git ls-remote *)"
+        "Bash(git cherry *)"
+        "Bash(git range-diff *)"
+        "Bash(git submodule status *)"
+
+        # File listing & info
+        "Bash(ls *)"
+        "Bash(tree *)"
+        "Bash(file *)"
+        "Bash(stat *)"
+        "Bash(wc *)"
+        "Bash(du *)"
+        "Bash(df *)"
+        "Bash(head *)"
+        "Bash(tail *)"
+        "Bash(col *)"
+        "Bash(grep *)"
+        "Bash(rg *)"
+        "Bash(find *)"
+        "Bash(fd *)"
+        "Bash(cat *)"
+        "Bash(bat *)"
+        "Bash(eza *)"
+        "Bash(readlink *)"
+        "Bash(realpath *)"
+        "Bash(basename *)"
+        "Bash(dirname *)"
+
+        # Text processing
+        "Bash(sort *)"
+        "Bash(uniq *)"
+        "Bash(cut *)"
+        "Bash(tr *)"
+        "Bash(diff *)"
+        "Bash(sed *)"
+        "Bash(awk *)"
+        "Bash(jq *)"
+        "Bash(column *)"
+        "Bash(strings *)"
+        "Bash(xargs *)"
+
+        # Help & documentation
+        "Bash(man *)"
+        "Bash(which *)"
+        "Bash(whereis *)"
+        "Bash(type *)"
+
+        # Process & system info
+        "Bash(ps *)"
+        "Bash(pgrep *)"
+        "Bash(uname *)"
+        "Bash(uptime *)"
+        "Bash(whoami *)"
+        "Bash(id *)"
+        "Bash(printenv *)"
+        "Bash(date *)"
+        "Bash(hostname *)"
+        "Bash(free *)"
+
+        # Notifications
+        "Bash(notify-send *)"
+
+        # Nix
+        "Bash(nix eval *)"
+        "Bash(nix flake show *)"
+        "Bash(nix flake metadata *)"
+        "Bash(nix flake check *)"
+        "Bash(nix search *)"
+        "Bash(nix build *)"
+        "Bash(nix fmt *)"
+        "Bash(nix run *)"
+        "Bash(nix shell *)"
+        "Bash(nix develop *)"
+        "Bash(nix-info *)"
+        "Bash(nix-instantiate *)"
+        "Bash(nix-store *)"
+        "Bash(nixos-rebuild *)"
+        "Bash(alejandra *)"
+        "Bash(deadnix *)"
+        "Bash(statix *)"
+
+        # GitHub CLI (read operations)
+        "Bash(gh pr view *)"
+        "Bash(gh pr list *)"
+        "Bash(gh pr diff *)"
+        "Bash(gh pr checks *)"
+        "Bash(gh pr status *)"
+        "Bash(gh issue view *)"
+        "Bash(gh issue list *)"
+        "Bash(gh issue status *)"
+        "Bash(gh repo view *)"
+        "Bash(gh repo list *)"
+        "Bash(gh release view *)"
+        "Bash(gh release list *)"
+        "Bash(gh run view *)"
+        "Bash(gh run list *)"
+        "Bash(gh workflow view *)"
+        "Bash(gh workflow list *)"
+        "Bash(gh api *)"
+        "Bash(gh status *)"
+        "Bash(gh search *)"
+        "Bash(gh auth status *)"
+        "Bash(gh label *)"
+
+        # Build & test
+        "Bash(cargo *)"
+        "Bash(npm test *)"
+        "Bash(npm run *)"
+        "Bash(make *)"
+        "Bash(just *)"
+        "Bash(cmake *)"
+
+        # AI
+        "Bash(codex *)"
+      ]
+      ++ (map ferrex [
+        # Read-only
+        "recall"
+        "reflect"
+        "stats"
+        "taxonomy"
+        "timeline"
+      ])
+      ++ (map serena [
+        # Read-only
+        "find_symbol"
+        "find_referencing_symbols"
+        "get_symbols_overview"
+        "find_file"
+        "list_dir"
+        "search_for_pattern"
+        "get_current_config"
+        "check_onboarding_performed"
+        "initial_instructions"
+        "list_memories"
+        "read_memory"
+        "activate_project"
+        "open_dashboard"
+        "onboarding"
+      ])
+      ++ (map context7 [
+        # Read-only — library documentation lookup
+        "resolve-library-id"
+        "get-library-docs"
+      ])
+      ++ (map nixos [
+        # Read-only — NixOS/HM/darwin option search
+        "nix"
+        "nix_versions"
+      ])
+      ++ (map searxng [
+        # Read-only — web search and content extraction
+        "searxng_web_search"
+        "web_url_read"
+      ])
+      ++ (map github [
+        # Read-only — context
+        "get_me"
+        "get_teams"
+        "get_team_members"
+        # Read-only — repos
+        "get_file_contents"
+        "list_commits"
+        "get_commit"
+        "list_branches"
+        "list_tags"
+        "get_tag"
+        "list_releases"
+        "get_latest_release"
+        "get_release_by_tag"
+        "list_starred_repositories"
+        # Read-only — git
+        "get_repository_tree"
+        # Read-only — issues
+        "issue_read"
+        "list_issues"
+        "list_issue_types"
+        # Read-only — pull requests
+        "pull_request_read"
+        "list_pull_requests"
+        # Read-only — search
+        "search_repositories"
+        "search_code"
+        "search_issues"
+        "search_pull_requests"
+        "search_users"
+        "search_orgs"
+        # Read-only — code security
+        "get_code_scanning_alert"
+        "list_code_scanning_alerts"
+        # Read-only — secret protection
+        "get_secret_scanning_alert"
+        "list_secret_scanning_alerts"
+        # Read-only — dependabot
+        "get_dependabot_alert"
+        "list_dependabot_alerts"
+        # Read-only — notifications
+        "list_notifications"
+        "get_notification_details"
+        # Read-only — discussions
+        "list_discussions"
+        "get_discussion"
+        "get_discussion_comments"
+        "list_discussion_categories"
+        # Read-only — actions
+        "actions_list"
+        "actions_get"
+        "get_job_logs"
+        # Read-only — security advisories
+        "list_global_security_advisories"
+        "get_global_security_advisory"
+        "list_repository_security_advisories"
+        "list_org_repository_security_advisories"
+        # Read-only — gists
+        "list_gists"
+        "get_gist"
+        # Read-only — projects
+        "projects_list"
+        "projects_get"
+        # Read-only — labels
+        "get_label"
+        "list_label"
+        # Read-only — dynamic
+        "list_available_toolsets"
+        "get_toolset_tools"
+      ])
+      ++ [
+        # Nix store is read-only; allow reading plugin prompts without prompting
+        "Read(//nix/**)"
+      ]
+      ++ [
+        # Skill auto-invocation
+        "Skill(recall)"
+        "Skill(reflect)"
+        "Skill(humanizer)"
+      ]
+      ++ [
+        # Web access
+        "Bash(curl *)"
+        "WebFetch"
+        "WebSearch"
+      ];
+
+    deny = denyList;
   };
 }

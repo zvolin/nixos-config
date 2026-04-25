@@ -78,6 +78,10 @@
       url = "github:ihor-sokoliuk/mcp-searxng/v1.0.3";
       flake = false;
     };
+
+    sandnix = {
+      url = "github:srid/sandnix";
+    };
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake {inherit inputs;} (inputs.import-tree ./modules);
