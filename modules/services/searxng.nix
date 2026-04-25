@@ -1,10 +1,17 @@
-{ ... }:
-
-{
+{...}: {
   flake.modules.nixos.searxng = {
     services.searx = {
       enable = true;
       settings = {
+        use_default_settings.engines.keep_only = [
+          "wikipedia"
+          "wikidata"
+          "github"
+          "stackoverflow"
+          "arch linux wiki"
+          "nixos wiki"
+          "currency"
+        ];
         server = {
           port = 8384;
           bind_address = "127.0.0.1";
