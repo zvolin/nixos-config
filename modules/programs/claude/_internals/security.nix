@@ -82,6 +82,7 @@
 in {
   programs.claude-code.settings = {
     skipDangerousModePermissionPrompt = true;
+    permissions.defaultMode = "bypassPermissions";
 
     hooks.PreToolUse =
       [
@@ -99,9 +100,4 @@ in {
       # Confirm hooks for memory-mutating MCP tools
       ++ (map mkConfirmHook confirmEntries);
   };
-
-  # Permission for the bash validator to run
-  programs.claude-code.settings.permissions.allow = [
-    "Bash(${check-bash-command}/bin/claude-check-bash-command *)"
-  ];
 }
