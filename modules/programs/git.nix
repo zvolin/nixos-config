@@ -1,7 +1,5 @@
-{ ... }:
-
-{
-  flake.modules.homeManager.git = { ... }: {
+{...}: {
+  flake.modules.homeManager.git = {...}: {
     programs.git = {
       enable = true;
 
@@ -14,6 +12,7 @@
         "**/docs/superpowers/"
         "**/.serena/"
         "**/.direnv"
+        "**/.envrc"
         "**/CLAUDE.local.md"
         "**/HANDOFF.md"
       ];
