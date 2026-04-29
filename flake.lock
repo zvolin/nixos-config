@@ -577,7 +577,6 @@
         "nixpkgs": "nixpkgs_2",
         "nixvim": "nixvim",
         "rust-overlay": "rust-overlay",
-        "sandnix": "sandnix",
         "stylix": "stylix",
         "superpowers": "superpowers",
         "tiny-dfr": "tiny-dfr",
@@ -618,21 +617,6 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "sandnix": {
-      "locked": {
-        "lastModified": 1772827213,
-        "narHash": "sha256-1IM7tsSgfNY2zEiZnrESFNaC70gY10uEk9AnsHrLqk4=",
-        "owner": "srid",
-        "repo": "sandnix",
-        "rev": "c63ab51a9e3c0aa59604678b44de0748b25ca9a8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "srid",
-        "repo": "sandnix",
         "type": "github"
       }
     },
