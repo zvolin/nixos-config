@@ -1,6 +1,4 @@
-{ inputs, ... }:
-
-{
+{inputs, ...}: {
   flake.modules.nixos.system-cli = {
     imports = with inputs.self.modules.nixos; [
       system-minimal

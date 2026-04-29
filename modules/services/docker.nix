@@ -1,6 +1,4 @@
-{ ... }:
-
-{
+{...}: {
   flake.modules.nixos.docker = {
     boot.binfmt.preferStaticEmulators = true;
     boot.binfmt.emulatedSystems = [

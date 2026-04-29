@@ -1,6 +1,8 @@
-{ inputs, pkgs, ... }:
-
-let
+{
+  inputs,
+  pkgs,
+  ...
+}: let
   patchedSuperpowers = pkgs.applyPatches {
     name = "superpowers-patched";
     src = inputs.superpowers;
@@ -13,10 +15,9 @@ let
       "${inputs.self}/patches/superpowers-implementer-prompt.patch"
     ];
   };
-in
-{
+in {
   programs.claude-code = {
-    plugins = [ patchedSuperpowers ];
+    plugins = [patchedSuperpowers];
 
     settings = {
       enabledPlugins = {
@@ -25,7 +26,10 @@ in
       };
       extraKnownMarketplaces = {
         skill-codex = {
-          source = { source = "github"; repo = "skills-directory/skill-codex"; };
+          source = {
+            source = "github";
+            repo = "skills-directory/skill-codex";
+          };
         };
       };
     };

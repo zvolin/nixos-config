@@ -1,16 +1,19 @@
-{ ... }:
-
-{
-  flake.modules.nixos.tiny-dfr = { lib, pkgs, config, ... }: {
+{...}: {
+  flake.modules.nixos.tiny-dfr = {
+    lib,
+    pkgs,
+    config,
+    ...
+  }: {
     options.services.tiny-dfr.enable = lib.mkEnableOption "tiny-dfr";
 
     config = lib.mkIf config.services.tiny-dfr.enable {
-      environment.systemPackages = [ pkgs.tiny-dfr ];
-      systemd.packages = [ pkgs.tiny-dfr ];
-      services.udev.packages = [ pkgs.tiny-dfr ];
+      environment.systemPackages = [pkgs.tiny-dfr];
+      systemd.packages = [pkgs.tiny-dfr];
+      services.udev.packages = [pkgs.tiny-dfr];
 
       # Install font system-wide so the systemd service can access it
-      fonts.packages = [ pkgs.nerd-fonts.fira-code ];
+      fonts.packages = [pkgs.nerd-fonts.fira-code];
 
       environment.etc."tiny-dfr/config.toml".text = ''
         media_layer_default = true

@@ -1,33 +1,28 @@
-{ lib, ... }:
-
-let
+{lib, ...}: let
   noremap = mode: key: desc: action: {
     inherit key action;
     mode = lib.mkIf (mode != "") (lib.stringToCharacters mode);
     options.desc = desc;
   };
-in
-{
+in {
   programs.nixvim = {
     globals.mapleader = " ";
 
-    plugins.which-key.settings.spec =
-      let
-        group = bind: group: {
-          __unkeyed = bind;
-          inherit group;
-        };
-      in
-      [
-        (group "<leader>b" "+buffers")
-        (group "<leader>f" "+find")
-        (group "<leader>g" "+git")
-        (group "<leader>gf" "+find")
-        (group "<leader>gfc" "+commit")
-        (group "<leader>w" "+windows")
-        (group "<leader>l" "+lsp")
-        (group "<leader>t" "+toggles")
-      ];
+    plugins.which-key.settings.spec = let
+      group = bind: group: {
+        __unkeyed = bind;
+        inherit group;
+      };
+    in [
+      (group "<leader>b" "+buffers")
+      (group "<leader>f" "+find")
+      (group "<leader>g" "+git")
+      (group "<leader>gf" "+find")
+      (group "<leader>gfc" "+commit")
+      (group "<leader>w" "+windows")
+      (group "<leader>l" "+lsp")
+      (group "<leader>t" "+toggles")
+    ];
 
     keymaps = [
       # General
@@ -70,7 +65,8 @@ in
       (noremap "" "<leader>fl" "Search loclist" "<cmd>Telescope loclist<cr>")
       (noremap "" "<leader>fj" "Search jumplist" "<cmd>Telescope jumplist<cr>")
       (noremap "" "<leader>fr" "Search registers" "<cmd>Telescope registers<cr>")
-      (noremap "" "<leader>fn" "Search NixOs man"
+      (
+        noremap "" "<leader>fn" "Search NixOs man"
         "<cmd>lua require('telescope').extensions.manix.manix()<cr>"
       )
       # Git
@@ -89,13 +85,16 @@ in
       (noremap "" "<leader>lS" "Workspace symbols" "<cmd>Telescope lsp_workspace_symbols<cr>")
       (noremap "" "<leader>ld" "Definitions" "<cmd>Telescope lsp_definitions<cr>")
       (noremap "" "<leader>li" "Implementations" "<cmd>Telescope lsp_implementations<cr>")
-      (noremap "" "<leader>lc" "Buffer diagnostics"
+      (
+        noremap "" "<leader>lc" "Buffer diagnostics"
         "<cmd>Telescope diagnostics bufnr=0 severity_limit=INFO<cr>"
       )
-      (noremap "" "<leader>lC" "Workspace diagnostics"
+      (
+        noremap "" "<leader>lC" "Workspace diagnostics"
         "<cmd>Telescope diagnostics severity_limit=INFO<cr>"
       )
-      (noremap "" "<leader>lh" "Toggle inlay hints"
+      (
+        noremap "" "<leader>lh" "Toggle inlay hints"
         "<cmd>lua vim.lsp.inlay_hint.enable(vim.lsp.inlay_hint.is_enabled(), { 0 })<cr>"
       )
       ## remap shift backspace and enter, for some reason when zsh in vi mode is used

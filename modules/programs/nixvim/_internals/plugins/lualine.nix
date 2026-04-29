@@ -1,6 +1,4 @@
-{ pkgs, ... }:
-
-{
+{pkgs, ...}: {
   programs.nixvim = {
     plugins.lualine = {
       enable = true;
@@ -88,7 +86,7 @@
       };
     };
 
-    extraPlugins = with pkgs.vimPlugins; [ nvim-navic ];
+    extraPlugins = with pkgs.vimPlugins; [nvim-navic];
 
     extraConfigLua = ''
       require("nvim-navic").setup({

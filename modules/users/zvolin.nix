@@ -1,7 +1,5 @@
-{ inputs, ... }:
-
-{
-  flake.modules.nixos.zvolin = { pkgs, ... }: {
+{inputs, ...}: {
+  flake.modules.nixos.zvolin = {pkgs, ...}: {
     users.mutableUsers = false;
 
     users.users.zwolin = {
@@ -12,7 +10,7 @@
         "wireshark"
         "video"
       ];
-      packages = [ ];
+      packages = [];
       shell = pkgs.zsh;
     };
 

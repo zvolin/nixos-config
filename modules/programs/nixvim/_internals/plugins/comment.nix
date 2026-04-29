@@ -1,6 +1,4 @@
-{ ... }:
-
-{
+{...}: {
   programs.nixvim.plugins = {
     ts-context-commentstring.enable = true;
     comment = {
@@ -10,7 +8,8 @@
         sticky = true;
         ignore = "^$";
 
-        pre_hook = # lua
+        pre_hook =
+          # lua
           "require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook()";
       };
     };

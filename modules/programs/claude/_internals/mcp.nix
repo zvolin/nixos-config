@@ -1,6 +1,10 @@
-{ config, inputs, lib, pkgs, ... }:
-
-let
+{
+  config,
+  inputs,
+  lib,
+  pkgs,
+  ...
+}: let
   homeDir = config.home.homeDirectory;
 
   serenaPackage = inputs.mcp-servers-nix.packages.${pkgs.stdenv.hostPlatform.system}.serena;
@@ -20,8 +24,8 @@ let
 
   wrappedSerena = pkgs.symlinkJoin {
     name = "serena-wrapped";
-    paths = [ serenaPackage ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
+    paths = [serenaPackage];
+    nativeBuildInputs = [pkgs.makeWrapper];
     postBuild = ''
       wrapProgram $out/bin/serena \
         --prefix PATH : ${rustupShim}/bin
@@ -43,21 +47,20 @@ let
       npx tsc
     '';
     installPhase = ''
-      mkdir -p $out/lib/mcp-searxng $out/bin
-      cp -r dist package.json node_modules $out/lib/mcp-searxng/
-      cat > $out/bin/mcp-searxng <<EOF
-#!/usr/bin/env bash
-exec ${pkgs.nodejs}/bin/node $out/lib/mcp-searxng/dist/index.js "\$@"
-EOF
-      chmod +x $out/bin/mcp-searxng
+            mkdir -p $out/lib/mcp-searxng $out/bin
+            cp -r dist package.json node_modules $out/lib/mcp-searxng/
+            cat > $out/bin/mcp-searxng <<EOF
+      #!/usr/bin/env bash
+      exec ${pkgs.nodejs}/bin/node $out/lib/mcp-searxng/dist/index.js "\$@"
+      EOF
+            chmod +x $out/bin/mcp-searxng
     '';
   };
-in
-{
+in {
   programs.claude-code.mcpServers = {
     serena = {
       command = "${wrappedSerena}/bin/serena";
-      args = [ "start-mcp-server" "--context" "claude-code" "--project-from-cwd" "--open-web-dashboard" "false" ];
+      args = ["start-mcp-server" "--context" "claude-code" "--project-from-cwd" "--open-web-dashboard" "false"];
     };
 
     ferrex = {

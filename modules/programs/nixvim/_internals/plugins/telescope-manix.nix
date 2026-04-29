@@ -1,7 +1,5 @@
 # nix man pages in telescope
-{ pkgs, ... }:
-
-{
+{pkgs, ...}: {
   environment.systemPackages = with pkgs; [
     (pkgs.rustPlatform.buildRustPackage rec {
       pname = "manix";
@@ -18,7 +16,7 @@
   ];
 
   programs.nixvim = {
-    extraPlugins = with pkgs.vimPlugins; [ telescope-manix ];
+    extraPlugins = with pkgs.vimPlugins; [telescope-manix];
 
     extraConfigLua = ''
       require("telescope").load_extension("manix")

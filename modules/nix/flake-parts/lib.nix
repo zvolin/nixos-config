@@ -1,13 +1,10 @@
-{ inputs, ... }:
-
-{
+{inputs, ...}: {
   flake.lib = {
     # HM wired unconditionally — every host in this config uses it
-    mkNixos =
-      system: name:
+    mkNixos = system: name:
       inputs.nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit inputs; };
+        specialArgs = {inherit inputs;};
         modules = [
           inputs.self.modules.nixos.${name}
           inputs.home-manager.nixosModules.default

@@ -1,7 +1,10 @@
-{ ... }:
-
-{
-  flake.modules.homeManager.mako = { pkgs, lib, config, ... }: {
+{...}: {
+  flake.modules.homeManager.mako = {
+    pkgs,
+    lib,
+    config,
+    ...
+  }: {
     services.mako = {
       enable = true;
       settings = {
@@ -18,6 +21,6 @@
     };
 
     # provides notify-send command
-    home.packages = [ pkgs.libnotify ];
+    home.packages = [pkgs.libnotify];
   };
 }

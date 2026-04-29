@@ -1,7 +1,9 @@
-{ ... }:
-
-{
-  flake.modules.nixos.cli-tools = { pkgs, lib, ... }: {
+{...}: {
+  flake.modules.nixos.cli-tools = {
+    pkgs,
+    lib,
+    ...
+  }: {
     environment.systemPackages = with pkgs; [
       bat
       curl

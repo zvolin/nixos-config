@@ -1,7 +1,9 @@
-{ ... }:
-
-{
-  flake.modules.homeManager.terminal = { pkgs, lib, ... }: {
+{...}: {
+  flake.modules.homeManager.terminal = {
+    pkgs,
+    lib,
+    ...
+  }: {
     options.terminal = lib.mkOption {
       type = lib.types.package;
       default = pkgs.kitty;

@@ -1,6 +1,4 @@
-{ inputs, ... }:
-
-{
+{inputs, ...}: {
   flake.modules.nixos.shell = {
     programs.zsh.enable = true;
     home-manager.sharedModules = with inputs.self.modules.homeManager; [
@@ -10,7 +8,11 @@
     ];
   };
 
-  flake.modules.homeManager.zsh = { lib, config, ... }: {
+  flake.modules.homeManager.zsh = {
+    lib,
+    config,
+    ...
+  }: {
     programs.zsh = {
       enable = true;
       dotDir = "${config.xdg.configHome}/zsh";
@@ -46,14 +48,14 @@
     };
   };
 
-  flake.modules.homeManager.bash = { ... }: {
+  flake.modules.homeManager.bash = {...}: {
     programs.bash = {
       enable = true;
       enableCompletion = true;
       # let terminal track current dir
       enableVteIntegration = true;
 
-      historyControl = [ "erasedups" ];
+      historyControl = ["erasedups"];
       historyFileSize = 50000;
       historySize = 20000;
 
@@ -69,7 +71,7 @@
     };
   };
 
-  flake.modules.homeManager.fzf = { ... }: {
+  flake.modules.homeManager.fzf = {...}: {
     programs.fzf = {
       enable = true;
 

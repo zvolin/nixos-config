@@ -1,6 +1,4 @@
-{ pkgs, ... }:
-
-{
+{pkgs, ...}: {
   imports = [
     ./bufferline.nix
     ./cmp.nix

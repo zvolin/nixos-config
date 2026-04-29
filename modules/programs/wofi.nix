@@ -1,7 +1,5 @@
-{ ... }:
-
-{
-  flake.modules.homeManager.wofi = { ... }: {
+{...}: {
+  flake.modules.homeManager.wofi = {...}: {
     programs.wofi = {
       enable = true;
 
