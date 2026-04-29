@@ -26,6 +26,9 @@
     "TERM"
     "LANG"
     "LC_ALL"
+    "SSH_AUTH_SOCK"
+    "DBUS_SESSION_BUS_ADDRESS"
+    "GPG_TTY"
   ];
 
   # Tokens (preloaded by wrapper)
@@ -115,6 +118,18 @@
           rw = [
             "$HOME/.claude.json"
             "$XDG_RUNTIME_DIR" # Wayland/D-Bus sockets for notify-send
+            "$HOME/.gnupg" # commit signing keyring + trustdb
+            "$HOME/.ferrex" # ferrex MCP database + log
+            "$HOME/.serena" # serena MCP user-level state
+            "$HOME/.cargo" # cargo registry/git/target caches for rust builds
+            "$HOME/.cache/gh" # gh CLI ephemeral cache (narrow, not all of ~/.cache)
+          ];
+          ro = [
+            "$HOME/.local/share/gh" # gh state on Linux (token store fallback)
+            "$HOME/.local/state/nix" # nix CLI state, registry
+            "$HOME/.nix-profile" # user nix profile symlink
+            "$HOME/.ssh/config" # ssh client config (git over ssh)
+            "$HOME/.ssh/known_hosts" # host key verification
           ];
           env = allEnv;
         };
