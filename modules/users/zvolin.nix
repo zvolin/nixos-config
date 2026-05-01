@@ -22,6 +22,7 @@
       imports = with inputs.self.modules.homeManager; [
         browser
         claude
+        codex
         connman-gui
         audio
         brightness
@@ -33,6 +34,7 @@
         kitty
         latex
         mako
+        mcp
         terminal
         waybar
         wofi
@@ -47,7 +49,6 @@
       home.packages = with pkgs; [
         freecad
         gh
-        codex
       ];
 
       home.sessionVariables = {
