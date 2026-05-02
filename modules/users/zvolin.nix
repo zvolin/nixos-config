@@ -20,14 +20,15 @@
 
     home-manager.users.zwolin = {
       imports = with inputs.self.modules.homeManager; [
+        audio
+        brightness
         browser
         claude
         codex
         connman-gui
-        audio
-        brightness
         direnv
         git
+        humanizer
         hypridle
         hyprlock
         keychain
@@ -35,6 +36,7 @@
         latex
         mako
         mcp
+        research
         terminal
         waybar
         wofi
