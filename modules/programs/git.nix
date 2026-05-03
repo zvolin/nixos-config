@@ -19,6 +19,10 @@
         "**/.envrc"
         "**/CLAUDE.local.md"
         "**/HANDOFF.md"
+        "**/AGENTS.md"
+        "**/AGENTS.override.md"
+        "**/.agents/"
+        "**/.codex"
       ];
 
       signing.key = "9DD9C8FD06750734";

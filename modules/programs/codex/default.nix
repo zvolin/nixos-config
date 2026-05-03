@@ -22,6 +22,10 @@
         - Commit messages: single line, conventional commits format (`type(scope): description`). No body, no trailers.
         - NEVER create merge commits — keep history linear (fast-forward, cherry-pick, or squash only).
 
+        # Gitignored Codex Artifacts
+
+        AGENTS.md, AGENTS.override.md, .agents/, and .codex are globally gitignored (configured in modules/programs/git.nix). Repos that want any of these tracked must whitelist them in their own .gitignore. Check with `git check-ignore -q <path>` before committing; do not use `git add -f`.
+
         # MCP Tools
 
         Prefer MCP tools over CLI equivalents when available:
