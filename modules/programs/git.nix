@@ -9,8 +9,7 @@
       };
 
       ignores = [
-        "**/.claude/worktrees/"
-        "**/.claude/settings.local.json"
+        "**/.claude/"
         "**/.worktrees"
         "**/docs/plans/"
         "**/docs/insights/"
