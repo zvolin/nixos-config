@@ -20,9 +20,8 @@ Read the draft against the question, assumptions, and plan. Return findings in t
 
 - Factual errors, or claims the cited source does not support.
 - Major claims with no citation.
-- Missing or absent dissent when the plan included a dissent facet.
 - Scope drift: the draft answers a different question than the one asked.
-- Internal contradictions.
+- Internal contradictions — claims in one facet section that conflict with claims in another, or pros/cons that contradict the reasoning paragraph.
 
 ### Suggested findings (should consider)
 
