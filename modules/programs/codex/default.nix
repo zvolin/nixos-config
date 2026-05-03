@@ -31,7 +31,8 @@
         Prefer MCP tools over CLI equivalents when available:
         - mcp-nixos for NixOS/Home Manager option lookups
         - context7 for library documentation
-        - SearXNG for wiki/reference lookups (local instance is restricted to reference engines; use built-in web search for general queries)
+        - SearXNG `web_url_read` is the default URL fetcher — use it for blogs, docs, and most public URLs. For Google, Bing, DuckDuckGo, and other sites that fingerprint or rate-limit SearXNG's egress IP (for example Reddit, LinkedIn, or Cloudflare-protected SaaS), fetch the URL outside SearXNG (built-in web tools or `curl`).
+        - For general search, use the built-in web search. SearXNG's `searxng_web_search` is restricted to wiki/reference engines (Wikipedia, Wikidata, GitHub, Stack Overflow, Arch/NixOS wikis, currency) — use it only when targeting those.
         - GitHub MCP for issues, PRs, code search
         - Serena (`find_symbol`, `find_referencing_symbols`, `get_symbols_overview`) for semantic code navigation in the current project
       '';

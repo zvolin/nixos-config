@@ -46,8 +46,8 @@
 
         Prefer MCP tools over their CLI/built-in equivalents:
         - Serena (`find_symbol`, `find_referencing_symbols`, `get_symbols_overview`) over grep for code navigation. Fall back to grep/glob for non-symbol searches.
-        - SearXNG `web_url_read` over WebFetch for reading specific URLs.
-        - Built-in WebSearch for general web queries (SearXNG only has wiki/reference engines — use `searxng_web_search` when targeting those specifically).
+        - SearXNG `web_url_read` is the default URL fetcher — use it for blogs, docs, and most public URLs. Fall back to WebFetch for Google, Bing, DuckDuckGo, and other sites that fingerprint or rate-limit SearXNG's egress IP (for example Reddit, LinkedIn, or Cloudflare-protected SaaS).
+        - Built-in WebSearch for general web queries. SearXNG `searxng_web_search` is restricted to wiki/reference engines (Wikipedia, Wikidata, GitHub, Stack Overflow, Arch/NixOS wikis, currency) — use it when targeting those.
         - GitHub MCP over `gh` CLI for searching code, reading files from other repos, PRs, and issues.
         - mcp-nixos (`nix` tool) over `nixos-option` or `man` for NixOS, Home Manager, nix-darwin, and nixvim options.
         - context7 (`resolve-library-id`, then `get-library-docs`) for library documentation before guessing at APIs.
