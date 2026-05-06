@@ -10,11 +10,25 @@
     inset = "15";
     wclass = "pinentry-floating";
     jq = lib.getExe pkgs.jq;
+    stty = "${pkgs.coreutils}/bin/stty";
 
-    # Runs inside the floating terminal — bridges assuan protocol over FIFOs
-    # Waits for a "ready" signal before starting so the window is already resized
+    # Runs in the floating terminal and bridges assuan over the two FIFOs.
+    # Polls stty size on a 50 ms tick and exec's pinentry-curses after 3
+    # consecutive reads agree, so curses gets the resized grid even if the
+    # hyprctl resize landed before this script started sampling.
     pinentry-term = pkgs.writeShellScript "pinentry-term" ''
-      while [ ! -f "$3" ]; do sleep 0.02; done
+      last=$(${stty} size)
+      stable=0
+      while [ "$stable" -lt 3 ]; do
+        sleep 0.05
+        cur=$(${stty} size)
+        if [ "$cur" = "$last" ]; then
+          stable=$((stable + 1))
+        else
+          last=$cur
+          stable=0
+        fi
+      done
       exec ${lib.getExe pkgs.pinentry-curses} < "$1" > "$2"
     '';
 
@@ -42,7 +56,7 @@
         # Spawn floating terminal with pinentry-curses
         hyprctl dispatch exec "[float; pin]" \
           "${terminal} --class ${wclass} --title GPG -o window_margin_width=3 \
-          ${pinentry-term} $tmpdir/in $tmpdir/out $tmpdir/ready" > /dev/null
+          ${pinentry-term} $tmpdir/in $tmpdir/out" > /dev/null
 
         # Poll until the window exists (hyprland v0.54: size/move broken in inline rules)
         while ! hyprctl clients -j | ${jq} -e '.[] | select(.class == "${wclass}")' > /dev/null 2>&1; do
@@ -58,10 +72,6 @@
           "$(( mon_w - win_w - ${gaps_out} - ${inset} ))" \
           "$(( bar_h + ${gaps_out} + ${inset} ))",class:${wclass} > /dev/null
         hyprctl dispatch focuswindow class:${wclass} > /dev/null
-
-        # Let kitty recalculate its character grid after resize, then signal pinentry to start
-        sleep 0.1
-        touch "$tmpdir/ready"
 
         # Bridge assuan protocol: rewrite ttyname so pinentry-curses uses
         # kitty's PTY (/dev/tty) instead of the caller's terminal
