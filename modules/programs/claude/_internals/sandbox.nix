@@ -30,6 +30,7 @@
   claudeEnv = [
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"
     "CLAUDE_SANDBOX"
+    "CLAUDE_SESSION_NAME"
   ];
 
   nixDevshellEnv = [
