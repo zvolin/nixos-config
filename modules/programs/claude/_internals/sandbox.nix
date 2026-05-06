@@ -141,8 +141,10 @@
     bind_rw "$HOME/.cargo"
     bind_rw "$HOME/.cache/gh"
     bind_rw "$HOME/.codex"
-    bind_ro "$HOME/.config/git"
+    bind_ro "$HOME/.config/direnv"
     bind_ro "$HOME/.config/gh"
+    bind_ro "$HOME/.config/git"
+    bind_ro "$HOME/.local/share/direnv"
     bind_ro "$HOME/.local/state/nix"
     bind_ro "$HOME/.nix-profile"
 
