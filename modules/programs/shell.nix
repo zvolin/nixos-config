@@ -130,6 +130,8 @@
       ps = "procs";
       top = "btop";
       htop = "btop";
+      tree = "eza --tree";
+      ping = "gping";
     };
   };
 }
