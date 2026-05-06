@@ -5,6 +5,7 @@
       zsh
       bash
       fzf
+      modern-cli
     ];
   };
 
@@ -80,6 +81,55 @@
         "--layout=reverse"
         "--inline-info"
       ];
+    };
+  };
+
+  flake.modules.homeManager.modern-cli = {pkgs, ...}: {
+    programs.eza = {
+      enable = true;
+      enableZshIntegration = true;
+      git = true;
+      icons = "auto";
+      extraOptions = ["--group-directories-first"];
+    };
+
+    programs.zoxide = {
+      enable = true;
+      enableZshIntegration = true;
+      options = ["--cmd cd"];
+    };
+
+    programs.bat.enable = true;
+
+    programs.delta = {
+      enable = true;
+      enableGitIntegration = true;
+      options = {
+        side-by-side = true;
+        navigate = true;
+        line-numbers = true;
+      };
+    };
+
+    home.packages = with pkgs; [
+      dust
+      duf
+      procs
+      btop
+      xh
+      gping
+      tealdeer
+    ];
+
+    programs.zsh.shellAliases = {
+      cat = "bat -p --paging=never";
+      grep = "rg --hidden --smart-case";
+      find = "fd";
+      du = "dust";
+      df = "duf";
+      ps = "procs";
+      top = "btop";
+      htop = "btop";
     };
   };
 }
