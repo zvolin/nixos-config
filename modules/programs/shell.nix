@@ -108,6 +108,8 @@
         side-by-side = true;
         navigate = true;
         line-numbers = true;
+        wrap-max-lines = "unlimited";
+        wrap-right-percent = "0";
       };
     };
 
