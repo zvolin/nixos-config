@@ -2,11 +2,13 @@
   pkgs,
   config,
   ...
-}: let
+}:
+let
   colors = config.lib.stylix.colors.withHashtag;
-in {
+in
+{
   programs.nixvim = {
-    extraPlugins = with pkgs.vimPlugins; [nvim-window-picker];
+    extraPlugins = with pkgs.vimPlugins; [ nvim-window-picker ];
 
     extraConfigLua = ''
       require 'window-picker'.setup({

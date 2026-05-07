@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   flake.modules.homeManager.claude = {
     imports = [
       ./_internals/agents.nix

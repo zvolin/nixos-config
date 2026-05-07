@@ -1,12 +1,15 @@
-{...}: {
-  flake.modules.homeManager.wofi = {...}: {
-    programs.wofi = {
-      enable = true;
+{ ... }:
+{
+  flake.modules.homeManager.wofi =
+    { ... }:
+    {
+      programs.wofi = {
+        enable = true;
 
-      settings = {
-        allow_markup = true;
-        width = "35%";
+        settings = {
+          allow_markup = true;
+          width = "35%";
+        };
       };
     };
-  };
 }

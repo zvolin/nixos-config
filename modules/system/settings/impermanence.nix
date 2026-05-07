@@ -1,11 +1,12 @@
-{...}: {
+{ ... }:
+{
   flake.modules.nixos.impermanence = {
     boot.initrd.systemd.services.root-wipe = {
       description = "Wipe root btrfs subvolume and restore blank snapshot";
-      wantedBy = ["initrd.target"];
-      requires = ["cryptsetup.target"];
-      after = ["cryptsetup.target"];
-      before = ["sysroot.mount"];
+      wantedBy = [ "initrd.target" ];
+      requires = [ "cryptsetup.target" ];
+      after = [ "cryptsetup.target" ];
+      before = [ "sysroot.mount" ];
       unitConfig.DefaultDependencies = "no";
       serviceConfig.Type = "oneshot";
       script = ''

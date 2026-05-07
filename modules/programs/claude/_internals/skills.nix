@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   programs.claude-code.skills = {
     remember = ''
       ---

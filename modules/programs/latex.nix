@@ -1,5 +1,8 @@
-{...}: {
-  flake.modules.homeManager.latex = {pkgs, ...}: {
-    home.packages = [pkgs.texliveFull];
-  };
+{ ... }:
+{
+  flake.modules.homeManager.latex =
+    { pkgs, ... }:
+    {
+      home.packages = [ pkgs.texliveFull ];
+    };
 }

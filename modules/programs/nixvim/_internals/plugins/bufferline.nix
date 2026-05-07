@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   programs.nixvim.plugins.bufferline = {
     enable = true;
 
@@ -12,15 +13,15 @@
       # only put bufferline after side panels
       offsets =
         map
-        (filetype: {
-          inherit filetype;
-          separator = true;
-          text-align = "left";
-        })
-        [
-          "neo-tree"
-          "undotree"
-        ];
+          (filetype: {
+            inherit filetype;
+            separator = true;
+            text-align = "left";
+          })
+          [
+            "neo-tree"
+            "undotree"
+          ];
     };
   };
 }

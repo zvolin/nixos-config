@@ -2,7 +2,8 @@
   pkgs,
   lib,
   ...
-}: let
+}:
+let
   bwrap = lib.getExe pkgs.bubblewrap;
   claude = lib.getExe pkgs.claude-code;
 
@@ -235,11 +236,12 @@
 
   # HM module reads cfg.package.meta (e.g. for symlinkJoin when plugins are
   # configured), so propagate meta from the original package.
-  claude-wrapped =
-    claude-wrapper
-    // {
-      meta = (pkgs.claude-code.meta or {}) // {mainProgram = "claude";};
+  claude-wrapped = claude-wrapper // {
+    meta = (pkgs.claude-code.meta or { }) // {
+      mainProgram = "claude";
     };
-in {
+  };
+in
+{
   programs.claude-code.package = claude-wrapped;
 }

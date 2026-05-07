@@ -1,6 +1,7 @@
-{inputs, ...}: {
+{ inputs, ... }:
+{
   flake.modules.nixos.xremap = {
-    imports = [inputs.xremap.nixosModules.default];
+    imports = [ inputs.xremap.nixosModules.default ];
 
     services.xremap = {
       enable = true;

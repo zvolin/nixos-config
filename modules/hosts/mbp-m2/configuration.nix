@@ -1,4 +1,5 @@
-{inputs, ...}: {
+{ inputs, ... }:
+{
   flake.modules.nixos.mbp-m2 = {
     imports = with inputs.self.modules.nixos; [
       system-desktop

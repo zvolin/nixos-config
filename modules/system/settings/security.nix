@@ -1,5 +1,6 @@
-{...}: {
+{ ... }:
+{
   flake.modules.nixos.security = {
-    security.pam.services.hyprlock = {};
+    security.pam.services.hyprlock = { };
   };
 }

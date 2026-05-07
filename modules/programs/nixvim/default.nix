@@ -1,4 +1,5 @@
-{inputs, ...}: {
+{ inputs, ... }:
+{
   flake.modules.nixos.nixvim = {
     imports = [
       inputs.nixvim.nixosModules.nixvim
@@ -15,6 +16,6 @@
       vimAlias = true;
     };
 
-    home-manager.sharedModules = [inputs.nixvim.homeModules.nixvim];
+    home-manager.sharedModules = [ inputs.nixvim.homeModules.nixvim ];
   };
 }

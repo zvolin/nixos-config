@@ -2,7 +2,8 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   homeDir = config.home.homeDirectory;
   dataDir = "${homeDir}/.local/share/qdrant";
   configFile = pkgs.writeText "qdrant-config.yaml" ''
@@ -15,11 +16,12 @@
       snapshots_path: ${dataDir}/snapshots
     telemetry_disabled: true
   '';
-in {
+in
+{
   systemd.user.services.qdrant = {
     Unit = {
       Description = "Qdrant vector database for ferrex memory";
-      After = ["network.target"];
+      After = [ "network.target" ];
     };
     Service = {
       ExecStart = "${pkgs.qdrant}/bin/qdrant --config-path ${configFile}";
@@ -27,7 +29,7 @@ in {
       RestartSec = 5;
     };
     Install = {
-      WantedBy = ["default.target"];
+      WantedBy = [ "default.target" ];
     };
   };
 }

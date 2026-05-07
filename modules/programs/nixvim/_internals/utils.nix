@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   # utility functions for other modules
   programs.nixvim.extraConfigLua = ''
     -- get the filetype of a window with given handle

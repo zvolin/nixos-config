@@ -1,7 +1,8 @@
-{config, ...}: let
+{ config, ... }:
+let
   # --- Deny list ---
   home = config.home.homeDirectory;
-  expandTilde = path: builtins.replaceStrings ["~"] [home] path;
+  expandTilde = path: builtins.replaceStrings [ "~" ] [ home ] path;
 
   mkDenyTriple = path: [
     "Read(${path})"
@@ -52,6 +53,7 @@
       "Bash(git push *)"
       "Bash(git push)"
     ];
-in {
+in
+{
   programs.claude-code.settings.permissions.deny = denyList;
 }

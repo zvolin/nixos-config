@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   flake.modules.nixos.networking = {
     services.connman = {
       enable = true;

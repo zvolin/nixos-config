@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   flake.modules.nixos.searxng = {
     services.searx = {
       enable = true;

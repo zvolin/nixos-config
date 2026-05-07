@@ -1,4 +1,5 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   jq = "${pkgs.jq}/bin/jq";
 
   statuslineScript = pkgs.writeShellScript "claude-statusline" ''
@@ -64,7 +65,8 @@
 
     printf '%b' "$out"
   '';
-in {
+in
+{
   programs.claude-code.settings.statusLine = {
     type = "command";
     command = "${statuslineScript}";

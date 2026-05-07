@@ -2,12 +2,13 @@
   pkgs,
   lib,
   ...
-}: let
+}:
+let
   claude-icon-ico = pkgs.fetchurl {
     url = "https://claude.ai/favicon.ico";
     sha256 = "1qw5w3c2v6clyv608kizpppyz501v29cnmlmibz51szgif15asl1";
   };
-  claude-icon = pkgs.runCommand "claude-icon.png" {} ''
+  claude-icon = pkgs.runCommand "claude-icon.png" { } ''
     ${pkgs.imagemagick}/bin/convert "${claude-icon-ico}[0]" -resize 128x128 $out
   '';
   claude-formatter = pkgs.writeShellScriptBin "claude-formatter" ''
@@ -30,7 +31,8 @@
       *.rs)  format rustfmt ${lib.getExe pkgs.rustfmt} "$file_path" ;;
     esac 2>/dev/null || true
   '';
-in {
+in
+{
   programs.claude-code.settings.hooks = {
     Notification = [
       {

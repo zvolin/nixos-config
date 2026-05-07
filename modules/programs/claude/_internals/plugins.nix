@@ -2,7 +2,8 @@
   inputs,
   pkgs,
   ...
-}: let
+}:
+let
   patchedSuperpowers = pkgs.applyPatches {
     name = "superpowers-patched";
     src = inputs.superpowers;
@@ -15,9 +16,10 @@
       "${inputs.self}/patches/superpowers-implementer-prompt.patch"
     ];
   };
-in {
+in
+{
   programs.claude-code = {
-    plugins = [patchedSuperpowers];
+    plugins = [ patchedSuperpowers ];
 
     settings = {
       enabledPlugins = {
