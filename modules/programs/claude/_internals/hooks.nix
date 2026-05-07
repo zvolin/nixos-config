@@ -25,7 +25,7 @@
     }
 
     case "$file_path" in
-      *.nix) format alejandra ${lib.getExe pkgs.alejandra} -q "$file_path" ;;
+      *.nix) format nixfmt ${lib.getExe pkgs.nixfmt} -q "$file_path" ;;
       *.go)  format gofmt ${pkgs.go}/bin/gofmt -w "$file_path" ;;
       *.rs)  format rustfmt ${lib.getExe pkgs.rustfmt} "$file_path" ;;
     esac 2>/dev/null || true
