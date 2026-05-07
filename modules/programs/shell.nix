@@ -109,7 +109,7 @@
         navigate = true;
         line-numbers = true;
         wrap-max-lines = "unlimited";
-        wrap-right-percent = "0";
+        wrap-right-percent = 1;
       };
     };
 
