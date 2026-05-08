@@ -68,6 +68,22 @@
         "type": "github"
       }
     },
+    "claude-rules": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773887153,
+        "narHash": "sha256-SctktR0CKwsBJ0MCQxb/QfctLDBQkqPOLE6NZISvX6c=",
+        "owner": "lifedever",
+        "repo": "claude-rules",
+        "rev": "6d5f8bd62c2d96ca2e07c0c7b8159f75fd2323b6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lifedever",
+        "repo": "claude-rules",
+        "type": "github"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1775236976,
@@ -565,6 +581,7 @@
     },
     "root": {
       "inputs": {
+        "claude-rules": "claude-rules",
         "ferrex": "ferrex",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",

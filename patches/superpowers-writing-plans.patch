@@ -1,6 +1,6 @@
 diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
---- a/skills/writing-plans/SKILL.md	2026-04-10 02:24:13.342049802 +0200
-+++ b/skills/writing-plans/SKILL.md	2026-04-10 02:24:13.342093135 +0200
+--- a/skills/writing-plans/SKILL.md	2026-05-07 11:48:36.584606710 +0000
++++ b/skills/writing-plans/SKILL.md	2026-05-07 11:49:08.665842150 +0000
 @@ -7,7 +7,7 @@
 
  ## Overview
@@ -27,7 +27,7 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
 
  **Goal:** [One sentence describing what this builds]
 
-@@ -57,6 +56,10 @@
+@@ -57,9 +56,21 @@
 
  **Tech Stack:** [Key technologies/libraries]
 
@@ -38,7 +38,27 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
  ---
  ```
 
-@@ -95,12 +98,6 @@
++**Plan-header copy of `## Coding Rules`.** Copy the spec's `## Coding Rules` section verbatim into the plan header, immediately after `## Execution Strategy`. Then emit one extra mandatory line directly below the section:
++
++```
++**Polish:** post-implementation-polish → <rule names or `none`>
++```
++
++The rules in the dedicated `**Polish:**` line are whatever the spec's `## Coding Rules` Polish row carries. If the two ever drift, the dedicated line is authoritative — that is what the polish dispatcher reads. Refuse to emit a plan without this line.
++
+ ## Task Structure
+
+ ````markdown
+@@ -70,6 +81,8 @@
+ - Modify: `exact/path/to/existing.py:123-145`
+ - Test: `tests/exact/path/to/test.py`
+
++**Rules:** <rule names or `none`>
++
+ - [ ] **Step 1: Write the failing test**
+
+ ```python
+@@ -95,12 +108,6 @@
  Run: `pytest tests/path/test.py::test_name -v`
  Expected: PASS
 
@@ -51,7 +71,7 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
  ````
 
  ## No Placeholders
-@@ -113,11 +110,32 @@
+@@ -113,11 +120,33 @@
  - Steps that describe what to do without showing how (code blocks required for code steps)
  - References to types, functions, or methods not defined in any task
 
@@ -83,10 +103,11 @@ diff -ruN a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
 +- DRY, YAGNI, TDD, KISS
 +- Reuse existing utilities and dependencies before introducing new ones
 +- Follow the existing conventions and style used in the project, unless there's a clear reason not to
++- Every task carries a `**Rules:**` field, every plan header carries a `**Polish:**` line — both copied from the spec. Refuse to ship the plan without them.
 
  ## Self-Review
 
-@@ -133,20 +151,16 @@
+@@ -133,20 +162,16 @@
 
  ## Execution Handoff
 

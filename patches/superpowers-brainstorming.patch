@@ -1,7 +1,7 @@
 diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
---- a/skills/brainstorming/SKILL.md	2026-04-11 20:44:16.246998081 +0200
-+++ b/skills/brainstorming/SKILL.md	2026-04-11 21:00:21.426399647 +0200
-@@ -22,46 +22,66 @@
+--- a/skills/brainstorming/SKILL.md	2026-05-07 11:39:16.314573575 +0000
++++ b/skills/brainstorming/SKILL.md	2026-05-07 11:39:41.977398532 +0000
+@@ -22,48 +22,68 @@
  You MUST create a task for each of these items and complete them in order:
 
  1. **Explore project context** — check files, docs, recent commits
@@ -87,6 +87,8 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 -**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
 +**Terminal state:** writing-plans → execute with the strategy recorded in the plan's header (Parallel subagents or Agent teams). There is no sequential mode. Do NOT invoke any other skill — writing-plans is the only next step after brainstorming. Do NOT ask the user to pick a strategy — the heuristic selection is now fixed in the spec and plan.
 
+ ## The Process
+
 @@ -77,11 +97,30 @@
  - Only one question per message - if a topic needs more exploration, break it into multiple questions
  - Focus on understanding: purpose, constraints, success criteria
@@ -118,7 +120,7 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 
  **Presenting the design:**
 
-@@ -111,29 +150,83 @@
+@@ -111,29 +150,104 @@
  - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
    - (User preferences for spec location override this default)
  - Use elements-of-style:writing-clearly-and-concisely skill if available
@@ -158,9 +160,10 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 -**Implementation:**
 +**Select execution strategy:**
 +Apply the Strategy Selection Heuristics (section below) to auto-select Parallel subagents or Agent teams. Announce the choice with a one-line reason. Do not ask the user.
-+
+
 +**Transition to implementation:**
-+- Invoke the writing-plans skill to create a detailed implementation plan
+ - Invoke the writing-plans skill to create a detailed implementation plan
+-- Do NOT invoke any other skill. writing-plans is the next step.
 +- Then execute with the selected strategy
 +- Do NOT invoke any other skill. writing-plans is the next step after brainstorming.
 +
@@ -187,6 +190,27 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 +
 +**Do NOT ask the user to confirm the selection.** Announce it and write it into the spec. The user can countermand it explicitly; otherwise proceed.
 +
++## Coding Rules Section (Mandatory)
++
++Every spec MUST contain a `## Coding Rules` section near the end, alongside `## Execution Strategy`. The section pairs each task with the rule files the implementer must read before touching code, plus a Polish row naming the rules the polish subagent loads.
++
++Schema:
++
++```markdown
++## Coding Rules
++
++- Task 1 [<task title>]: <rule names or `none`>
++- Task 2 [<task title>]: <rule names or `none`>
++- ...
++- Polish: <rule names or `none`>
++```
++
++Rule names are path-relative tokens (no extension, forward slashes) under `~/.config/claude/rules/` — for example `languages/rust`, `base/git`, `frameworks/react`. The literal token `none` (case-insensitive, bare, no parentheses) is allowed wherever a rule name list is expected.
++
++The Polish row is mandatory. Writing-plans propagates the section verbatim into the plan header and adds a dedicated `**Polish:** post-implementation-polish → <rules>` line that polish-phase dispatch reads.
++
++If you are not sure which rules apply to a task, write `none` and let the implementer escalate if a rule is needed.
++
 +## Humanize All Non-Code Prose
 +
 +Apply the `humanizer` skill to all non-code text throughout brainstorming. This includes:
@@ -208,17 +232,15 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 +- Sycophantic openers ("Great question!", "Absolutely!")
 +- Generic positive conclusions ("the future looks bright")
 +- Em dash overuse, excessive boldface, emoji decoration
-
--- Invoke the writing-plans skill to create a detailed implementation plan
--- Do NOT invoke any other skill. writing-plans is the next step.
++
 +Write like a person talking to another person. Vary sentence rhythm. Have opinions. Be specific.
 
  ## Key Principles
 
 diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brainstorming/spec-document-reviewer-prompt.md
---- a/skills/brainstorming/spec-document-reviewer-prompt.md	2026-04-11 20:44:16.246998081 +0200
-+++ b/skills/brainstorming/spec-document-reviewer-prompt.md	2026-04-11 20:44:16.250998082 +0200
-@@ -16,13 +16,33 @@
+--- a/skills/brainstorming/spec-document-reviewer-prompt.md	2026-05-07 11:39:16.315705226 +0000
++++ b/skills/brainstorming/spec-document-reviewer-prompt.md	2026-05-07 11:39:51.304880220 +0000
+@@ -16,13 +16,34 @@
 
      ## What to Check
 
@@ -233,6 +255,7 @@ diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brain
 -    | YAGNI | Unrequested features, over-engineering |
 +    | Dependencies | External dependencies or prerequisites not mentioned |
 +    | Testability | Success criteria that cannot be verified |
++    | Coding Rules | Missing or empty `## Coding Rules` section, missing Polish row, or Polish row references rules that do not exist under `~/.config/claude/rules/` |
 +
 +    ### Medium Issues (should fix)
 +
@@ -254,7 +277,7 @@ diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brain
 
      ## Calibration
 
-@@ -37,13 +57,26 @@
+@@ -37,13 +58,26 @@
 
      ## Spec Review
 

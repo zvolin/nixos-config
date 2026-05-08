@@ -1,6 +1,6 @@
 diff -ruN a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
---- a/skills/executing-plans/SKILL.md	2026-04-10 02:24:13.344279183 +0200
-+++ b/skills/executing-plans/SKILL.md	2026-04-10 02:24:13.344313475 +0200
+--- a/skills/executing-plans/SKILL.md	2026-05-07 11:55:56.075362962 +0000
++++ b/skills/executing-plans/SKILL.md	2026-05-07 11:56:12.551239666 +0000
 @@ -27,7 +27,8 @@
  1. Mark as in_progress
  2. Follow each step exactly (plan has bite-sized steps)
@@ -11,7 +11,22 @@ diff -ruN a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
 
  ### Step 3: Complete Development
 
-@@ -44,6 +45,8 @@
+@@ -36,6 +37,14 @@
+ - **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
+ - Follow that skill to verify tests, present options, execute choice
+
++## Polish Phase
++
++After every task in the plan is marked complete and verified, dispatch the post-implementation-polish skill against the full implementation. The Polish line in the plan header (`**Polish:** post-implementation-polish → <rules>`) names the rules the polish subagent loads.
++
++Polish runs once per plan. If polish flags blockers, the controller addresses them and re-runs polish. Max 3 polish iterations before escalating to user.
++
++Polish runs in the same worktree as the implementation. No fresh checkout. Phases 4–6 commit on top of the implementation commits.
++
+ ## When to Stop and Ask for Help
+
+ **STOP executing immediately when:**
+@@ -44,6 +53,8 @@
  - You don't understand an instruction
  - Verification fails repeatedly
 

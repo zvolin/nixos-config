@@ -9,6 +9,7 @@
       ./_internals/permissions.nix
       ./_internals/plugins.nix
       ./_internals/qdrant.nix
+      ./_internals/rules.nix
       ./_internals/statusline.nix
       ./_internals/sandbox.nix
       ./_internals/security.nix

@@ -1,6 +1,22 @@
---- a/skills/subagent-driven-development/implementer-prompt.md	2026-04-10 02:24:13.348903822 +0200
-+++ b/skills/subagent-driven-development/implementer-prompt.md	2026-04-10 02:24:13.348937655 +0200
-@@ -71,6 +71,19 @@
+diff -ruN a/skills/subagent-driven-development/implementer-prompt.md b/skills/subagent-driven-development/implementer-prompt.md
+--- a/skills/subagent-driven-development/implementer-prompt.md	2026-05-07 12:46:08.335575923 +0000
++++ b/skills/subagent-driven-development/implementer-prompt.md	2026-05-07 12:46:32.691339711 +0000
+@@ -12,6 +12,14 @@
+
+     [FULL TEXT of task from plan - paste it here, don't make subagent read file]
+
++    ## Coding Rules
++
++    Before reading any task code, read every rule file named in this task's `**Rules:**` field. If you are the polish subagent, read the rule files named in the plan-header's dedicated `**Polish:**` line (which is authoritative — never read the `## Coding Rules` Polish row directly). Files live at `~/.config/claude/rules/<path>.md`.
++
++    If a rule conflicts with the plan, escalate to the controller — never silently override the plan.
++
++    If the field value is `none`, report "no rules to load" and proceed.
++
+     ## Context
+
+     [Scene-setting: where this fits, dependencies, architectural context]
+@@ -71,6 +79,19 @@
      The controller can provide more context, re-dispatch with a more capable model,
      or break the task into smaller pieces.
 

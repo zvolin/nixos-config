@@ -27,6 +27,7 @@
           brightness
           browser
           claude
+          cleanup
           codex
           connman-gui
           direnv
@@ -39,6 +40,7 @@
           latex
           mako
           mcp
+          post-implementation-polish
           research
           terminal
           waybar

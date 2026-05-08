@@ -60,6 +60,11 @@
       flake = false;
     };
 
+    claude-rules = {
+      url = "github:lifedever/claude-rules";
+      flake = false;
+    };
+
     ferrex = {
       url = "github:vaporif/ferrex";
       inputs.nixpkgs.follows = "nixpkgs";

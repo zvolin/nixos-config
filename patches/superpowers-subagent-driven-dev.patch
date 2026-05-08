@@ -1,10 +1,11 @@
---- a/skills/subagent-driven-development/SKILL.md	2026-04-18 01:03:50.465227671 +0200
-+++ b/skills/subagent-driven-development/SKILL.md	2026-04-18 01:13:17.588774264 +0200
+diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven-development/SKILL.md
+--- a/skills/subagent-driven-development/SKILL.md	2026-05-07 12:02:13.025398455 +0000
++++ b/skills/subagent-driven-development/SKILL.md	2026-05-07 12:02:45.209641299 +0000
 @@ -55,15 +55,19 @@
          "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
          "Code quality reviewer subagent approves?" [shape=diamond];
          "Implementer subagent fixes quality issues" [shape=box];
-+        "Comment cleanup pass" [shape=box];
++        "Prose cleanup pass" [shape=box];
          "Mark task complete in TodoWrite" [shape=box];
      }
 
@@ -33,8 +34,8 @@
 -    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
 -    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
 +    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review (max 10)"];
-+    "Code quality reviewer subagent approves?" -> "Comment cleanup pass" [label="yes, or minor only"];
-+    "Comment cleanup pass" -> "Mark task complete in TodoWrite";
++    "Code quality reviewer subagent approves?" -> "Prose cleanup pass" [label="yes, or minor only"];
++    "Prose cleanup pass" -> "Mark task complete in TodoWrite";
      "Mark task complete in TodoWrite" -> "More tasks remain?";
      "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
      "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
@@ -53,7 +54,7 @@
  ## Model Selection
 
  Use the least powerful model that can handle each role to conserve cost and increase speed.
-@@ -117,6 +129,37 @@
+@@ -117,6 +129,41 @@
 
  **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
@@ -63,16 +64,16 @@
 +- **Minor issues don't block:** Note them in the task completion report but proceed to the next task. Do not loop on minor-only feedback.
 +- **Same-issue cap:** If the same issue appears in 3 consecutive review cycles, escalate — the implementer and reviewer disagree on how to fix it.
 +
-+## Comment Cleanup Pass
++## Prose Cleanup Pass
 +
-+After code quality review approves (or only minor issues remain), run a quick cleanup before marking the task complete:
++Every task ends with a prose cleanup pass. This is not optional. Run after code-quality review reaches zero critical and zero important findings, before marking the task complete:
 +
-+- Strip comments that restate what the code does (`// Initialize the logger`, `// Return the result`)
-+- Strip AI-obvious comments (apply `humanizer` patterns — no "Ensures proper...", "Leverages...", "Facilitates...")
-+- Humanize remaining comments, docstrings, and error messages — direct and specific, no filler
-+- Keep only comments that explain *why* something is done a non-obvious way
++1. Strip every comment that restates what the code does (`// Initialize the logger`, `// Return the result`).
++2. Strip AI-obvious phrases — apply `humanizer` patterns. No "ensures proper...", "leverages...", "facilitates...", "serves as...", no significance inflation, no rule-of-three padding.
++3. Rewrite remaining comments, docstrings, and error messages so they sound like a person wrote them. Direct and specific. No filler.
++4. Keep only comments that explain *why* code does something a non-obvious way — a hidden constraint, an invariant, a workaround.
 +
-+This is a quick pass, not a full rewrite — if comments are already clean, skip it.
++The implementer subagent runs this pass itself before reporting the task complete. The controller does not advance to the next task until the pass is reported as done.
 +
 +## Pre-Merge User Review
 +
@@ -88,10 +89,14 @@
 +
 +Wait for the user to confirm before continuing to the finishing skill. If the user requests changes, address them and re-present the diff command.
 +
++## Polish Dispatch (End-of-Plan)
++
++After the final code reviewer approves and the user confirms the diff, dispatch the `post-implementation-polish` skill against the full implementation before invoking `finishing-a-development-branch`. The plan header's `**Polish:**` line names the rules the polish subagent loads. See the `executing-plans` skill's `## Polish Phase` for iteration limits.
++
  ## Prompt Templates
 
  - `./implementer-prompt.md` - Dispatch implementer subagent
-@@ -196,6 +239,13 @@
+@@ -196,6 +243,13 @@
  [Dispatch final code-reviewer]
  Final reviewer: All requirements met, ready to merge
 
