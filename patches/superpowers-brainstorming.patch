@@ -1,7 +1,7 @@
 diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
---- a/skills/brainstorming/SKILL.md	2026-05-07 11:39:16.314573575 +0000
-+++ b/skills/brainstorming/SKILL.md	2026-05-07 11:39:41.977398532 +0000
-@@ -22,48 +22,68 @@
+--- a/skills/brainstorming/SKILL.md	2026-05-08 18:34:28.082552024 +0000
++++ b/skills/brainstorming/SKILL.md	2026-05-08 18:34:53.562216011 +0000
+@@ -22,48 +22,69 @@
  You MUST create a task for each of these items and complete them in order:
 
  1. **Explore project context** — check files, docs, recent commits
@@ -27,9 +27,14 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 +    > "Selected execution strategy: **<strategy>**. Reason: <one line grounded in the heuristics>."
 +
 +    Strategies (only two — there is no sequential mode):
-+    - **Parallel subagents** → writing-plans → subagent-driven-development. Default.
-+    - **Agent teams** → writing-plans → Agent teams. For large features with cross-cutting coordination.
-+12. **Transition to implementation** — invoke writing-plans. Writing-plans copies `## Execution Strategy` from the spec into the plan header verbatim. Then execute with the strategy recorded in the plan — no further confirmation.
++    - **Parallel subagents**: writing-plans produces the plan, executing-plans dispatches to subagent-driven-development. Default.
++    - **Agent teams**: writing-plans produces the plan, executing-plans dispatches to an Agent team. For large features with cross-cutting coordination.
++12. **Transition to planning** — do NOT invoke writing-plans directly. Announce:
++
++    > "Spec saved to `<path>`. Strategy: **<strategy>**. To continue, clear context and invoke writing-plans with this spec:
++    >
++    > `/clear`
++    > then: `/writing-plans <spec-path>`"
 
  ## Process Flow
 
@@ -51,9 +56,7 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
      "User reviews spec?" [shape=diamond];
 -    "Invoke writing-plans skill" [shape=doublecircle];
 +    "Select strategy (heuristic)" [shape=box];
-+    "Invoke writing-plans skill" [shape=box];
-+    "Parallel subagents\n(subagent-driven-dev)" [shape=doublecircle];
-+    "Agent teams" [shape=doublecircle];
++    "Announce spec path + clear context" [shape=doublecircle];
 
 -    "Explore project context" -> "Visual questions ahead?";
 +    "Explore project context" -> "Check ferrex memory";
@@ -78,18 +81,16 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
      "User reviews spec?" -> "Write design doc" [label="changes requested"];
 -    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
 +    "User reviews spec?" -> "Select strategy (heuristic)" [label="approved"];
-+    "Select strategy (heuristic)" -> "Invoke writing-plans skill";
-+    "Invoke writing-plans skill" -> "Parallel subagents\n(subagent-driven-dev)" [label="strategy=parallel"];
-+    "Invoke writing-plans skill" -> "Agent teams" [label="strategy=teams"];
++    "Select strategy (heuristic)" -> "Announce spec path + clear context";
  }
  ```
 
 -**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
-+**Terminal state:** writing-plans → execute with the strategy recorded in the plan's header (Parallel subagents or Agent teams). There is no sequential mode. Do NOT invoke any other skill — writing-plans is the only next step after brainstorming. Do NOT ask the user to pick a strategy — the heuristic selection is now fixed in the spec and plan.
++**Terminal state:** Announce the spec path and strategy, tell the user to clear context and invoke writing-plans. Do NOT invoke writing-plans directly — the user does it in a clean session. Do NOT ask the user to pick a strategy — the heuristic selection is fixed in the spec.
 
  ## The Process
 
-@@ -77,11 +97,30 @@
+@@ -77,11 +98,30 @@
  - Only one question per message - if a topic needs more exploration, break it into multiple questions
  - Focus on understanding: purpose, constraints, success criteria
 
@@ -120,7 +121,30 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 
  **Presenting the design:**
 
-@@ -111,29 +150,104 @@
+@@ -91,6 +131,22 @@
+ - Cover: architecture, components, data flow, error handling, testing
+ - Be ready to go back and clarify if something doesn't make sense
+
++**Vertical-slice discipline:**
++
++Every task in the design must be a thin vertical slice — independently demoable, touching all layers needed for that slice of functionality. Reject horizontal tasks like "set up all database tables", "build all API endpoints", "wire all UI components" that cut across features.
++
++**Reject:**
++- T1: Create schema for users, posts, comments
++- T2: Build CRUD endpoints for all entities
++- T3: Wire up UI for everything
++
++**Require:**
++- T1: User registration (schema + endpoint + UI)
++- T2: Create post (schema + endpoint + UI, depends on T1)
++- T3: Comments (schema + endpoint + UI, depends on T2)
++
++**Escape hatch for cross-cutting prerequisites:** A task that is a shared prerequisite (add a library, set up a build tool, create shared types) can be horizontal, but must carry `**Task type:** prerequisite` in the task block and be placed at the root of the dependency graph (`depends on: none`). The vertical-slice rule applies to feature work, not scaffolding.
++
+ **Design for isolation and clarity:**
+
+ - Break the system into smaller units that each have one clear purpose, communicate through well-defined interfaces, and can be understood and tested independently
+@@ -111,29 +167,126 @@
  - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
    - (User preferences for spec location override this default)
  - Use elements-of-style:writing-clearly-and-concisely skill if available
@@ -160,12 +184,11 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 -**Implementation:**
 +**Select execution strategy:**
 +Apply the Strategy Selection Heuristics (section below) to auto-select Parallel subagents or Agent teams. Announce the choice with a one-line reason. Do not ask the user.
-
-+**Transition to implementation:**
- - Invoke the writing-plans skill to create a detailed implementation plan
--- Do NOT invoke any other skill. writing-plans is the next step.
-+- Then execute with the selected strategy
-+- Do NOT invoke any other skill. writing-plans is the next step after brainstorming.
++
++**Transition to planning:**
++- Do NOT invoke writing-plans directly. Announce the spec path and tell the user to clear context.
++- The user invokes writing-plans in a clean session. Writing-plans reads the spec file, not conversation state.
++- Do NOT invoke any implementation or execution skill.
 +
 +## Strategy Selection Heuristics
 +
@@ -211,6 +234,28 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 +
 +If you are not sure which rules apply to a task, write `none` and let the implementer escalate if a rule is needed.
 +
++## Task Dependency Graph Section (Mandatory)
++
++Every spec MUST contain a `## Task Dependency Graph` section alongside `## Coding Rules` and `## Execution Strategy`. The section lists each task and its dependencies:
++
++```markdown
++## Task Dependency Graph
++
++| Task | Depends On |
++|------|------------|
++| T1   | none       |
++| T2   | T1         |
++| T3   | T1         |
++| T4   | T2, T3     |
++```
++
++When defining tasks during the design, assign each a `depends on:` field. The table is a summary; per-task fields are authoritative if they drift. Tasks in the spec MUST appear in topological order (a task appears after all its dependencies).
++
++Validation rules (checked by spec-document-reviewer and writing-plans self-review):
++- No cycles (A depends on B depends on A)
++- No references to undefined task IDs
++- No duplicate task IDs
++
 +## Humanize All Non-Code Prose
 +
 +Apply the `humanizer` skill to all non-code text throughout brainstorming. This includes:
@@ -232,15 +277,17 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 +- Sycophantic openers ("Great question!", "Absolutely!")
 +- Generic positive conclusions ("the future looks bright")
 +- Em dash overuse, excessive boldface, emoji decoration
-+
+
+-- Invoke the writing-plans skill to create a detailed implementation plan
+-- Do NOT invoke any other skill. writing-plans is the next step.
 +Write like a person talking to another person. Vary sentence rhythm. Have opinions. Be specific.
 
  ## Key Principles
 
 diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brainstorming/spec-document-reviewer-prompt.md
---- a/skills/brainstorming/spec-document-reviewer-prompt.md	2026-05-07 11:39:16.315705226 +0000
-+++ b/skills/brainstorming/spec-document-reviewer-prompt.md	2026-05-07 11:39:51.304880220 +0000
-@@ -16,13 +16,34 @@
+--- a/skills/brainstorming/spec-document-reviewer-prompt.md	2026-05-08 18:34:28.084226861 +0000
++++ b/skills/brainstorming/spec-document-reviewer-prompt.md	2026-05-08 18:34:28.085628239 +0000
+@@ -16,13 +16,36 @@
 
      ## What to Check
 
@@ -256,6 +303,7 @@ diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brain
 +    | Dependencies | External dependencies or prerequisites not mentioned |
 +    | Testability | Success criteria that cannot be verified |
 +    | Coding Rules | Missing or empty `## Coding Rules` section, missing Polish row, or Polish row references rules that do not exist under `~/.config/claude/rules/` |
++    | Task Dependency Graph | Missing or empty `## Task Dependency Graph` section, cycles in the graph, references to undefined task IDs, duplicate task IDs, or disagreement between table and per-task `depends on:` fields |
 +
 +    ### Medium Issues (should fix)
 +
@@ -266,6 +314,7 @@ diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brain
 +    | Testing | No concrete verification steps |
 +    | File list | No clear list of files to be created or modified |
 +    | Scope | Boundaries that could cause confusion during implementation |
++    | Vertical Slices | Feature tasks that only deliver one layer (only schema, only endpoints) without `**Task type:** prerequisite` marker |
 +
 +    ### Minor Issues (nice to fix)
 +
@@ -277,7 +326,7 @@ diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brain
 
      ## Calibration
 
-@@ -37,13 +58,26 @@
+@@ -37,13 +60,26 @@
 
      ## Spec Review
 

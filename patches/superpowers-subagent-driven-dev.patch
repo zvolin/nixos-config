@@ -1,16 +1,49 @@
 diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven-development/SKILL.md
---- a/skills/subagent-driven-development/SKILL.md	2026-05-07 12:02:13.025398455 +0000
-+++ b/skills/subagent-driven-development/SKILL.md	2026-05-07 12:02:45.209641299 +0000
-@@ -55,15 +55,19 @@
+--- a/skills/subagent-driven-development/SKILL.md	2026-05-08 18:12:15.336990538 +0000
++++ b/skills/subagent-driven-development/SKILL.md	2026-05-08 18:12:39.810572374 +0000
+@@ -13,29 +13,7 @@
+
+ ## When to Use
+
+-```dot
+-digraph when_to_use {
+-    "Have implementation plan?" [shape=diamond];
+-    "Tasks mostly independent?" [shape=diamond];
+-    "Stay in this session?" [shape=diamond];
+-    "subagent-driven-development" [shape=box];
+-    "executing-plans" [shape=box];
+-    "Manual execution or brainstorm first" [shape=box];
+-
+-    "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
+-    "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
+-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
+-    "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
+-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
+-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
+-}
+-```
+-
+-**vs. Executing Plans (parallel session):**
+-- Same session (no context switch)
+-- Fresh subagent per task (no context pollution)
+-- Two-stage review after each task: spec compliance first, then code quality
+-- Faster iteration (no human-in-loop between tasks)
++This skill is dispatched by the executing-plans router. Do not invoke it directly.
+
+ ## The Process
+
+@@ -55,15 +33,22 @@
          "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
          "Code quality reviewer subagent approves?" [shape=diamond];
          "Implementer subagent fixes quality issues" [shape=box];
 +        "Prose cleanup pass" [shape=box];
          "Mark task complete in TodoWrite" [shape=box];
++        "Flip checkboxes in plan file" [shape=box];
      }
 
      "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
 +    "Set up worktree (superpowers:using-git-worktrees)" [shape=box];
++    "Read dependency graph, compute batches" [shape=box];
      "More tasks remain?" [shape=diamond];
      "Dispatch final code reviewer subagent for entire implementation" [shape=box];
 +    "Show diff command for user terminal review" [shape=box];
@@ -18,11 +51,12 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 
 -    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
 +    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Set up worktree (superpowers:using-git-worktrees)";
-+    "Set up worktree (superpowers:using-git-worktrees)" -> "Dispatch implementer subagent (./implementer-prompt.md)";
++    "Set up worktree (superpowers:using-git-worktrees)" -> "Read dependency graph, compute batches";
++    "Read dependency graph, compute batches" -> "Dispatch implementer subagent (./implementer-prompt.md)";
      "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
      "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
      "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-@@ -71,19 +75,27 @@
+@@ -71,19 +56,28 @@
      "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
      "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
      "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
@@ -33,10 +67,12 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
      "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
 -    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
 -    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
+-    "Mark task complete in TodoWrite" -> "More tasks remain?";
 +    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review (max 10)"];
 +    "Code quality reviewer subagent approves?" -> "Prose cleanup pass" [label="yes, or minor only"];
 +    "Prose cleanup pass" -> "Mark task complete in TodoWrite";
-     "Mark task complete in TodoWrite" -> "More tasks remain?";
++    "Mark task complete in TodoWrite" -> "Flip checkboxes in plan file";
++    "Flip checkboxes in plan file" -> "More tasks remain?";
      "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
      "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
 -    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
@@ -54,7 +90,7 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
  ## Model Selection
 
  Use the least powerful model that can handle each role to conserve cost and increase speed.
-@@ -117,6 +129,41 @@
+@@ -117,6 +111,65 @@
 
  **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
@@ -63,6 +99,30 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 +- **Max iterations:** 10 for any review loop (spec compliance or code quality). After 10 iterations with unresolved critical or important issues, escalate to the user.
 +- **Minor issues don't block:** Note them in the task completion report but proceed to the next task. Do not loop on minor-only feedback.
 +- **Same-issue cap:** If the same issue appears in 3 consecutive review cycles, escalate — the implementer and reviewer disagree on how to fix it.
++
++## Batch Dispatch from Dependency Graph
++
++The controller reads the `## Task Dependency Graph` on plan load and computes parallel batches via topological sort:
++
++- Batch 1: tasks with no dependencies (or all deps already `- [x]`)
++- Batch 2: tasks whose deps are all in Batch 1
++- etc.
++
++The dependency graph determines task ordering. The controller never starts a task before its dependencies are complete. Within a batch, the controller dispatches tasks sequentially by default. Parallel dispatch within a batch is permitted only when the tasks' `**Files:**` lists are fully disjoint — no shared files between any two tasks in the batch. The controller checks file lists before deciding. If any overlap exists, dispatch those tasks sequentially.
++
++The controller waits for the entire batch to complete (all reviews passed) before dispatching the next batch.
++
++## Checkpoint Resume
++
++Plan files live under `docs/superpowers/plans/`, which is globally gitignored. Checkpoints are edits to the plan file in place. The plan file stays in the main tree (where writing-plans created it). The SDD controller runs in the user's session (main tree) and dispatches implementer subagents into the worktree. The controller reads and writes the plan file from the main tree. On resume, the user invokes executing-plans from the main tree with the same plan path.
++
++After all tasks in a batch pass two-stage review and prose cleanup, the controller edits the plan file: flips all `- [ ]` → `- [x]` for each completed task in that batch. No git commit (the file is gitignored). The edit persists on disk.
++
++On resume, executing-plans reads the plan file and skips tasks where all steps are `- [x]`.
++
++Granularity is per-task, not per-step. Subagents either finish a task or fail — there is no useful mid-task resume point.
++
++Only the controller edits the plan file. Subagents never touch it. The controller waits for all tasks in a batch to complete, then flips checkboxes for the batch. This avoids concurrent edits.
 +
 +## Prose Cleanup Pass
 +
@@ -91,22 +151,139 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 +
 +## Polish Dispatch (End-of-Plan)
 +
-+After the final code reviewer approves and the user confirms the diff, dispatch the `post-implementation-polish` skill against the full implementation before invoking `finishing-a-development-branch`. The plan header's `**Polish:**` line names the rules the polish subagent loads. See the `executing-plans` skill's `## Polish Phase` for iteration limits.
++After the final code reviewer approves and the user confirms the diff, dispatch the `post-implementation-polish` skill against the full implementation before invoking `finishing-a-development-branch`. The plan header's `**Polish:**` line names the rules the polish subagent loads. Max 3 polish iterations before escalating to the user.
 +
  ## Prompt Templates
 
  - `./implementer-prompt.md` - Dispatch implementer subagent
-@@ -196,6 +243,13 @@
- [Dispatch final code-reviewer]
- Final reviewer: All requirements met, ready to merge
+@@ -130,71 +183,70 @@
 
+ [Read plan file once: docs/superpowers/plans/feature-plan.md]
+ [Extract all 5 tasks with full text and context]
+-[Create TodoWrite with all tasks]
++[Read dependency graph: T1 (none), T2 (T1), T3 (T1), T4 (T2, T3), T5 (T4)]
++[Compute batches: Batch 1 = {T1}, Batch 2 = {T2, T3}, Batch 3 = {T4}, Batch 4 = {T5}]
++[Check checkboxes: T1 already [x] — skip]
++[Adjusted batches: start at Batch 2]
++[Set up worktree via superpowers:using-git-worktrees]
++[Create TodoWrite with remaining tasks]
++
++--- Batch 2: T2, T3 (file lists disjoint → parallel dispatch) ---
+
+-Task 1: Hook installation script
++[Dispatch T2 implementer subagent]
++[Dispatch T3 implementer subagent]
+
+-[Get Task 1 text and context (already extracted)]
+-[Dispatch implementation subagent with full task text + context]
++T2 implementer: Implemented, tests passing, self-reviewed, committed.
++T3 implementer: Implemented, tests passing, self-reviewed, committed.
+
+-Implementer: "Before I begin - should the hook be installed at user or system level?"
++[Dispatch T2 spec reviewer] → ✅ Spec compliant
++[Dispatch T3 spec reviewer] → ✅ Spec compliant
+
+-You: "User level (~/.config/superpowers/hooks/)"
++[Dispatch T2 code quality reviewer] → ✅ Approved
++[Dispatch T3 code quality reviewer] → ✅ Approved
+
+-Implementer: "Got it. Implementing now..."
+-[Later] Implementer:
+-  - Implemented install-hook command
+-  - Added tests, 5/5 passing
+-  - Self-review: Found I missed --force flag, added it
+-  - Committed
++[T2 prose cleanup pass — done]
++[T3 prose cleanup pass — done]
+
+-[Dispatch spec compliance reviewer]
+-Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
++[Mark T2, T3 complete in TodoWrite]
++[Flip checkboxes: T2 and T3 all steps → [x] in plan file]
+
+-[Get git SHAs, dispatch code quality reviewer]
+-Code reviewer: Strengths: Good test coverage, clean. Issues: None. Approved.
++--- Batch 3: T4 ---
+
+-[Mark Task 1 complete]
++[Dispatch T4 implementer subagent]
+
+-Task 2: Recovery modes
++T4 implementer: "Before I begin — should the widget use sync or async?"
+
+-[Get Task 2 text and context (already extracted)]
+-[Dispatch implementation subagent with full task text + context]
++You: "Async — see T2's implementation for the pattern."
+
+-Implementer: [No questions, proceeds]
+-Implementer:
+-  - Added verify/repair modes
+-  - 8/8 tests passing
+-  - Self-review: All good
+-  - Committed
++T4 implementer: Implemented, tests passing, committed.
+
+-[Dispatch spec compliance reviewer]
+-Spec reviewer: ❌ Issues:
+-  - Missing: Progress reporting (spec says "report every 100 items")
+-  - Extra: Added --json flag (not requested)
++[Dispatch T4 spec reviewer] → ❌ Missing progress reporting
++[T4 implementer fixes] → Added progress reporting
++[Dispatch T4 spec reviewer] → ✅ Spec compliant
++[Dispatch T4 code quality reviewer] → ✅ Approved
++[T4 prose cleanup pass — done]
+
+-[Implementer fixes issues]
+-Implementer: Removed --json flag, added progress reporting
++[Mark T4 complete in TodoWrite]
++[Flip checkboxes: T4 all steps → [x] in plan file]
+
+-[Spec reviewer reviews again]
+-Spec reviewer: ✅ Spec compliant now
++--- Batch 4: T5 ---
+
+-[Dispatch code quality reviewer]
+-Code reviewer: Strengths: Solid. Issues (Important): Magic number (100)
++[Dispatch T5 implementer → review cycle → approved]
++[T5 prose cleanup pass — done]
++[Mark T5 complete, flip checkboxes]
+
+-[Implementer fixes]
+-Implementer: Extracted PROGRESS_INTERVAL constant
++--- All batches complete ---
+
+-[Code reviewer reviews again]
+-Code reviewer: ✅ Approved
++[Dispatch final code-reviewer]
++Final reviewer: All requirements met, ready to merge.
+
+-[Mark Task 2 complete]
 +You: To review the full diff before we proceed:
-+
-+  git diff main...feat/hook-install
-+
+
+-...
++  git diff main...feat/widget-system
+
+-[After all tasks]
+-[Dispatch final code-reviewer]
+-Final reviewer: All requirements met, ready to merge
 +[User reviews, confirms]
++[Dispatch post-implementation-polish]
 +[Invoke finishing-a-development-branch]
-+
+
  Done!
  ```
+@@ -237,7 +289,7 @@
+ - Start implementation on main/master branch without explicit user consent
+ - Skip reviews (spec compliance OR code quality)
+ - Proceed with unfixed issues
+-- Dispatch multiple implementation subagents in parallel (conflicts)
++- Dispatch tasks in parallel that are not in the same dependency batch, or that share files — only dispatch within a batch when `**Files:**` lists are fully disjoint
+ - Make subagent read plan file (provide full text instead)
+ - Skip scene-setting context (subagent needs to understand where task fits)
+ - Ignore subagent questions (answer before letting them proceed)
+@@ -273,5 +325,3 @@
+ **Subagents should use:**
+ - **superpowers:test-driven-development** - Subagents follow TDD for each task
 
+-**Alternative workflow:**
+-- **superpowers:executing-plans** - Use for parallel session instead of same-session execution

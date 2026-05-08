@@ -1,32 +1,83 @@
 diff -ruN a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
---- a/skills/executing-plans/SKILL.md	2026-05-07 11:55:56.075362962 +0000
-+++ b/skills/executing-plans/SKILL.md	2026-05-07 11:56:12.551239666 +0000
-@@ -27,7 +27,8 @@
+--- a/skills/executing-plans/SKILL.md	2026-05-08 18:12:21.875734031 +0000
++++ b/skills/executing-plans/SKILL.md	2026-05-08 18:12:42.314569116 +0000
+@@ -7,47 +7,74 @@
+
+ ## Overview
+
+-Load plan, review critically, execute all tasks, report when complete.
++Router that loads a plan file, reads its execution strategy and checkpoint state, and dispatches the appropriate execution skill. This is the entry point for plan execution — invoke this skill after writing-plans produces the plan.
+
+-**Announce at start:** "I'm using the executing-plans skill to implement this plan."
+-
+-**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
++**Announce at start:** "I'm using the executing-plans skill to dispatch this plan."
+
+ ## The Process
+
+-### Step 1: Load and Review Plan
++### Step 1: Load Plan
+ 1. Read plan file
+-2. Review critically - identify any questions or concerns about the plan
+-3. If concerns: Raise them with your human partner before starting
+-4. If no concerns: Create TodoWrite and proceed
++2. Read `## Execution Strategy` — must name exactly one of: Parallel subagents, Agent teams
++3. Read `## Task Dependency Graph` — extract batch ordering
++4. Read checkbox state — tasks where all steps are `- [x]` are done, skip them
++5. If all tasks are checked, announce "Plan already complete" and stop
++
++### Step 2: Dispatch
++
++Route based on strategy:
++
++**Parallel subagents (default):**
++Invoke superpowers:subagent-driven-development with the plan path. SDD handles worktree setup, batch dispatch, reviews, and polish.
++
++**Agent teams:**
++Spawn an Agent team. The team lead reads the plan and coordinates. Team lead enforces two-stage review gates. Checkpoint resume and dependency batching are SDD-specific — Agent teams handle their own coordination and progress tracking.
++
++**Inline-Degraded Path:**
++Only when BOTH conditions hold:
++1. Subagent support is unavailable on this platform
++2. The user explicitly acknowledges degraded mode when prompted: "I understand this runs without subagent review gates"
++
++If the user declines, stop and explain that full-quality execution requires subagent support. The inline path executes tasks sequentially:
+
+-### Step 2: Execute Tasks
++Before executing tasks, invoke superpowers:using-git-worktrees to set up an isolated workspace.
+
+ For each task:
  1. Mark as in_progress
- 2. Follow each step exactly (plan has bite-sized steps)
- 3. Run verifications as specified
--4. Mark as completed
-+4. Comment cleanup — strip comments that restate what the code does. Strip AI-obvious comments (apply `humanizer` patterns — no "Ensures proper...", "Leverages...", "Facilitates..."). Humanize remaining comments, docstrings, and error messages. Keep comments that explain *why* something is done a non-obvious way.
-+5. Mark as completed
+-2. Follow each step exactly (plan has bite-sized steps)
+-3. Run verifications as specified
++2. For each step: follow it exactly, run verifications as specified, then flip that step's `- [ ]` → `- [x]` in the plan file
++3. After all steps: comment cleanup — strip comments that restate what the code does. Strip AI-obvious comments (apply `humanizer` patterns — no "Ensures proper...", "Leverages...", "Facilitates..."). Humanize remaining comments, docstrings, and error messages. Keep comments that explain *why* something is done a non-obvious way.
+ 4. Mark as completed
 
- ### Step 3: Complete Development
+-### Step 3: Complete Development
++### Step 3: Polish Phase
 
-@@ -36,6 +37,14 @@
- - **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
- - Follow that skill to verify tests, present options, execute choice
-
-+## Polish Phase
+-After all tasks complete and verified:
+-- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
+-- **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
+-- Follow that skill to verify tests, present options, execute choice
++**Inline-Degraded Path only:**
 +
 +After every task in the plan is marked complete and verified, dispatch the post-implementation-polish skill against the full implementation. The Polish line in the plan header (`**Polish:** post-implementation-polish → <rules>`) names the rules the polish subagent loads.
 +
 +Polish runs once per plan. If polish flags blockers, the controller addresses them and re-runs polish. Max 3 polish iterations before escalating to user.
 +
-+Polish runs in the same worktree as the implementation. No fresh checkout. Phases 4–6 commit on top of the implementation commits.
++Polish runs in the same worktree as the implementation. No fresh checkout.
 +
++After polish, invoke superpowers:finishing-a-development-branch.
+
  ## When to Stop and Ask for Help
 
++**Inline-Degraded Path only:**
++
  **STOP executing immediately when:**
-@@ -44,6 +53,8 @@
+ - Hit a blocker (missing dependency, test fails, instruction unclear)
+ - Plan has critical gaps preventing starting
  - You don't understand an instruction
  - Verification fails repeatedly
 
@@ -35,3 +86,33 @@ diff -ruN a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
  **Ask for clarification rather than guessing.**
 
  ## When to Revisit Earlier Steps
+
++**Inline-Degraded Path only:**
++
+ **Return to Review (Step 1) when:**
+ - Partner updates the plan based on your feedback
+ - Fundamental approach needs rethinking
+@@ -55,16 +82,16 @@
+ **Don't force through blockers** - stop and ask.
+
+ ## Remember
+-- Review plan critically first
+-- Follow plan steps exactly
+-- Don't skip verifications
+-- Reference skills when plan says to
+-- Stop when blocked, don't guess
++- This skill is a router — read the plan, choose a path, delegate
++- The plan file is the contract, not conversation state
++- Skip tasks whose checkboxes are already `- [x]`
+ - Never start implementation on main/master branch without explicit user consent
++- Inline execution is degraded — always prefer subagent dispatch
+
+ ## Integration
+
+ **Required workflow skills:**
+-- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
+-- **superpowers:writing-plans** - Creates the plan this skill executes
++- **superpowers:writing-plans** - Creates the plan this skill dispatches
++- **superpowers:subagent-driven-development** - Default execution path (Parallel subagents)
++- **superpowers:using-git-worktrees** - REQUIRED for inline path: Set up isolated workspace before starting
+ - **superpowers:finishing-a-development-branch** - Complete development after all tasks
