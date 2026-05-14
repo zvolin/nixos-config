@@ -13,6 +13,12 @@
       big = text: "${sized (size * 1.1) text}";
       small = text: "${sized (size * 0.8) text}";
       tiny = text: "${sized (size * 0.6) text}";
+      systemctl = "${pkgs.systemd}/bin/systemctl";
+      hypridle-status = pkgs.writeShellScript "hypridle-status" ''
+        if ! ${systemctl} --user is-active hypridle.service >/dev/null 2>&1; then
+          echo '{"text": "󰒳 ", "tooltip": "hypridle disabled"}'
+        fi
+      '';
     in
     {
       programs.waybar = {
@@ -38,7 +44,7 @@
               "network"
               "group/perf"
               "group/media"
-              "battery"
+              "group/power"
             ];
 
             "custom/logo" = {
@@ -167,6 +173,22 @@
                 on-discharging-urgent = "notify-send -r 99003 -u critical 'Battery Urgent' '5% remaining - plug in now'";
               };
             };
+
+            "group/power" = {
+              orientation = "inherit";
+              modules = [
+                "battery"
+                "custom/hypridle"
+              ];
+            };
+
+            "custom/hypridle" = {
+              exec = "${hypridle-status}";
+              return-type = "json";
+              format = "${sized (size * 1.2) "{}"}";
+              interval = 5;
+              signal = 9;
+            };
           }
         ];
 
@@ -237,7 +259,7 @@
             margin-right: 10px;
           }
 
-          #network, #perf, #media, #battery {
+          #network, #perf, #media, #power {
             color: @base00;
             margin-top: 3px;
             margin-bottom: 3px;
@@ -248,7 +270,8 @@
           }
 
           #perf widget:not(:last-child) label,
-          #media widget:not(:last-child) label {
+          #media widget:not(:last-child) label,
+          #power widget:not(:last-child) label {
             margin-right: 10px;
           }
 
@@ -264,8 +287,18 @@
             background: @base0D;
           }
 
-          #battery {
+          #power {
             background: @base08;
+          }
+
+          #power #battery {
+            padding: 0px;
+            margin: 0px;
+          }
+
+          #custom-hypridle {
+            margin-left: 6px;
+            margin-right: -4px;
           }
         '';
       };

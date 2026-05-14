@@ -79,6 +79,13 @@
           swappy = lib.getExe pkgs.swappy;
           swaybg = lib.getExe pkgs.swaybg;
           hyprlock = lib.getExe pkgs.hyprlock;
+          systemctl = "${pkgs.systemd}/bin/systemctl";
+          pkill = "${pkgs.procps}/bin/pkill";
+          lock-and-reset = pkgs.writeShellScript "lock-and-reset" ''
+            ${systemctl} --user start hypridle.service
+            ${pkill} -RTMIN+9 waybar || true
+            exec ${hyprlock}
+          '';
           wofi = lib.getExe pkgs.wofi;
           wpctl = lib.getExe' pkgs.wireplumber "wpctl";
           waybar = lib.getExe pkgs.waybar;
@@ -172,7 +179,8 @@
               "${modshift}, Return, exec, uwsm app -- ${terminal}"
               "${modshift}, C,      killactive"
               "${mod},      P,      exec, uwsm app -- ${wofi} --show run"
-              "${modshift}, L,      exec, uwsm app -- ${hyprlock}"
+              "${modshift}, L,      exec, uwsm app -- ${lock-and-reset}"
+              "${mod},      I,      exec, hypridle-toggle"
               # scratchpads
               "${mod},      X,      togglespecialworkspace, kitty"
               # cycle workspaces
