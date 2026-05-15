@@ -32,7 +32,7 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 
  ## The Process
 
-@@ -55,15 +33,22 @@
+@@ -55,15 +33,23 @@
          "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
          "Code quality reviewer subagent approves?" [shape=diamond];
          "Implementer subagent fixes quality issues" [shape=box];
@@ -47,6 +47,7 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
      "More tasks remain?" [shape=diamond];
      "Dispatch final code reviewer subagent for entire implementation" [shape=box];
 +    "Show diff command for user terminal review" [shape=box];
++    "Dispatch post-implementation-polish" [shape=box];
      "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
 -    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -56,7 +57,7 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
      "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
      "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
      "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-@@ -71,19 +56,28 @@
+@@ -71,19 +57,29 @@
      "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
      "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
      "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
@@ -76,7 +77,8 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
      "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
      "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
 -    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
-+    "Dispatch final code reviewer subagent for entire implementation" -> "Show diff command for user terminal review";
++    "Dispatch final code reviewer subagent for entire implementation" -> "Dispatch post-implementation-polish";
++    "Dispatch post-implementation-polish" -> "Show diff command for user terminal review";
 +    "Show diff command for user terminal review" -> "Use superpowers:finishing-a-development-branch";
  }
  ```
@@ -90,7 +92,7 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
  ## Model Selection
 
  Use the least powerful model that can handle each role to conserve cost and increase speed.
-@@ -117,6 +111,65 @@
+@@ -117,6 +113,65 @@
 
  **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
@@ -135,9 +137,13 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 +
 +The implementer subagent runs this pass itself before reporting the task complete. The controller does not advance to the next task until the pass is reported as done.
 +
++## Polish Dispatch (End-of-Plan)
++
++After the final code reviewer approves, dispatch the `post-implementation-polish` skill on the full implementation. The plan header's `**Polish:**` line names the rules the polish subagent loads. Max 3 polish iterations before escalating to the user. Present the pre-merge diff for user review only after polish completes.
++
 +## Pre-Merge User Review
 +
-+After the final code reviewer approves and before invoking `finishing-a-development-branch`, give the user a ready-to-run diff command so they can review all changes from their own terminal:
++After `post-implementation-polish` completes and before invoking `finishing-a-development-branch`, give the user a ready-to-run diff command so they can review all changes from their own terminal:
 +
 +```
 +To review the full diff before we proceed:
@@ -149,14 +155,10 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 +
 +Wait for the user to confirm before continuing to the finishing skill. If the user requests changes, address them and re-present the diff command.
 +
-+## Polish Dispatch (End-of-Plan)
-+
-+After the final code reviewer approves and the user confirms the diff, dispatch the `post-implementation-polish` skill against the full implementation before invoking `finishing-a-development-branch`. The plan header's `**Polish:**` line names the rules the polish subagent loads. Max 3 polish iterations before escalating to the user.
-+
  ## Prompt Templates
 
  - `./implementer-prompt.md` - Dispatch implementer subagent
-@@ -130,71 +183,70 @@
+@@ -130,71 +185,72 @@
 
  [Read plan file once: docs/superpowers/plans/feature-plan.md]
  [Extract all 5 tasks with full text and context]
@@ -258,6 +260,9 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 +Final reviewer: All requirements met, ready to merge.
 
 -[Mark Task 2 complete]
++[Dispatch post-implementation-polish]
++[Polish phases run; user approves /cleanup subset; polish reports complete]
++
 +You: To review the full diff before we proceed:
 
 -...
@@ -267,12 +272,11 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
 -[Dispatch final code-reviewer]
 -Final reviewer: All requirements met, ready to merge
 +[User reviews, confirms]
-+[Dispatch post-implementation-polish]
 +[Invoke finishing-a-development-branch]
 
  Done!
  ```
-@@ -237,7 +289,7 @@
+@@ -237,7 +293,7 @@
  - Start implementation on main/master branch without explicit user consent
  - Skip reviews (spec compliance OR code quality)
  - Proceed with unfixed issues
@@ -281,7 +285,7 @@ diff -ruN a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven
  - Make subagent read plan file (provide full text instead)
  - Skip scene-setting context (subagent needs to understand where task fits)
  - Ignore subagent questions (answer before letting them proceed)
-@@ -273,5 +325,3 @@
+@@ -273,5 +329,3 @@
  **Subagents should use:**
  - **superpowers:test-driven-development** - Subagents follow TDD for each task
 
