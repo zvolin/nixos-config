@@ -7,8 +7,7 @@
       ./_internals/hooks.nix
       ./_internals/mcp.nix
       ./_internals/permissions.nix
-      ./_internals/plugins.nix
-      ./_internals/qdrant.nix
+      ./_internals/marketplace.nix
       ./_internals/rules.nix
       ./_internals/statusline.nix
       ./_internals/sandbox.nix

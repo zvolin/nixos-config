@@ -1,4 +1,5 @@
 ---
+name: cleanup
 description: Clean up code in current branch - simplify, remove AI artifacts, challenge decisions
 ---
 

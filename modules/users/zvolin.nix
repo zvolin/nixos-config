@@ -31,6 +31,7 @@
           codex
           connman-gui
           direnv
+          ferrex
           git
           humanizer
           hypridle
@@ -42,6 +43,7 @@
           mcp
           post-implementation-polish
           research
+          superpowers
           terminal
           waybar
           wofi

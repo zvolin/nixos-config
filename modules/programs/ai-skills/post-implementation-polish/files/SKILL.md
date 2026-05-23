@@ -1,4 +1,5 @@
 ---
+name: post-implementation-polish
 description: End-of-plan polish pipeline. Runs three review rounds with early exit, an idiomatic-code pass, /cleanup, and a comment strip + humanize. Dispatched by executing-plans or subagent-driven-development after the final task verifies.
 ---
 
