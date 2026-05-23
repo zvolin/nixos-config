@@ -41,10 +41,23 @@
         '';
 
         settings = {
+          model = "gpt-5.4";
           model_reasoning_effort = "high";
           approval_policy = "on-request";
           projects."/home/zwolin".trust_level = "trusted";
           projects."/persist/etc/nixos".trust_level = "trusted";
+
+          tui = {
+            status_line = [
+              "model-name"
+              "git-branch"
+              "used-tokens"
+              "context-window-size"
+              "five-hour-limit"
+              "weekly-limit"
+            ];
+            status_line_use_colors = true;
+          };
 
           mcp_servers.serena = {
             command = "${serena}/bin/serena";
