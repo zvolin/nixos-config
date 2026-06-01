@@ -106,6 +106,7 @@ let
       "$HOME/.serena" \
       "$HOME/.cargo" \
       "$HOME/.codex" \
+      "$HOME/.agents" \
       "$HOME/.cache/gh"
     touch "$HOME/.claude.json" 2>/dev/null || true
 
@@ -143,6 +144,7 @@ let
     bind_rw "$HOME/.cargo"
     bind_rw "$HOME/.cache/gh"
     bind_rw "$HOME/.codex"
+    bind_rw "$HOME/.agents"
     bind_ro "$HOME/.config/claude/rules"
     bind_ro "$HOME/.config/direnv"
     bind_ro "$HOME/.config/gh"
