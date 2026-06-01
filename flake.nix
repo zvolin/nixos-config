@@ -65,6 +65,11 @@
       flake = false;
     };
 
+    wshobson-agents = {
+      url = "github:wshobson/agents";
+      flake = false;
+    };
+
     ferrex = {
       url = "github:vaporif/ferrex";
       inputs.nixpkgs.follows = "nixpkgs";

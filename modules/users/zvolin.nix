@@ -45,6 +45,7 @@
           research
           superpowers
           terminal
+          threat-modeling-expert
           waybar
           wofi
           zathura

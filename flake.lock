@@ -597,6 +597,7 @@
         "stylix": "stylix",
         "superpowers": "superpowers",
         "tiny-dfr": "tiny-dfr",
+        "wshobson-agents": "wshobson-agents",
         "xremap": "xremap"
       }
     },
@@ -795,6 +796,22 @@
       "original": {
         "path": "/home/zwolin/data/tiny-dfr",
         "type": "path"
+      }
+    },
+    "wshobson-agents": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780081917,
+        "narHash": "sha256-gFYaNc3fX4u7ifPbXnao49b/9ejxgq5VldVPEdCQ4tg=",
+        "owner": "wshobson",
+        "repo": "agents",
+        "rev": "0818067b4ecad18c234b2ae427cc44f2053792d4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "wshobson",
+        "repo": "agents",
+        "type": "github"
       }
     },
     "xremap": {
