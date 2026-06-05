@@ -1,9 +1,11 @@
 {
   pkgs,
   lib,
+  config,
   ...
 }:
 let
+  codexTools = import ./codex-tools.nix { inherit pkgs config; };
   bwrap = lib.getExe pkgs.bubblewrap;
   claude = lib.getExe pkgs.claude-code;
 
@@ -227,7 +229,7 @@ let
       --setenv HOME  "$HOME"
       --setenv USER  "''${USER:-$(id -un)}"
       --setenv TERM  "''${TERM:-xterm-256color}"
-      --setenv PATH  "''${PATH}"
+      --setenv PATH  "${codexTools.codexWrap}/bin:''${PATH}"
       --setenv SHELL "''${SHELL:-/bin/sh}"
     )
     for var in ${lib.concatStringsSep " " envAllowlist}; do

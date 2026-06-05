@@ -43,6 +43,7 @@
           mcp
           post-implementation-polish
           research
+          skill-codex
           superpowers
           terminal
           threat-modeling-expert

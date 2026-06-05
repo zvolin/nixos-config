@@ -594,6 +594,7 @@
         "nixpkgs": "nixpkgs_2",
         "nixvim": "nixvim",
         "rust-overlay": "rust-overlay",
+        "skill-codex": "skill-codex",
         "stylix": "stylix",
         "superpowers": "superpowers",
         "tiny-dfr": "tiny-dfr",
@@ -635,6 +636,22 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "skill-codex": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780492939,
+        "narHash": "sha256-KHTZF3Fgvtypl3ko8fC0mOSgRmbuqQEm/MoFjQaZcZc=",
+        "owner": "skills-directory",
+        "repo": "skill-codex",
+        "rev": "0cce7fc7c49b08fd60ae05bdf7934590d7bc34b5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "skills-directory",
+        "repo": "skill-codex",
         "type": "github"
       }
     },

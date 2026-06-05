@@ -88,6 +88,11 @@
       url = "github:ihor-sokoliuk/mcp-searxng/v1.0.3";
       flake = false;
     };
+
+    skill-codex = {
+      url = "github:skills-directory/skill-codex";
+      flake = false;
+    };
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
