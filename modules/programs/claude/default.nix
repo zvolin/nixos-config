@@ -94,6 +94,8 @@
       settings = {
         env = {
           CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+          # Workaround for anthropics/claude-code#11205 — silent rg failure hides ~/.claude/agents.
+          CLAUDE_CODE_USE_NATIVE_FILE_SEARCH = "1";
         };
       };
     };
