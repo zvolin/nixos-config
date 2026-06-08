@@ -143,7 +143,7 @@
               format-muted = "${big " "}";
               max-volume = 120;
               scroll-step = 0.2;
-              on-click = "${lib.getExe config.terminal} --class wiremix -e wiremix";
+              on-click = "audio-toggle";
             };
 
             battery = {
