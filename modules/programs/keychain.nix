@@ -84,6 +84,8 @@
           kill "$SED_PID" 2>/dev/null || true
         '';
       };
+
+      cacheTtl = 84000;
     in
     {
       programs.ssh = {
@@ -92,14 +94,14 @@
         matchBlocks."*".addKeysToAgent = "yes";
       };
 
-      services.ssh-agent.enable = true;
-
       programs.gpg.enable = true;
 
       services.gpg-agent = {
         enable = true;
-        defaultCacheTtl = 84000;
-        maxCacheTtl = 84000;
+        defaultCacheTtl = cacheTtl;
+        maxCacheTtl = cacheTtl;
+        defaultCacheTtlSsh = cacheTtl;
+        maxCacheTtlSsh = cacheTtl;
         pinentry.package = pinentry-floating;
         extraConfig = ''
           allow-loopback-pinentry
