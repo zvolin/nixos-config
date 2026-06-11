@@ -39,6 +39,19 @@
         xdg-utils
       ];
 
+      # HM's Hyprland module enables xdg.portal with only hyprland-portal and
+      # points NIX_XDG_DESKTOP_PORTAL_DIR at the user profile, hiding gtk.portal
+      # from the system. Without gtk the Settings interface is unreachable, so
+      # Flutter/GTK apps fall back to light theme (white-on-white text).
+      xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+      xdg.portal.config = {
+        common.default = [ "gtk" ];
+        hyprland.default = [
+          "hyprland"
+          "gtk"
+        ];
+      };
+
       home.sessionVariables = {
         # for correct wayland support
         QT_QPA_PLATFORM = "wayland";
