@@ -60,6 +60,8 @@
         home.packages = with pkgs; [
           freecad
           gh
+          gimp
+          pitivi
         ];
 
         home.sessionVariables = {
