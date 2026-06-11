@@ -31,7 +31,7 @@
         cliphist
         grim
         slurp
-        swappy
+        satty
         swaybg
         wl-clipboard
         wofi
@@ -75,8 +75,7 @@
               ${wl-copy} && ${wtype} -s 10 -M ctrl -s 10 -M shift -s 10 -k V
           '';
           grim = lib.getExe pkgs.grim;
-          slurp = lib.getExe pkgs.slurp;
-          swappy = lib.getExe pkgs.swappy;
+          satty = lib.getExe pkgs.satty;
           swaybg = lib.getExe pkgs.swaybg;
           hyprlock = lib.getExe pkgs.hyprlock;
           systemctl = "${pkgs.systemd}/bin/systemctl";
@@ -195,7 +194,7 @@
               "${mod},      V,      exec, uwsm app -- ${cliphist-paste}"
               "${modshift}, V,      exec, uwsm app -- ${cliphist} wipe"
               # media
-              '', XF86SelectiveScreenshot, exec, uwsm app -- ${grim} -g "$(${slurp})" - | ${swappy} -f -''
+              ", XF86SelectiveScreenshot, exec, uwsm app -- ${grim} - | ${satty} -f - --fullscreen --initial-tool crop --copy-command ${wl-copy} --actions-on-enter save-to-clipboard --early-exit"
             ]
             ++ (
               # workspaces 1..10
