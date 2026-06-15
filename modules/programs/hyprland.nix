@@ -69,6 +69,9 @@
         let
           mod = "SUPER";
           modshift = "${mod}SHIFT";
+          # linux/input-event-codes.h — Hyprland has no symbolic aliases
+          btn_left = "mouse:272";
+          btn_right = "mouse:273";
           xkb = osConfig.services.xserver.xkb;
           colors = config.lib.stylix.colors;
           terminal = lib.getExe config.terminal;
@@ -233,6 +236,12 @@
               ", XF86AudioMicMute, exec, uwsm app -- ${wpctl} set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
               # power button wakes screen (logind ignores short press, long press still shuts down)
               # ", XF86PowerOff,     exec, hyprctl dispatch dpms on"
+            ];
+
+            # mouse drag floating windows
+            bindm = [
+              "${mod}, ${btn_left},  movewindow"
+              "${mod}, ${btn_right}, resizewindow"
             ];
 
             # binds repeated when held, working when lock active
