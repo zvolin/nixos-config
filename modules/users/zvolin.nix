@@ -43,6 +43,7 @@
           mcp
           post-implementation-polish
           research
+          review
           skill-codex
           superpowers
           terminal
