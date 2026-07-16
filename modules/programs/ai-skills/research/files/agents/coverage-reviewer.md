@@ -1,3 +1,9 @@
+---
+name: research-coverage-reviewer
+description: Find niche alternatives the main research pass missed; used by §8 of the research skill.
+model: opus
+---
+
 # Coverage reviewer
 
 You are reviewing a research-skill bullet draft to find options the main agent missed. You have a fresh context — the dispatching agent has not seen this conversation, and you are not the agent that wrote the draft.

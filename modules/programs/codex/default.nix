@@ -3,6 +3,8 @@
   flake.modules.homeManager.codex =
     { serena, ... }:
     {
+      imports = [ ./_internals/agents.nix ];
+
       programs.codex = {
         enable = true;
         enableMcpIntegration = true;
