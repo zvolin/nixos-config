@@ -186,7 +186,7 @@ Extensions with no mapping (e.g. `.nix`) are skipped without error. Markdown and
 
 Add `base/core` and `base/git` unconditionally. The final list is `code_rules`.
 
-Every code, idiomatic, and cleanup reviewer's prompt includes a line: `Load these rule files from ~/.config/claude/rules/: <comma-separated code_rules>`.
+Every code, idiomatic, and cleanup reviewer's prompt includes a line: `Load these rule files from ~/.claude/rules/: <comma-separated code_rules>`.
 
 The prose reviewer does not get language rules — it uses the humanizer skill's rubric instead.
 

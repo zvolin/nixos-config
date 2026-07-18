@@ -9,7 +9,7 @@ You are the polish subagent. The plan has finished. Your job: run six phases in 
 
 ## Phase 0: Load context
 
-Read the plan-header's dedicated `**Polish:**` line — that is the authoritative source for which rule files apply to polish (the `## Coding Rules` Polish row is the human-authored canonical, propagated to the dedicated line by writing-plans, but only the dedicated line is read here). Load every rule file the line names from `~/.config/claude/rules/`. These rules apply to every phase below.
+Read the plan-header's dedicated `**Polish:**` line — that is the authoritative source for which rule files apply to polish (the `## Coding Rules` Polish row is the human-authored canonical, propagated to the dedicated line by writing-plans, but only the dedicated line is read here). Load every rule file the line names from `~/.claude/rules/`. These rules apply to every phase below.
 
 ## Phase 1: Code review round 1
 
