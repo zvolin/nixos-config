@@ -12,6 +12,7 @@
       ./_internals/statusline.nix
       ./_internals/sandbox.nix
       ./_internals/security.nix
+      ./_internals/preferences.nix
     ];
 
     programs.claude-code = {
@@ -30,7 +31,7 @@
 
         - Commit messages MUST be a single line (the header only). No body, no blank line after header, no trailers.
         - Follow conventional commits format: `type(scope): description`
-        - Do NOT add `Co-Authored-By` trailers — this overrides the default Claude Code behavior
+        - Do NOT add `Co-Authored-By` trailers.
         - Use `git commit -m "type(scope): description"` — do NOT use HEREDOC or multi-line formats
         - When a repository has its own documented commit convention, follow that instead
 
