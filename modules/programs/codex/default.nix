@@ -22,6 +22,12 @@
           - This is a NixOS system. To change system or user config, edit Nix files — do not create or modify dotfiles, system configs, or service files directly.
           - Home Manager is a NixOS module (not standalone). There is no `home-manager switch` command.
 
+          # Running Claude Code
+
+          - To run Claude Code (the `claude` CLI), request escalated / unsandboxed execution.
+          - Claude applies its own bubblewrap isolation. Nesting it inside Codex's workspace-write sandbox breaks it: writes to `~/.claude` and other state dirs are denied, and the model API network is blocked.
+          - Running `claude` escalated lets it reapply its own jail, so the net boundary is Claude's wrapper, not "no sandbox".
+
           # Git Conventions
 
           - Commit messages: single line, conventional commits format (`type(scope): description`). No body, no trailers.
@@ -42,10 +48,16 @@
           - Serena (`find_symbol`, `find_referencing_symbols`, `get_symbols_overview`) for semantic code navigation in the current project
         '';
 
+        rules.nix-managed = ''
+          prefix_rule(pattern=["claude"], decision="allow")
+        '';
+
         settings = {
           model = "gpt-5.6-terra";
           model_reasoning_effort = "medium";
           approval_policy = "on-request";
+          sandbox_mode = "workspace-write";
+          sandbox_workspace_write.network_access = true;
           projects."/home/zwolin".trust_level = "trusted";
           projects."/persist/etc/nixos".trust_level = "trusted";
 
