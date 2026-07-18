@@ -1,25 +1,26 @@
-diff -ruN a/skills/subagent-driven-development/implementer-prompt.md b/skills/subagent-driven-development/implementer-prompt.md
---- a/skills/subagent-driven-development/implementer-prompt.md	2026-05-07 12:46:08.335575923 +0000
-+++ b/skills/subagent-driven-development/implementer-prompt.md	2026-05-07 12:46:32.691339711 +0000
-@@ -12,6 +12,14 @@
-
-     [FULL TEXT of task from plan - paste it here, don't make subagent read file]
-
+diff --git a/skills/subagent-driven-development/implementer-prompt.md b/skills/subagent-driven-development/implementer-prompt.md
+index 218fcfe..8bc990a 100644
+--- a/skills/subagent-driven-development/implementer-prompt.md
++++ b/skills/subagent-driven-development/implementer-prompt.md
+@@ -15,6 +15,14 @@ Subagent (general-purpose):
+     Read your task brief first: [BRIEF_FILE]
+     It contains the full task text from the plan.
+ 
 +    ## Coding Rules
 +
-+    Before reading any task code, read every rule file named in this task's `**Rules:**` field. If you are the polish subagent, read the rule files named in the plan-header's dedicated `**Polish:**` line (which is authoritative — never read the `## Coding Rules` Polish row directly). Files live at `~/.claude/rules/<path>.md`.
++    Before reading any task code, read every rule file named in this task's `**Rules:**` field (it is in the task brief you just read). If you are the polish subagent, read the rule files named in the plan-header's dedicated `**Polish:**` line. That line is authoritative; never read the `## Coding Rules` Polish row directly. Files live at `~/.config/claude/rules/<path>.md`.
 +
-+    If a rule conflicts with the plan, escalate to the controller — never silently override the plan.
++    If a rule conflicts with the plan, escalate to the controller. Never silently override the plan.
 +
 +    If the field value is `none`, report "no rules to load" and proceed.
 +
      ## Context
-
+ 
      [Scene-setting: where this fits, dependencies, architectural context]
-@@ -71,6 +79,19 @@
+@@ -77,6 +85,19 @@ Subagent (general-purpose):
      The controller can provide more context, re-dispatch with a more capable model,
      or break the task into smaller pieces.
-
+ 
 +    ## Prose Quality
 +
 +    Any non-code text you write (comments, docstrings, error messages, documentation, commit messages) must sound like a person wrote it. Avoid AI-isms: no "serves as", "leverages", "ensures", "facilitates", no significance inflation ("crucial", "pivotal"), no filler ("in order to", "it is important to note"), no sycophantic tone. Be direct and specific.
@@ -27,12 +28,12 @@ diff -ruN a/skills/subagent-driven-development/implementer-prompt.md b/skills/su
 +    ## Document Decision Trade-offs
 +
 +    When you make a choice not specified in the plan (library, pattern, data structure, approach):
-+    - Briefly note the alternatives you considered and why you chose this one
-+    - Include in your report under "Self-review findings"
-+    - If the decision is significant (affects architecture, performance, or API surface), flag your report as DONE_WITH_CONCERNS so the controller can review the trade-off
++    - Briefly note the alternatives you considered and why you chose this one.
++    - Include it in your report under "Self-review findings".
++    - If the decision is significant (affects architecture, performance, or API surface), flag your report as DONE_WITH_CONCERNS so the controller can review the trade-off.
 +
 +    Small decisions (variable naming, loop vs map, etc.) don't need documentation.
 +
      ## Before Reporting Back: Self-Review
-
+ 
      Review your work with fresh eyes. Ask yourself:
