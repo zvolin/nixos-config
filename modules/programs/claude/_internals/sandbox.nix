@@ -147,7 +147,6 @@ let
     bind_rw "$HOME/.cache/gh"
     bind_rw "$HOME/.codex"
     bind_rw "$HOME/.agents"
-    bind_ro "$HOME/.config/claude/rules"
     bind_ro "$HOME/.config/direnv"
     bind_ro "$HOME/.config/gh"
     bind_ro "$HOME/.config/git"

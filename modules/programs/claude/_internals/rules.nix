@@ -1,4 +1,4 @@
 { inputs, ... }:
 {
-  home.file.".config/claude/rules".source = "${inputs.claude-rules}";
+  programs.claude-code.rulesDir = "${inputs.claude-rules}";
 }
