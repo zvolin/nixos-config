@@ -78,7 +78,7 @@
 +
 +The wrapper applies `--sandbox read-only` when no `--sandbox` is passed. Override only when the task needs to modify files. Ask the user via `AskUserQuestion` before using `--sandbox danger-full-access`.
 +
-+Model defaults (`gpt-5.4`, reasoning effort `high`) come from `~/.codex/config.toml`. Pass `-m <model>` and `--config model_reasoning_effort=<level>` only when the user specifies a different choice.
++Model defaults (`gpt-5.6-terra`, reasoning effort `medium`) come from `~/.codex/config.toml`. Pass `-m <model>` and `--config model_reasoning_effort=<level>` only when the user specifies a different choice.
 +
 +## Liveness check
 +
