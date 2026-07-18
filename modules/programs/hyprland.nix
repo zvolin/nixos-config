@@ -109,6 +109,17 @@
         in
         {
           enable = true;
+          # Stay on the hyprlang generator. Hyprland 0.55.4 does not load
+          # hyprland.lua at runtime (it autogenerates a default hyprland.conf),
+          # and HM's lua renderer emits invalid Lua for hyprlang-only keys such
+          # as `exec-once` (`hl.exec-once(...)` — a hyphen is not a valid Lua
+          # identifier). Revisit when both mature; migrating is not a one-liner.
+          # The warnIf fires once Hyprland reaches 0.56, where runtime lua
+          # config support is expected to land, as a nudge to re-evaluate.
+          configType =
+            lib.warnIf (lib.versionAtLeast pkgs.hyprland.version "0.56")
+              "hyprland: ${pkgs.hyprland.version} >= 0.56 is out — re-evaluate migrating configType to \"lua\" (see modules/programs/hyprland.nix)."
+              "hyprlang";
           xwayland.enable = true;
           systemd.enable = false;
 

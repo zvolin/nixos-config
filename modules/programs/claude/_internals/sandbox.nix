@@ -242,6 +242,9 @@ let
   # HM module reads cfg.package.meta (e.g. for symlinkJoin when plugins are
   # configured), so propagate meta from the original package.
   claude-wrapped = claude-wrapper // {
+    # Propagate version so the HM module detects it and uses persistent plugins
+    # instead of the legacy `--plugin-dir` wrapper.
+    inherit (pkgs.claude-code) version;
     meta = (pkgs.claude-code.meta or { }) // {
       mainProgram = "claude";
     };

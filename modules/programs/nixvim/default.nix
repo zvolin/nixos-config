@@ -14,6 +14,9 @@
       enable = true;
       viAlias = true;
       vimAlias = true;
+      # We follow a single nixpkgs (see flake.nix); make that explicit so nixvim
+      # doesn't warn about its pinned nixpkgs being overridden by `follows`.
+      nixpkgs.source = inputs.nixpkgs;
     };
 
     home-manager.sharedModules = [ inputs.nixvim.homeModules.nixvim ];

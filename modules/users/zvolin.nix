@@ -1,7 +1,7 @@
 { inputs, ... }:
 {
   flake.modules.nixos.zvolin =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     {
       users.mutableUsers = false;
 
@@ -69,12 +69,16 @@
           XCURSOR_SIZE = "14";
         };
 
+        # Stylix sets home.pointerCursor.{name,package,size} but not `.enable`;
+        # enable it explicitly (the implicit-enable path is deprecated).
+        home.pointerCursor.enable = true;
+
         manual.json.enable = true;
         xdg.enable = true;
 
         qt.enable = true;
         gtk.enable = true;
-        gtk.gtk4.theme = null;
+        gtk.gtk4.theme = lib.mkForce null;
       };
     };
 }

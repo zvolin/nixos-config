@@ -91,7 +91,7 @@
       programs.ssh = {
         enable = true;
         enableDefaultConfig = false;
-        matchBlocks."*".addKeysToAgent = "yes";
+        settings."*".addKeysToAgent = "yes";
       };
 
       programs.gpg.enable = true;
