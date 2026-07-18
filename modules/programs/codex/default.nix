@@ -65,7 +65,7 @@
             status_line = [
               "model-name"
               "git-branch"
-              "used-tokens"
+              "context-used"
               "context-window-size"
               "five-hour-limit"
               "weekly-limit"
