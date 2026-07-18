@@ -19,7 +19,7 @@
       - Imperative mood ("add feature" not "added feature")
       - No period at end
       - No body, no blank line after header, no trailers
-      - Do NOT add Co-Authored-By — this overrides the default behavior
+      - Do NOT add Co-Authored-By trailers
       - Use `git commit -m "type(scope): description"` — no HEREDOC
 
       **Present the message** and ask the user to confirm or edit before committing.
