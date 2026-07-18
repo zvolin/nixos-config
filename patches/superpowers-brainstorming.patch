@@ -228,7 +228,7 @@ diff -ruN a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
 +- Polish: <rule names or `none`>
 +```
 +
-+Rule names are path-relative tokens (no extension, forward slashes) under `~/.config/claude/rules/` — for example `languages/rust`, `base/git`, `frameworks/react`. The literal token `none` (case-insensitive, bare, no parentheses) is allowed wherever a rule name list is expected.
++Rule names are path-relative tokens (no extension, forward slashes) under `~/.claude/rules/` — for example `languages/rust`, `base/git`, `frameworks/react`. The literal token `none` (case-insensitive, bare, no parentheses) is allowed wherever a rule name list is expected.
 +
 +The Polish row is mandatory. Writing-plans propagates the section verbatim into the plan header and adds a dedicated `**Polish:** post-implementation-polish → <rules>` line that polish-phase dispatch reads.
 +
@@ -302,7 +302,7 @@ diff -ruN a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brain
 -    | YAGNI | Unrequested features, over-engineering |
 +    | Dependencies | External dependencies or prerequisites not mentioned |
 +    | Testability | Success criteria that cannot be verified |
-+    | Coding Rules | Missing or empty `## Coding Rules` section, missing Polish row, or Polish row references rules that do not exist under `~/.config/claude/rules/` |
++    | Coding Rules | Missing or empty `## Coding Rules` section, missing Polish row, or Polish row references rules that do not exist under `~/.claude/rules/` |
 +    | Task Dependency Graph | Missing or empty `## Task Dependency Graph` section, cycles in the graph, references to undefined task IDs, duplicate task IDs, or disagreement between table and per-task `depends on:` fields |
 +
 +    ### Medium Issues (should fix)
