@@ -43,8 +43,8 @@
         '';
 
         settings = {
-          model = "gpt-5.4";
-          model_reasoning_effort = "high";
+          model = "gpt-5.6-terra";
+          model_reasoning_effort = "medium";
           approval_policy = "on-request";
           projects."/home/zwolin".trust_level = "trusted";
           projects."/persist/etc/nixos".trust_level = "trusted";
@@ -73,6 +73,11 @@
             ];
             required = true;
           };
+        };
+
+        profiles.deep = {
+          model = "gpt-5.6-sol";
+          model_reasoning_effort = "xhigh";
         };
       };
     };
