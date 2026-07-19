@@ -1,0 +1,225 @@
+diff --git a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
+index 0e86fb4..f0ec4c6 100644
+--- a/skills/executing-plans/SKILL.md
++++ b/skills/executing-plans/SKILL.md
+@@ -19,7 +19,7 @@ Announce: "I'm using the executing-plans skill to dispatch this plan."
+ 2. Read `## Execution Strategy` — it must name exactly one of: `Subagents`, `Agent teams`. If the token is missing or is anything else, STOP and surface the error to the user — do not fall through to inline. The router defines no unrecognized-token default.
+ 3. Read `## Task Dependency Graph` — extract the batch ordering.
+ 4. **Already-complete check (Subagents and inline paths only):** read the Durable Progress ledger from the main tree:
+-   `LEDGER="$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`.
++   `LEDGER="$(../subagent-driven-development/scripts/sdd-workspace "$PLAN")/progress.md"`.
+    A task is done iff a line matching `^Task N: complete` exists in that file (prefix match). A missing ledger means nothing is done yet. Do not read plan-file checkboxes for this — the ledger is the resume signal.
+ 5. If every task already matches `^Task N: complete`, announce "Plan already complete" and stop.
+ 
+@@ -31,7 +31,7 @@ Route on the `## Execution Strategy` token (exact match):
+ 
+ **Agent teams:** Spawn an Agent team. The team lead reads the plan and coordinates, and enforces the per-task review gate. Agent teams handle their own coordination and progress tracking — run no ledger precheck on this branch.
+ 
+-**Inline-Degraded Path:** Only when BOTH conditions hold: (1) subagent support is unavailable on this platform; (2) the user explicitly acknowledges degraded mode when prompted — "I understand this runs without subagent review gates." If the user declines, stop and explain that full-quality execution requires subagent support. The inline path executes tasks sequentially; before executing, invoke superpowers:using-git-worktrees. As each task finishes, append the bare `Task N: complete` line to `"$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"` (job 1 only — this path has no per-task review gate for Minor roll-up and records no commit range), creating the file if it does not exist. Do not flip plan-file checkboxes.
++**Inline-Degraded Path:** Only when BOTH conditions hold: (1) subagent support is unavailable on this platform; (2) the user explicitly acknowledges degraded mode when prompted — "I understand this runs without subagent review gates." If the user declines, stop and explain that full-quality execution requires subagent support. The inline path executes tasks sequentially; before executing, invoke superpowers:using-git-worktrees. As each task finishes, append the bare `Task N: complete` line to `"$(../subagent-driven-development/scripts/sdd-workspace "$PLAN")/progress.md"` (job 1 only — this path has no per-task review gate for Minor roll-up and records no commit range), creating the file if it does not exist. Do not flip plan-file checkboxes.
+ 
+ ### Step 3: Polish Phase (Inline-Degraded Path only)
+ 
+@@ -64,7 +64,7 @@ After every task is complete and verified, dispatch the post-implementation-poli
+ ## Remember
+ - This skill is a router — read the plan, choose a path, delegate.
+ - The plan file is the contract, not conversation state.
+-- Resume state lives in the Durable Progress ledger (`.superpowers/sdd/progress.md`), read via the `^Task N: complete` prefix match — never plan-file checkboxes.
++- Resume state lives in the Durable Progress ledger (`.superpowers/sdd/<plan-slug>/progress.md`, resolved via `sdd-workspace "$PLAN"`), read via the `^Task N: complete` prefix match — never plan-file checkboxes.
+ - Never start implementation on main/master branch without explicit user consent.
+ - Inline execution is degraded — always prefer subagent dispatch.
+ 
+diff --git a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven-development/SKILL.md
+index 7666ddf..f21bb57 100644
+--- a/skills/subagent-driven-development/SKILL.md
++++ b/skills/subagent-driven-development/SKILL.md
+@@ -128,7 +128,7 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
+ 
+ Implementer subagents report one of four statuses. Handle each appropriately:
+ 
+-**DONE:** Generate the review package (`scripts/review-package BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
++**DONE:** Generate the review package (`scripts/review-package "$PLAN" BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
+ 
+ **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
+ 
+@@ -161,7 +161,7 @@ review — send it back to the implementer and re-review.
+ 
+ ## Batch Dispatch from Dependency Graph
+ 
+-On plan load, read `## Task Dependency Graph` and compute parallel batches by topological sort. A task's dependency is "already complete" when the Durable Progress ledger — resolved from the main tree as `"$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"` — contains a line matching `^Task N: complete` (prefix match), never a plan-file checkbox. Batch 1 = tasks whose deps are all already complete (or have none); Batch 2 = tasks whose deps are all in Batch 1; and so on.
++On plan load, read `## Task Dependency Graph` and compute parallel batches by topological sort. A task's dependency is "already complete" when the Durable Progress ledger — resolved from the main tree as `"$(scripts/sdd-workspace "$PLAN")/progress.md"` (the script derives the plan's slug directory) — contains a line matching `^Task N: complete` (prefix match), never a plan-file checkbox. Batch 1 = tasks whose deps are all already complete (or have none); Batch 2 = tasks whose deps are all in Batch 1; and so on.
+ 
+ The dependency graph determines task ordering. The controller never starts a task before its dependencies are complete. Within a batch, the controller dispatches tasks sequentially by default. Parallel dispatch within a batch is permitted only when the tasks' `**Files:**` lists are fully disjoint — no shared files between any two tasks in the batch. The controller checks file lists before deciding; if any overlap exists, dispatch those tasks sequentially. The controller waits for the entire batch to complete (all reviews passed) before dispatching the next batch.
+ 
+@@ -201,7 +201,7 @@ final whole-branch review. When you fill a reviewer template:
+   test hygiene, review method) — the constraints block is for what THIS
+   project's spec demands.
+ - Hand the reviewer its diff as a file: run this skill's
+-  `scripts/review-package BASE HEAD` and pass the reviewer the file path
++  `scripts/review-package "$PLAN" BASE HEAD` and pass the reviewer the file path
+   it prints (or, without bash: `git log --oneline`, `git diff --stat`,
+   and `git diff -U10` for the range, redirected to one uniquely named
+   file). The output never enters your own context, and the reviewer sees
+@@ -223,7 +223,7 @@ final whole-branch review. When you fill a reviewer template:
+   Do not dismiss the finding because the plan mandates it, and do not
+   dispatch a fix that contradicts the plan without asking.
+ - The final whole-branch review gets a package too: run
+-  `scripts/review-package MERGE_BASE HEAD` (MERGE_BASE = the commit the
++  `scripts/review-package "$PLAN" MERGE_BASE HEAD` (MERGE_BASE = the commit the
+   branch started from, e.g. `git merge-base main HEAD`) and include the
+   printed path in the final review dispatch, so the final reviewer reads
+   one file instead of re-deriving the branch diff with git commands.
+@@ -290,7 +290,7 @@ sequences — the single most expensive failure observed. Track progress in
+ a ledger file, not only in todos.
+ 
+ - At skill start, check for a ledger:
+-  `cat "$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`. Tasks listed there
++  `cat "$(scripts/sdd-workspace "$PLAN")/progress.md"`. Tasks listed there
+   as complete are DONE — do not re-dispatch them; resume at the first task
+   not marked complete.
+ - When a task's review comes back clean, append one line to the ledger in
+@@ -423,7 +423,7 @@ Done!
+   dispatch prompt ("treat it as Minor at most") — the plan's example code is
+   a starting point, not evidence that its weaknesses were chosen
+ - Dispatch a task reviewer without a diff file — generate it first
+-  (`scripts/review-package BASE HEAD`) and name the printed path in the
++  (`scripts/review-package "$PLAN" BASE HEAD`) and name the printed path in the
+   prompt
+ - Move to next task while the review has open Critical/Important issues
+ - Re-dispatch a task the progress ledger already marks complete — check
+diff --git a/skills/subagent-driven-development/scripts/review-package b/skills/subagent-driven-development/scripts/review-package
+index 33bb20f..677bf2a 100755
+--- a/skills/subagent-driven-development/scripts/review-package
++++ b/skills/subagent-driven-development/scripts/review-package
+@@ -4,26 +4,28 @@
+ # call. Using the recorded per-task BASE (not HEAD~1) keeps multi-commit
+ # tasks intact.
+ #
+-# Usage: review-package BASE HEAD [OUTFILE]
+-# Default OUTFILE: <repo-root>/.superpowers/sdd/review-<base7>..<head7>.diff
+-# (named per range, so a re-review after fixes gets a distinct fresh file).
++# Usage: review-package PLAN_FILE BASE HEAD [OUTFILE]
++# Default OUTFILE: <repo-root>/.superpowers/sdd/<plan-slug>/review-<base7>..<head7>.diff
++# (the slug comes from PLAN_FILE via sdd-workspace; named per range, so a
++# re-review after fixes gets a distinct fresh file).
+ set -euo pipefail
+ 
+-if [ $# -lt 2 ] || [ $# -gt 3 ]; then
+-  echo "usage: review-package BASE HEAD [OUTFILE]" >&2
++if [ $# -lt 3 ] || [ $# -gt 4 ]; then
++  echo "usage: review-package PLAN_FILE BASE HEAD [OUTFILE]" >&2
+   exit 2
+ fi
+ 
+-base=$1
+-head=$2
++plan=$1
++base=$2
++head=$3
+ 
+ git rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
+ git rev-parse --verify --quiet "$head" >/dev/null || { echo "bad HEAD: $head" >&2; exit 2; }
+ 
+-if [ $# -eq 3 ]; then
+-  out=$3
++if [ $# -eq 4 ]; then
++  out=$4
+ else
+-  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace")
++  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
+   out="$dir/review-$(git rev-parse --short "$base")..$(git rev-parse --short "$head").diff"
+ fi
+ 
+diff --git a/skills/subagent-driven-development/scripts/sdd-workspace b/skills/subagent-driven-development/scripts/sdd-workspace
+index ea9bb08..e059514 100755
+--- a/skills/subagent-driven-development/scripts/sdd-workspace
++++ b/skills/subagent-driven-development/scripts/sdd-workspace
+@@ -1,22 +1,39 @@
+ #!/usr/bin/env bash
+-# Resolve and ensure the working-tree directory SDD uses for its short-lived
+-# artifacts: task briefs, implementer reports, review packages, and the
+-# progress ledger. Print the directory's absolute path.
++# Resolve and ensure the working-tree directory SDD uses for ONE plan's
++# short-lived artifacts: task briefs, implementer reports, review packages,
++# and the progress ledger. Print the directory's absolute path.
++#
++# Each plan gets its own subdirectory, keyed by the plan file's basename with a
++# trailing .md stripped (the "slug"). Same plan file -> same slug -> same
++# directory, so ledger-based resume and post-compaction recovery keep working;
++# different plans -> different slugs, so their state never collides.
+ #
+ # The workspace lives in the working tree (not under .git/) because Claude Code
+ # treats .git/ as a protected path and denies agent writes there — which blocks
+-# an implementer subagent from writing its report file. A self-ignoring
+-# .gitignore keeps the workspace out of `git status` and out of accidental
+-# commits without modifying any tracked file.
++# an implementer subagent from writing its report file. A single self-ignoring
++# .gitignore at the .superpowers/sdd/ level (a lone "*") recursively keeps every
++# slug directory, and itself, out of `git status` and out of accidental commits
++# without modifying any tracked file.
+ #
+-# Single source of truth for the workspace location, so task-brief and
+-# review-package cannot drift to different directories.
++# Single source of truth for the workspace location and the slug rule, so
++# task-brief and review-package cannot drift to different directories.
+ #
+-# Usage: sdd-workspace
++# Usage: sdd-workspace PLAN_FILE
+ set -euo pipefail
+ 
++if [ $# -ne 1 ]; then
++  echo "usage: sdd-workspace PLAN_FILE" >&2
++  exit 2
++fi
++
++plan=$1
++slug=$(basename "$plan")
++slug=${slug%.md}
++
+ root=$(git rev-parse --show-toplevel)
+-dir="$root/.superpowers/sdd"
++base="$root/.superpowers/sdd"
++mkdir -p "$base"
++printf '*\n' > "$base/.gitignore"
++dir="$base/$slug"
+ mkdir -p "$dir"
+-printf '*\n' > "$dir/.gitignore"
+ cd "$dir" && pwd
+diff --git a/skills/subagent-driven-development/scripts/task-brief b/skills/subagent-driven-development/scripts/task-brief
+index 247a767..198c828 100755
+--- a/skills/subagent-driven-development/scripts/task-brief
++++ b/skills/subagent-driven-development/scripts/task-brief
+@@ -4,8 +4,9 @@
+ # through the controller's context.
+ #
+ # Usage: task-brief PLAN_FILE TASK_NUMBER [OUTFILE]
+-# Default OUTFILE: <repo-root>/.superpowers/sdd/task-<N>-brief.md
+-# (per worktree; concurrent runs in the same working tree share it).
++# Default OUTFILE: <repo-root>/.superpowers/sdd/<plan-slug>/task-<N>-brief.md
++# (the slug is derived from PLAN_FILE by sdd-workspace, so each plan's briefs
++# stay in that plan's own directory).
+ set -euo pipefail
+ 
+ if [ $# -lt 2 ] || [ $# -gt 3 ]; then
+@@ -20,7 +21,7 @@ n=$2
+ if [ $# -eq 3 ]; then
+   out=$3
+ else
+-  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace")
++  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
+   out="$dir/task-${n}-brief.md"
+ fi
+ 
+diff --git a/skills/subagent-driven-development/task-reviewer-prompt.md b/skills/subagent-driven-development/task-reviewer-prompt.md
+index 588a402..7dca124 100644
+--- a/skills/subagent-driven-development/task-reviewer-prompt.md
++++ b/skills/subagent-driven-development/task-reviewer-prompt.md
+@@ -178,7 +178,7 @@ Subagent (general-purpose):
+ - `[BASE_SHA]` — commit before this task
+ - `[HEAD_SHA]` — current commit
+ - `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
+-  package to (`scripts/review-package BASE HEAD` prints the unique path it
++  package to (`scripts/review-package "$PLAN" BASE HEAD` prints the unique path it
+   wrote; the package never enters the controller's context)
+ 
+ **Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues

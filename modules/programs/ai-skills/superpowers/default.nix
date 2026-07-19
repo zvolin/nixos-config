@@ -12,6 +12,7 @@
           "${inputs.self}/patches/superpowers-executing-plans.patch"
           "${inputs.self}/patches/superpowers-subagent-driven-dev.patch"
           "${inputs.self}/patches/superpowers-implementer-prompt.patch"
+          "${inputs.self}/patches/superpowers-sdd-per-plan-ledger.patch"
         ];
       };
     in
