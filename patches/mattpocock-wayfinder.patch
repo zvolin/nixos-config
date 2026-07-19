@@ -1,0 +1,120 @@
+diff --git a/skills/engineering/wayfinder/SKILL.md b/skills/engineering/wayfinder/SKILL.md
+index 42e3644..3496df7 100644
+--- a/skills/engineering/wayfinder/SKILL.md
++++ b/skills/engineering/wayfinder/SKILL.md
+@@ -22,7 +22,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
+
+ The map is an **index**, not a store. It lists the decisions made and points at the tickets that hold their detail; a decision lives in exactly one place — its ticket — so the map never restates it, only gists it and links.
+
+-**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** The issue tracker should have been provided to you — run `/setup-matt-pocock-skills` if not. Consult the tracker doc's "Wayfinding operations" section for how _this_ repo expresses them. If no tracker has been provided, default to the local-markdown tracker.
++**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** Consult [WAYFINDING-OPS.md](WAYFINDING-OPS.md) for how the local-markdown tracker expresses them — the default for this repo. If a different tracker has been provided, use its own Wayfinding-operations doc instead.
+
+ ### The map body
+
+@@ -64,9 +64,9 @@ Each ticket is a **child issue** of the map; the tracker's issue id is its ident
+
+ Each ticket carries a `wayfinder:<type>` label — one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)).
+
+-A session **claims** a ticket by assigning it to the dev driving the map, **first**, before any work, so concurrent sessions skip it. That assignee _is_ the claim: an open, unassigned ticket is unclaimed.
++A session **claims** a ticket by setting its `claimed-by:` (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md)), **first**, before any work, so concurrent sessions skip it. That `claimed-by:` value is the claim; an `open` ticket with empty `claimed-by:` is unclaimed.
+
+-Blocking uses the tracker's **native** dependency relationship — essential because it renders the frontier _visually_ in the tracker's own UI, so the human sees what's takeable without opening the map. Only a tracker that lacks native blocking falls back to a body convention. A ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked, unclaimed children — the edge of the known.
++Blocking is recorded in the ticket's `blocked-by:` frontmatter; the **frontier** is computed by the scan in [WAYFINDING-OPS.md](WAYFINDING-OPS.md), not rendered by a tracker UI. A ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked, unclaimed children — the edge of the known.
+
+ The answer isn't part of the body — it's recorded on resolution (see [Work through the map](#work-through-the-map)). Assets created while resolving a ticket are linked from the issue, not pasted in.
+
+@@ -75,8 +75,8 @@ The answer isn't part of the body — it's recorded on resolution (see [Work thr
+ Every ticket is either **HITL** — human in the loop, worked *with* a human who speaks for themselves — or **AFK**, driven by the agent alone. A HITL ticket only resolves through that live exchange; the agent never stands in for the human's side of it (a grilling agent that answers its own questions has broken this).
+
+ - **Research** (AFK): Reading documentation, third-party APIs, or local resources like knowledge bases to surface a fact a decision waits on. Resolved by a `/research` **subagent**. Use when knowledge outside the current working directory is required.
+-- **Prototype** (HITL): Raise the fidelity of the discussion by making a cheap, rough, concrete artifact to react to — an outline, a rough take, a stub, or UI/logic code via the /prototype skill. Links the prototype as an asset. Use when "how should it look" or "how should it behave" is the key question.
+-- **Grilling** (HITL): Conversation via the /grilling and /domain-modeling skills, one question at a time. The default case.
++- **Prototype** (HITL): Raise the fidelity of the discussion by making a cheap, rough, concrete artifact to react to — an outline, a rough take, a stub, or rough UI/logic code made by hand. Links the prototype as an asset. Use when "how should it look" or "how should it behave" is the key question.
++- **Grilling** (HITL): Conversation via the brainstorming and /domain-modeling skills, one question at a time. The default case.
+ - **Task** (HITL or AFK): Manual work that must happen before a *decision* can be made — nothing to decide, prototype, or research, but the discussion is blocked until it's done. Signing up for a service so its API can be judged, provisioning access, moving data so its shape can be seen. This is the one type that *does* rather than decides — and it earns its place by unblocking a decision, not by delivering the destination. The agent drives it alone where it can (AFK); otherwise it hands the human a precise checklist (HITL). Resolved when the work is done; the answer records what was done and any resulting facts (credentials location, new URLs, row counts) later tickets depend on.
+
+ ## Fog of war
+@@ -108,7 +108,7 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
+
+ User invokes with a loose idea.
+
+-1. **Name the destination.** Run a `/grilling` and `/domain-modeling` session to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first.
++1. **Name the destination.** Run a `brainstorming` and `/domain-modeling` session to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first.
+ 2. **Map the frontier.** Grill again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** — the way to the destination is already clear, the whole journey small enough for one session — you don't need a map. Stop and ask the user how they'd like to proceed.
+ 3. **Create the map** (label `wayfinder:map`): Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
+ 4. **Create the tickets you can specify now** as child issues of the map — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
+@@ -121,8 +121,8 @@ User invokes with a map (URL or number). A ticket is **optional** — without on
+
+ 1. Load the **map** — the low-res view, not every ticket body.
+ 2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
+-3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`.
+-4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
++3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `brainstorming` and `/domain-modeling`.
++4. Record the resolution: write the answer into the ticket body, set `status: closed`, and **append a context pointer** to the map's Decisions-so-far (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md)).
+ 5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
+
+ The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.
+diff --git a/skills/engineering/wayfinder/WAYFINDING-OPS.md b/skills/engineering/wayfinder/WAYFINDING-OPS.md
+new file mode 100644
+index 0000000..1bba7c6
+--- /dev/null
++++ b/skills/engineering/wayfinder/WAYFINDING-OPS.md
+@@ -0,0 +1,58 @@
++# Wayfinding operations (local-markdown tracker)
++
++Where the map, its child tickets, blocking, and the frontier query physically
++live, for the local-markdown tracker. The default when no other tracker is
++provided.
++
++## Location
++
++A map and its tickets live under `docs/superpowers/wayfinder/<effort-slug>/`
++(gitignored — it persists across sessions but is never committed). The
++`<effort-slug>` is derived from the destination's name.
++
++- The map is `map.md`.
++- Each ticket is `tickets/NN-slug.md`, where `NN` is a zero-padded two-digit id
++  (`01`, `02`, …), assigned in creation order.
++
++## Child issue → file
++
++A ticket *is* a file in `tickets/`. Its filename `NN` is its id. Creating a
++ticket means writing the file; there is no separate tracker record.
++
++## Type / claim / blocking → frontmatter
++
++Each ticket carries YAML frontmatter:
++
++```yaml
++---
++type: research        # one of: research | prototype | grilling | task
++status: open          # one of: open | closed
++claimed-by:           # a name, or empty = unclaimed
++blocked-by: []        # a list of ticket ids this one waits on, e.g. [01, 03]
++---
++```
++
++The ticket body is the `## Question` block, exactly as the SKILL.md ticket-body
++format defines it.
++
++## Claiming
++
++To claim a ticket, set `claimed-by:` to the dev driving the map, **before** any
++work, so concurrent sessions skip it. An `open` ticket with empty `claimed-by:`
++is unclaimed.
++
++## Frontier → scan
++
++The frontier is the set of tickets that are `status: open`, unclaimed
++(`claimed-by:` empty), and have every id in `blocked-by:` pointing at a ticket
++whose `status:` is `closed`. Compute it by reading the ticket frontmatter — there
++is no tracker UI to query.
++
++## Resolution
++
++To resolve a ticket:
++
++1. Set `status: closed`.
++2. Write the answer into the ticket body (below the `## Question` block).
++3. Append one gist line to the map's `## Decisions so far`, linking the ticket by
++   a relative path: `- [<ticket title>](tickets/NN-slug.md) — <one-line gist>`.

@@ -83,6 +83,13 @@
       url = "github:skills-directory/skill-codex/0cce7fc7c49b08fd60ae05bdf7934590d7bc34b5";
       flake = false;
     };
+
+    # mattpocock skills, vendored + patched like superpowers. Pinned to a rev;
+    # to bump: change the rev, rebuild, regenerate any patch that fails to apply.
+    mattpocock-skills = {
+      url = "github:mattpocock/skills/9603c1c";
+      flake = false;
+    };
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);

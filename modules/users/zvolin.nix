@@ -39,6 +39,10 @@
           kitty
           latex
           mako
+          mattpocock-architecture
+          mattpocock-domain-modeling
+          mattpocock-handoff
+          mattpocock-wayfinder
           mcp
           post-implementation-polish
           research

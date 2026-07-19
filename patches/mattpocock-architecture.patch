@@ -1,0 +1,119 @@
+diff --git a/skills/engineering/codebase-design/DESIGN-IT-TWICE.md b/skills/engineering/codebase-design/DESIGN-IT-TWICE.md
+index 49a7c42..bf23aff 100644
+--- a/skills/engineering/codebase-design/DESIGN-IT-TWICE.md
++++ b/skills/engineering/codebase-design/DESIGN-IT-TWICE.md
+@@ -18,7 +18,7 @@ Show this to the user, then immediately proceed to Step 2. The user reads and th
+
+ ### 2. Spawn sub-agents
+
+-Spawn 3+ sub-agents in parallel using the Agent tool. Each must produce a **radically different** interface for the deepened module.
++Spawn 3+ sub-agents in parallel using your harness's subagent mechanism (the Agent tool on Claude Code, a `multi_agent` spawn on Codex). Each must produce a **radically different** interface for the deepened module.
+
+ Prompt each sub-agent with a separate technical brief (file paths, coupling details, dependency category from [DEEPENING.md](DEEPENING.md), what sits behind the seam). The brief is independent of the user-facing problem-space explanation in Step 1. Give each agent a different design constraint:
+
+@@ -27,7 +27,7 @@ Prompt each sub-agent with a separate technical brief (file paths, coupling deta
+ - Agent 3: "Optimise for the most common caller — make the default case trivial."
+ - Agent 4 (if applicable): "Design around ports & adapters for cross-seam dependencies."
+
+-Include both [SKILL.md](SKILL.md) vocabulary and CONTEXT.md vocabulary in the brief so each sub-agent names things consistently with the architecture language and the project's domain language.
++Include both [SKILL.md](SKILL.md) vocabulary and docs/LLM_CONTEXT.md vocabulary in the brief so each sub-agent names things consistently with the architecture language and the project's domain language.
+
+ Each sub-agent outputs:
+
+diff --git a/skills/engineering/improve-codebase-architecture/HTML-REPORT.md b/skills/engineering/improve-codebase-architecture/HTML-REPORT.md
+index 17f6d2c..d641d7f 100644
+--- a/skills/engineering/improve-codebase-architecture/HTML-REPORT.md
++++ b/skills/engineering/improve-codebase-architecture/HTML-REPORT.md
+@@ -1,6 +1,6 @@
+ # HTML Report Format
+
+-The architectural review is rendered as a single self-contained HTML file in the OS temp directory. Tailwind and Mermaid both come from CDNs. Mermaid handles graph-shaped diagrams reliably; hand-built divs and inline SVG handle the more editorial visuals (mass diagrams, cross-sections). Mix the two — don't lean on Mermaid for everything, it'll start to look generic.
++The architectural review is a self-contained HTML report. On Claude Code it is emitted with the Artifact tool (native Mermaid, inlined CSS, no filesystem or display dependency); elsewhere it is written to `docs/architecture-reports/<timestamp>.html` and its path printed. Either way, every asset is inlined — no CDN `<script src>`. Mermaid handles graph-shaped diagrams reliably; hand-built divs and inline SVG handle the more editorial visuals (mass diagrams, cross-sections). Mix the two — don't lean on Mermaid for everything, it'll start to look generic.
+
+ ## Scaffold
+
+@@ -10,11 +10,9 @@ The architectural review is rendered as a single self-contained HTML file in the
+   <head>
+     <meta charset="utf-8" />
+     <title>Architecture review — {{repo name}}</title>
+-    <script src="https://cdn.tailwindcss.com"></script>
+-    <script type="module">
+-      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+-      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+-    </script>
++    <!-- No CDN scripts. On Claude Code the Artifact tool renders ```mermaid blocks and
++         supplies the page skeleton; the docs/architecture-reports fallback inlines a
++         <style> block (hand-written utility CSS, not the Tailwind CDN) and static inline SVG. -->
+     <style>
+       /* small custom layer for things Tailwind doesn't cover cleanly:
+          dashed seam lines, hand-drawn-feeling arrow heads, etc. */
+@@ -97,7 +95,7 @@ Before: a tree of function calls rendered as nested boxes. After: the same tree
+ - Colour sparingly: one accent (emerald or indigo) plus red for leakage and amber for warnings.
+ - Keep diagrams ~320px tall so before/after sits comfortably side by side without scrolling.
+ - Use `text-xs uppercase tracking-wider` for module labels inside diagrams — they should read as schematic, not as UI.
+-- The only scripts are the Tailwind CDN and the Mermaid ESM import. The report is otherwise static — no app code, no interactivity beyond Mermaid's own rendering.
++- No CDN scripts and no app code — the report is static. On Claude Code the Artifact tool renders the Mermaid; the fallback file uses inlined CSS and static SVG.
+
+ ## Top recommendation section
+
+diff --git a/skills/engineering/improve-codebase-architecture/SKILL.md b/skills/engineering/improve-codebase-architecture/SKILL.md
+index b56969e..3e55a4e 100644
+--- a/skills/engineering/improve-codebase-architecture/SKILL.md
++++ b/skills/engineering/improve-codebase-architecture/SKILL.md
+@@ -11,7 +11,7 @@ Surface architectural friction and propose **deepening opportunities** — refac
+ This command is _informed_ by the project's domain model and built on a shared design vocabulary:
+
+ - Run the `/codebase-design` skill for the architecture vocabulary (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) and its principles (the deletion test, "the interface is the test surface", "one adapter = hypothetical seam, two = real"). Use these terms exactly in every suggestion — don't drift into "component," "service," "API," or "boundary."
+-- The domain language in `CONTEXT.md` gives names to good seams; ADRs in `docs/adr/` record decisions this command should not re-litigate.
++- The domain language in `docs/LLM_CONTEXT.md` gives names to good seams; ADRs in `docs/adr/` record decisions this command should not re-litigate.
+
+ ## Process
+
+@@ -22,9 +22,9 @@ This command is _informed_ by the project's domain model and built on a shared d
+ - If the user named a direction — a module, a subsystem, a pain point — take it, and skip the inference below.
+ - Otherwise, walk back a good stretch of the commit history (`git log --oneline`) to find the codebase's hot spots — the files and areas that keep coming up — and let those paths pull your attention first. If the changes are scattered with no clear hot spot, widen the net.
+
+-Read the project's domain glossary (`CONTEXT.md`) and any ADRs in the area you're touching first.
++Read the project's domain glossary (`docs/LLM_CONTEXT.md`) and any ADRs in the area you're touching first.
+
+-Then use the Agent tool with `subagent_type=Explore` to walk the codebase. Don't follow rigid heuristics — explore organically and note where you experience friction:
++Then dispatch a parallel exploration subagent using your harness's subagent mechanism — the Agent tool on Claude Code, a `multi_agent` spawn on Codex — to walk the codebase. Don't follow rigid heuristics — explore organically and note where you experience friction:
+
+ - Where does understanding one concept require bouncing between many small modules?
+ - Where are modules **shallow** — interface nearly as complex as the implementation?
+@@ -36,9 +36,9 @@ Apply the **deletion test** to anything you suspect is shallow: would deleting i
+
+ ### 2. Present candidates as an HTML report
+
+-Write a self-contained HTML file to the OS temp directory so nothing lands in the repo. Resolve the temp dir from `$TMPDIR`, falling back to `/tmp` (or `%TEMP%` on Windows), and write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Open it for the user — `xdg-open <path>` on Linux, `open <path>` on macOS, `start <path>` on Windows — and tell them the absolute path.
++Present the candidates as a self-contained HTML report. On Claude Code, emit it with the **Artifact tool** — it renders Mermaid natively and takes inlined CSS, so nothing touches the filesystem or a display server. Where the Artifact tool is unavailable (Codex, or any harness without it), write the report to `docs/architecture-reports/<timestamp>.html` — a gitignored path, so nothing lands in the repo — and print the absolute path. Derive `<timestamp>` as `YYYYMMDD-HHMMSS` so each run gets a fresh file.
+
+-The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via CDN** for diagrams where a graph/flow/sequence reliably communicates the structure. Mix Mermaid with hand-crafted CSS/SVG visuals — use Mermaid when relationships are graph-shaped (call graphs, dependencies, sequences), and hand-built divs/SVG when you want something more editorial (mass diagrams, cross-sections, collapse animations). Each candidate gets a **before/after visualisation**. Be visual.
++Inline every asset: no `<script src>` to a CDN. Render diagrams as Mermaid where relationships are graph-shaped (call graphs, dependencies, sequences) — as ```mermaid fenced blocks on the Artifact, or inlined into the fallback file — and hand-built CSS/SVG for editorial visuals (mass diagrams, cross-sections, collapse animations). Mix the two; each candidate gets a **before/after visualisation**. Be visual.
+
+ For each candidate, render a card with:
+
+@@ -51,7 +51,7 @@ For each candidate, render a card with:
+
+ End the report with a **Top recommendation** section: which candidate you'd tackle first and why.
+
+-**Use CONTEXT.md vocabulary for the domain, and the `/codebase-design` vocabulary for the architecture.** If `CONTEXT.md` defines "Order," talk about "the Order intake module" — not "the FooBarHandler," and not "the Order service."
++**Use docs/LLM_CONTEXT.md vocabulary for the domain, and the `/codebase-design` vocabulary for the architecture.** If `docs/LLM_CONTEXT.md` defines "Order," talk about "the Order intake module" — not "the FooBarHandler," and not "the Order service."
+
+ **ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly in the card (e.g. a warning callout: _"contradicts ADR-0007 — but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
+
+@@ -61,11 +61,11 @@ Do NOT propose interfaces yet. After the file is written, ask the user: "Which o
+
+ ### 3. Grilling loop
+
+-Once the user picks a candidate, run the `/grilling` skill to walk the decision tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
++Once the user picks a candidate, run the `brainstorming` skill to walk the decision tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
+
+ Side effects happen inline as decisions crystallize — run the `/domain-modeling` skill to keep the domain model current as you go:
+
+-- **Naming a deepened module after a concept not in `CONTEXT.md`?** Add the term to `CONTEXT.md`. Create the file lazily if it doesn't exist.
+-- **Sharpening a fuzzy term during the conversation?** Update `CONTEXT.md` right there.
++- **Naming a deepened module after a concept not in `docs/LLM_CONTEXT.md`?** Add the term to `docs/LLM_CONTEXT.md`. Create the file lazily if it doesn't exist.
++- **Sharpening a fuzzy term during the conversation?** Update `docs/LLM_CONTEXT.md` right there.
+ - **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing — skip ephemeral reasons ("not worth it right now") and self-evident ones.
+ - **Want to explore alternative interfaces for the deepened module?** Run the `/codebase-design` skill and use its design-it-twice parallel sub-agent pattern.
