@@ -3,9 +3,9 @@ index d8ca081..7666ddf 100644
 --- a/skills/subagent-driven-development/SKILL.md
 +++ b/skills/subagent-driven-development/SKILL.md
 @@ -18,29 +18,7 @@ ledger and the tool results carry the record.
- 
+
  ## When to Use
- 
+
 -```dot
 -digraph when_to_use {
 -    "Have implementation plan?" [shape=diamond];
@@ -30,9 +30,9 @@ index d8ca081..7666ddf 100644
 -- Review after each task (spec compliance + code quality), broad review at the end
 -- Faster iteration (no human-in-loop between tasks)
 +This skill is dispatched by the executing-plans router. Do not invoke it directly.
- 
+
  ## The Process
- 
+
 @@ -57,15 +35,22 @@ digraph process {
          "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" [shape=box];
          "Task reviewer reports spec ✅ and quality approved?" [shape=diamond];
@@ -40,7 +40,7 @@ index d8ca081..7666ddf 100644
 +        "Prose cleanup pass" [shape=box];
          "Mark task complete in todo list and progress ledger" [shape=box];
      }
- 
+
      "Read plan, note context and global constraints, create todos" [shape=box];
 +    "Set up worktree (superpowers:using-git-worktrees)" [shape=box];
 +    "Read dependency graph, compute batches" [shape=box];
@@ -49,7 +49,7 @@ index d8ca081..7666ddf 100644
 +    "Dispatch post-implementation-polish" [shape=box];
 +    "Show git diff main...<branch> for user review" [shape=box];
      "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
- 
+
 -    "Read plan, note context and global constraints, create todos" -> "Dispatch implementer subagent (./implementer-prompt.md)";
 +    "Read plan, note context and global constraints, create todos" -> "Set up worktree (superpowers:using-git-worktrees)";
 +    "Set up worktree (superpowers:using-git-worktrees)" -> "Read dependency graph, compute batches";
@@ -75,7 +75,7 @@ index d8ca081..7666ddf 100644
 +    "Show git diff main...<branch> for user review" -> "Use superpowers:finishing-a-development-branch";
  }
  ```
- 
+
 +<HARD-GATE>
 +Do NOT dispatch any implementation, review, or fix subagent until you have set up
 +an isolated worktree via superpowers:using-git-worktrees. All subagent work must
@@ -84,12 +84,12 @@ index d8ca081..7666ddf 100644
 +</HARD-GATE>
 +
  ## Pre-Flight Plan Review
- 
+
  Before dispatching Task 1, scan the plan once for conflicts:
 @@ -156,6 +151,33 @@ complete: you hold the plan and cross-task context the reviewer
  lacks. If you confirm an item is a real gap, treat it as a failed spec
  review — send it back to the implementer and re-review.
- 
+
 +## Review Loop Limits
 +
 +**Max iterations:** 10 for any review loop (spec compliance or code quality). After 10 iterations with unresolved critical or important issues, escalate to the user.
@@ -118,12 +118,12 @@ index d8ca081..7666ddf 100644
 +The implementer subagent runs this pass itself before reporting the task complete. The controller does not append the task's ledger line until the pass is reported done.
 +
  ## Constructing Reviewer Prompts
- 
+
  Per-task reviews are task-scoped gates. The broad review happens once, at the
 @@ -216,6 +238,23 @@ final whole-branch review. When you fill a reviewer template:
    Per-finding fixers each rebuild context and re-run suites; a real
    session's final-review fix wave cost more than all its tasks combined.
- 
+
 +## Polish Dispatch (End-of-Plan)
 +
 +After the final code reviewer approves, dispatch the `post-implementation-polish` skill on the full implementation. The plan header's `**Polish:**` line names the rules the polish subagent loads. Max 3 polish iterations before escalating to the user. Present the pre-merge diff for user review only after polish completes. Polish runs in the same worktree as the implementation.
@@ -142,17 +142,17 @@ index d8ca081..7666ddf 100644
 +Wait for the user to confirm before continuing to the finishing skill. If the user requests changes, address them and re-present the diff command.
 +
  ## File Handoffs
- 
+
  Everything you paste into a dispatch prompt — and everything a subagent
 @@ -271,6 +310,8 @@ a ledger file, not only in todos.
- 
+
  ## Example Workflow
- 
+
 +Read `## Task Dependency Graph`: `T1 (none), T2 (T1), T3 (T1), T4 (T2, T3), T5 (T4)`. Compute batches: `Batch 1 = {T1}, Batch 2 = {T2, T3}, Batch 3 = {T4}, Batch 4 = {T5}`. Skip any task the ledger already marks with `^Task N: complete`. Set up the worktree via using-git-worktrees. Batch 2's `T2` and `T3` have disjoint `**Files:**` lists, so dispatch them in parallel; append each task's `Task N: complete (commits <base7>..<head7>, review clean)` line to the ledger after its prose-cleanup commit lands. After Batch 4, dispatch the final code reviewer, then post-implementation-polish, then show `git diff main...<worktree-branch>`, then finishing-a-development-branch.
 +
  ```
  You: I'm using Subagent-Driven Development to execute this plan.
- 
+
 @@ -370,7 +411,7 @@ Done!
  - Start implementation on main/master branch without explicit user consent
  - Skip task review, or accept a report missing either verdict (spec compliance AND task quality are both required)

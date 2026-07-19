@@ -3,7 +3,7 @@ index b0d52b2..37d4c6e 100644
 --- a/skills/brainstorming/SKILL.md
 +++ b/skills/brainstorming/SKILL.md
 @@ -23,13 +23,14 @@ You MUST create a task for each of these items and complete them in order:
- 
+
  1. **Explore project context** — check files, docs, recent commits
  2. **Offer the visual companion just-in-time** — NOT upfront. The first time a question would genuinely be clearer shown than described, offer it then (its own message); on approval its browser tab opens for you. If no visual question ever arises, never offer it. See the Visual Companion section below.
 -3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
@@ -20,9 +20,9 @@ index b0d52b2..37d4c6e 100644
 +8. **User reviews written spec** — ask the user to review the spec file before proceeding
 +9. **Select execution strategy (heuristic, no ask)** — apply the Strategy Selection Heuristics below; pick ONE; do NOT ask the user to confirm
 +10. **Transition to planning** — do NOT invoke writing-plans directly; announce the spec path + strategy, tell the user to `/clear` then invoke writing-plans
- 
+
  ## Process Flow
- 
+
 @@ -37,28 +38,33 @@ You MUST create a task for each of these items and complete them in order:
  digraph brainstorming {
      "Explore project context" [shape=box];
@@ -40,7 +40,7 @@ index b0d52b2..37d4c6e 100644
 -    "Invoke writing-plans skill" [shape=doublecircle];
 +    "Select strategy (heuristic)" [shape=box];
 +    "Announce spec path + clear context" [shape=doublecircle];
- 
+
      "Explore project context" -> "Ask clarifying questions";
 -    "Ask clarifying questions" -> "Propose 2-3 approaches";
 -    "Propose 2-3 approaches" -> "Present design sections";
@@ -63,12 +63,12 @@ index b0d52b2..37d4c6e 100644
 +    "Select strategy (heuristic)" -> "Announce spec path + clear context";
  }
  ```
- 
+
 -**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
 +**Terminal state:** Announce the spec path and strategy, then tell the user to clear context and invoke writing-plans. Do NOT invoke writing-plans directly — the user does it in a clean session. Do NOT ask the user to pick a strategy — the heuristic selection is fixed in the spec.
- 
+
  ## The Process
- 
+
 @@ -77,6 +83,25 @@ digraph brainstorming {
  - Propose 2-3 different approaches with trade-offs
  - Present options conversationally with your recommendation and reasoning
@@ -92,16 +92,16 @@ index b0d52b2..37d4c6e 100644
 +**Reject:** T1 Create schema for users/posts/comments; T2 Build CRUD endpoints for all entities; T3 Wire up UI for everything.
 +**Require:** T1 User registration (schema + endpoint + UI); T2 Create post (depends on T1); T3 Comments (depends on T2).
 +**Escape hatch for cross-cutting prerequisites:** A task that is a shared prerequisite (add a library, set up a build tool, create shared types) can be horizontal, but must carry `**Task type:** prerequisite` in the task block and sit at the root of the dependency graph (`depends on: none`). The vertical-slice rule applies to feature work, not scaffolding.
- 
+
  **Presenting the design:**
- 
+
 @@ -106,29 +131,36 @@ digraph brainstorming {
  - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
    - (User preferences for spec location override this default)
  - Use elements-of-style:writing-clearly-and-concisely skill if available
 -- Commit the design document to git
 +- If the path is not gitignored (check with `git check-ignore -q <path>`), commit the design document to git. If it is gitignored, skip the commit — the file is saved locally and usable. Never use `git add -f`.
- 
+
 -**Spec Self-Review:**
 -After writing the spec document, look at it with fresh eyes:
 -
@@ -118,21 +118,21 @@ index b0d52b2..37d4c6e 100644
 +3. If issues are found, fix them and re-dispatch.
 +4. Loop until 0 critical/medium issues remain.
 +5. Max 10 iterations, then escalate to the user.
- 
+
  **User Review Gate:**
  After the spec review loop passes, ask the user to review the written spec before proceeding:
- 
+
 -> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
 +> "Spec written to `<path>`. Please review it before I proceed."
- 
+
  Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
- 
+
 -**Implementation:**
 +**Select execution strategy:**
 +Apply the Strategy Selection Heuristics (below). Announce the choice with a one-line reason. Do NOT ask the user to confirm.
 +
 +> "Selected execution strategy: **<strategy>**. Reason: <one line grounded in the heuristics>."
- 
+
 -- Invoke the writing-plans skill to create a detailed implementation plan
 -- Do NOT invoke any other skill. writing-plans is the next step.
 +**Transition to planning:**
@@ -143,13 +143,13 @@ index b0d52b2..37d4c6e 100644
 +> then: `/writing-plans <spec-path>`"
 +
 +writing-plans reads the spec file, not conversation state. Do NOT invoke any implementation or execution skill from here.
- 
+
  ## Key Principles
- 
+
 @@ -139,6 +171,52 @@ Wait for the user's response. If they request changes, make them and re-run the
  - **Incremental validation** - Present design, get approval before moving on
  - **Be flexible** - Go back and clarify when something doesn't make sense
- 
+
 +## Strategy Selection Heuristics
 +
 +Apply these rules in order. Take the first match. Record the match and reason in the spec's `## Execution Strategy` section. There are only two strategies — no sequential mode.
@@ -197,16 +197,16 @@ index b0d52b2..37d4c6e 100644
 +Write like a person talking to another person. Vary sentence rhythm. Have opinions. Be specific.
 +
  ## Visual Companion
- 
+
  A browser-based companion for showing mockups, diagrams, and visual options during brainstorming. Available as a tool — not a mode. Accepting the companion means it's available for questions that benefit from visual treatment; it does NOT mean every question goes through the browser.
 diff --git a/skills/brainstorming/spec-document-reviewer-prompt.md b/skills/brainstorming/spec-document-reviewer-prompt.md
 index 6099312..f191189 100644
 --- a/skills/brainstorming/spec-document-reviewer-prompt.md
 +++ b/skills/brainstorming/spec-document-reviewer-prompt.md
 @@ -16,13 +16,35 @@ Subagent (general-purpose):
- 
+
      ## What to Check
- 
+
 -    | Category | What to Look For |
 -    |----------|------------------|
 -    | Completeness | TODOs, placeholders, "TBD", incomplete sections |
@@ -243,18 +243,18 @@ index 6099312..f191189 100644
 +    | Verbosity | Sections are longer than the decision warrants |
 +    | References | Dangling references to files or sections |
 +    | Ordering | Tasks not in topological order |
- 
+
      ## Calibration
- 
+
 @@ -37,13 +59,25 @@ Subagent (general-purpose):
- 
+
      ## Spec Review
- 
+
 -    **Status:** Approved | Issues Found
 +    **Critical issues**: <count>
 +    **Medium issues**: <count>
 +    **Minor issues**: <count>
- 
+
 -    **Issues (if any):**
 -    - [Section X]: [specific issue] - [why it matters for planning]
 +    ### Critical Issues
@@ -269,11 +269,11 @@ index 6099312..f191189 100644
 +    If 0 critical and 0 medium issues:
 +    **Status:** Approved
 +    **No critical or medium issues found.** Spec is ready for user review.
- 
+
      **Recommendations (advisory, do not block approval):**
 -    - [suggestions for improvement]
 +    - <optional recommendations>
  ```
- 
+
 -**Reviewer returns:** Status, Issues (if any), Recommendations
 +**Reviewer returns:** Status with severity-categorized issues, or Approved with optional recommendations.

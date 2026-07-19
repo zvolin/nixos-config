@@ -5,7 +5,7 @@ index 218fcfe..8bc990a 100644
 @@ -15,6 +15,14 @@ Subagent (general-purpose):
      Read your task brief first: [BRIEF_FILE]
      It contains the full task text from the plan.
- 
+
 +    ## Coding Rules
 +
 +    Before reading any task code, read every rule file named in this task's `**Rules:**` field (it is in the task brief you just read). If you are the polish subagent, read the rule files named in the plan-header's dedicated `**Polish:**` line. That line is authoritative; never read the `## Coding Rules` Polish row directly. Files live at `~/.config/claude/rules/<path>.md`.
@@ -15,12 +15,12 @@ index 218fcfe..8bc990a 100644
 +    If the field value is `none`, report "no rules to load" and proceed.
 +
      ## Context
- 
+
      [Scene-setting: where this fits, dependencies, architectural context]
 @@ -77,6 +85,19 @@ Subagent (general-purpose):
      The controller can provide more context, re-dispatch with a more capable model,
      or break the task into smaller pieces.
- 
+
 +    ## Prose Quality
 +
 +    Any non-code text you write (comments, docstrings, error messages, documentation, commit messages) must sound like a person wrote it. Avoid AI-isms: no "serves as", "leverages", "ensures", "facilitates", no significance inflation ("crucial", "pivotal"), no filler ("in order to", "it is important to note"), no sycophantic tone. Be direct and specific.
@@ -35,5 +35,5 @@ index 218fcfe..8bc990a 100644
 +    Small decisions (variable naming, loop vs map, etc.) don't need documentation.
 +
      ## Before Reporting Back: Self-Review
- 
+
      Review your work with fresh eyes. Ask yourself:
