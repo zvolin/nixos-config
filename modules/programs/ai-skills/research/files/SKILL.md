@@ -13,13 +13,6 @@ Anything less — a chat-only answer, an unreviewed draft, an unsaved draft — 
 
 **Announce at start:** "Using the research skill to investigate <topic>."
 
-## The build chain
-
-    approved plan ──▶ bullet draft ──▶ reviewed bullet draft ──▶ humanized prose ──▶ saved file
-        (§5)             (§7)              (§10)                    (§14)              (§15)
-
-Investigate, expansion review, and prose synthesis are how those artifacts get built. They are not stages you can hand back as an answer. Before replying with "here is what I found," check: which artifact in the chain do you hold? If it is not "humanized prose saved to disk," the chain is not done.
-
 ## Decision tree — where am I in the chain?
 
     What is in hand right now?
@@ -29,14 +22,11 @@ Investigate, expansion review, and prose synthesis are how those artifacts get b
     ├── reviewed bullet draft        → build the humanized prose     (§11–§14)
     └── humanized prose              → save the file                 (§15)
 
-At every step, "am I done?" has the same answer: only when the file at §15 exists on disk. Not before.
+The build chain: approved plan (§5) → bullet draft (§7) → reviewed bullet draft (§10) → humanized prose (§14) → saved file (§15). Investigate, expansion review, and prose synthesis build those artifacts; they are not stages you can hand back as an answer. Before replying "here is what I found," check which artifact you hold — if it is not humanized prose saved to disk, the chain is not done.
 
 ## Entry contract
 
-Before the first tool call, confirm:
-- Deliverable: saved markdown file at the §15 path.
-- Completion test: does that file exist with humanized, reviewer-approved prose?
-- If the answer is "no" when you are about to hand back, you are not done. Identify which artifact you are missing and build it.
+Before the first tool call, confirm the deliverable is the saved markdown file at the §15 path and the completion test is whether that file exists with humanized, reviewer-approved prose. At every step, "am I done?" has the same answer: only when the file at §15 exists on disk. If the answer is "no" when you are about to hand back, identify which artifact you are missing and build it — you are not done until the §15 file exists.
 
 ## When to use
 
@@ -54,11 +44,12 @@ Before the first tool call, confirm:
 
 ## Tool mapping
 
+Web fetch and web search map to whatever the host runtime provides — call them "your web-fetch tool" and "your web-search tool". The instructions below name capabilities, not products, because this skill is mounted for both Claude Code and Codex. Read local files with `Read` and `Grep` on both runtimes.
+
+Only subagent dispatch is genuinely runtime-specific:
+
 | Action | Claude Code | Codex |
 |---|---|---|
-| Web search | `WebSearch` | built-in web search |
-| Read URL | `WebFetch` | `web_search`, or `curl` for a known URL |
-| Read local files | `Read`, `Grep`, Explore agent | `Read`, `Grep` |
 | Dispatch §8 reviewers | `Agent` tool → `research-coverage-reviewer`, `research-validation-reviewer` | `spawn` in parallel → `research-coverage-reviewer`, `research-validation-reviewer` |
 | Dispatch §12 draft reviewer | `Agent` tool (general-purpose) | subagent (general-purpose) |
 
@@ -126,11 +117,30 @@ If any check fails, revise once and re-check. Cap at one revision. If the second
 **Output:** per-facet quotes, URLs, and preliminary cons — the raw material §7 consumes. Not an answer for the user; not the end of the chain.
 
 For each facet:
-- Web search, then URL read for the most promising sources.
+- Web search (your web-search tool) to discover blogs and forums, then fetch the most promising sources with your web-fetch tool.
+- Reach real human opinion through the named sources below, not just the top web-search results.
 - Light counter-evidence sweep ("X criticisms", "problems with X", "X overrated"). Enough to fill preliminary cons in the bullet draft.
 - For project-relevant facets: also read the relevant local files.
 
-Collect quotes, URLs, and per-facet preliminary cons as you go.
+Collect quotes, URLs, and per-facet preliminary cons as you go. Pre-fetch the archive evidence each facet needs and carry it into the bullet draft, so the two parallel §8 reviewers lean on already-collected material and spend their own archive calls only on genuine gaps. Three agents hitting the same rate-limited API at once is the failure mode to avoid. For each source, capture its **type** (first-party practitioner/community · independent journalism · vendor/affiliate/SEO), its **signal** (score, comment volume, or star rating where the platform exposes it — archive/API sources like PullPush/arctic-shift/Algolia give it as JSON; blogs give none), and its **date**. These feed the §7 draft and the enriched Sources line.
+
+**Where opinion lives — reach it, with fallbacks when a path is blocked:**
+
+Real human opinion clusters on Reddit, Hacker News, Stack Exchange, lobste.rs, Discourse forums, Goodreads, and practitioner blogs. Reach for it directly with your web-fetch and web-search tools first. Some direct paths are blocked in some environments — this skill was probed on Claude Code, where direct-fetch of reddit.com (and its `.json`/old.reddit.com/Redlib/Teddit mirrors) and stackexchange.com failed; other runtimes may differ, so verify rather than assume. When a direct path fails, fall back to an archive or API instead of dropping the source. The endpoints below are known-good starting points at time of writing, not guarantees or an exhaustive list — probe one before relying on it, and if it is down or blocked, find the current equivalent.
+
+- **Reddit** — largest reservoir of practitioner and consumer opinion. When direct paths are blocked, reach it through archive APIs such as (but not limited to):
+  - PullPush threads: `api.pullpush.io/reddit/search/submission/?q=<q>&subreddit=<sub>&size=25&sort=desc&sort_type=score`
+  - PullPush comments: `api.pullpush.io/reddit/search/comment/?link_id=<id>&size=100&sort_type=score`
+  - arctic-shift (`arctic-shift.photon-reddit.com/api/`) mirrors both and cross-checks freshness — it often surfaces more recent posts than PullPush.
+  - Both return JSON with `score`, `num_comments`, `created_utc`, `body`, `author`. When `site:reddit.com` web search is dead, discover threads through the archive's own `q=` search.
+- **Hacker News** — the Algolia API stays reachable when `news.ycombinator.com` direct-fetch 429s. Threads: `hn.algolia.com/api/v1/search?query=<q>&tags=story`. Comments: `hn.algolia.com/api/v1/items/<id>`. Returns `points`, `num_comments`, `created_at`.
+- **Stack Exchange** — when stackexchange.com direct-fetch is blocked, do not treat it as unreachable without trying web search (its threads are common search hits) or the public API `api.stackexchange.com` (e.g. `/2.3/search/advanced?order=desc&sort=votes&q=<q>&site=stackoverflow`).
+- **Direct fetch** (your web-fetch tool) for lobste.rs, Discourse forums, Goodreads, practitioner blogs, and journalism.
+
+**Guards:**
+- Your web-search tool's prose summary is not a citable source. Cite only from its returned links array or from pages you actually fetched. (Web search twice emitted confident, citation-shaped, Reddit-flavored prose with zero real links — that prose is not a source.)
+- When a direct domain is blocked, use the fallback path above before giving up on the source — do not silently drop Reddit, HN, or Stack Exchange because their front door is closed.
+- Archive/API vote and comment counts are approximate snapshots, not live values, and these APIs rate-limit (~15 req/min, 429 on bursts). Treat counts as directional and cross-check one archive against another when recency matters.
 
 #### §7 — Bullet-form tentative draft (produces: bullet draft)
 
@@ -147,15 +157,19 @@ Internal scratch, not shown to the user. Assemble a structured list per facet:
   - ...
 - Cons / limitations:
   - ...
-- Sources used: <urls>
+- Verbatim voices:
+  - <attributed quote — author/handle, signal, date>
+- Sources used: per source, `<URL> — [type · signal · date]`
+  - type: first-party practitioner/community · independent journalism · vendor/affiliate/SEO (a three-bucket filter, not a scoring rubric)
+  - signal: score / comment volume / star rating where the platform exposes it; omit for blogs
+  - date: the source's own date
 ```
 
 This is the input to §8.
 
 #### §8 — Expansion review (parallel subagents) (produces: coverage + validation reports)
 
-**Input:** bullet draft.
-**Output:** two review reports §9 folds back into the draft.
+**Input:** bullet draft (from §7). **Output:** coverage + validation reports for §9.
 
 Spawn two subagents in parallel to review the bullet draft: `research-coverage-reviewer` and `research-validation-reviewer`. Send both spawn requests in one response. Wait for both threads to finish before continuing to §9. Do not ask the user for permission — the skill invocation is the permission for this dispatch.
 
@@ -165,8 +179,7 @@ Spawn two subagents in parallel to review the bullet draft: `research-coverage-r
 
 #### §9 — Integrate findings (produces: updated bullet draft)
 
-**Input:** bullet draft + coverage + validation reports.
-**Output:** bullet draft with new options merged and validation criticisms attached to the right facets.
+**Input:** bullet draft + the two §8 reports. **Output:** updated bullet draft — new options merged, validation criticisms attached to the right facets.
 
 Update the bullet draft:
 - New options from coverage become new facet entries (or attach to existing facets per the reviewer's "Target facet" suggestion).
@@ -197,7 +210,7 @@ digraph round2 {
 }
 ```
 
-Counter-example: do not run round 2 when all three diamonds are "no": coverage found no misses, validation criticism stayed within per-facet weak points without pointing to a missed option coverage should check, and the facet structure is unchanged after §9. That is already a complete pass.
+All three diamonds "no" means the pass is already complete — skip to §11.
 
 **Hard cap: 2 rounds total.** Past round 2, reviewers tend to re-surface the same critiques rather than find new ones; cost grows, signal does not.
 
@@ -208,7 +221,7 @@ Counter-example: do not run round 2 when all three diamonds are "no": coverage f
 **Input:** reviewed bullet draft.
 **Output:** prose draft ready for §12's fresh-context reviewer.
 
-Expand the bullet draft into the full prose report using the output template below.
+Expand the bullet draft into the full prose report using the output template below. Produce the `## Recommendation` section: state the pick tailored to the asker's stated constraints, why it wins on cited evidence, a confidence level, and the conditions that flip it. Draw the flip-conditions from the strongest credible dissent the validation reviewer surfaced, so the recommendation survives its best counter-argument instead of leaving dissent as a detached appendix. Weave attributed verbatim quotes into each facet's prose — real voices with signal and date, not only laundered analytical summary. Claims are weighted by triangulation across independent communities, not by raw count from a single venue.
 
 #### §12 — Subagent review (fresh context) (produces: three-tier reviewer findings)
 
@@ -259,12 +272,9 @@ Write to `docs/research/YYYY-MM-DD-<slug>.md` if in a git repo. Otherwise ask. D
 
 ## Red flags — STOP
 
+The common-mistakes table above is the single home for the rationalizations. These two fire on an in-the-moment action the table cannot capture:
+
 - About to dispatch the two expansion reviewers sequentially. STOP. Send them in one parallel call.
-- About to skip §5 because the plan "looks obviously right". STOP. Ask the user.
-- About to enter review round 6. STOP. Surface the unresolved findings to the user.
-- About to save without the humanizer pass. STOP. Run humanizer first.
-- About to investigate before §5 confirmation. STOP. The plan is not approved yet.
-- About to write prose directly from web search results, no bullet draft. STOP. §7 first.
 - About to ask the user for permission to spawn the §8 reviewers. STOP. The user's invocation of this skill is the permission. Spawn them directly.
 
 ## Output template
@@ -295,19 +305,30 @@ Write to `docs/research/YYYY-MM-DD-<slug>.md` if in a git repo. Otherwise ask. D
 **Cons / limitations:**
 - ...
 
+**Representative voices:** at least one verbatim quote with attribution and signal — a named or handle-attributed comment with its score/stars and date. This is what separates the report from an encyclopedia entry.
+
 A reasoning paragraph that ties the four parts together with inline citations [^N]. This is where the agent argues: why these pros matter for the use case, what the cons rule out, where this option fits among the others.
 
 ## <Facet 2 title>
 ... same structure ...
 
+## Recommendation
+
+**Pick:** <the option or answer, tailored to the asker's stated constraints>.
+**Why:** <2-4 sentences grounded in cited evidence>.
+**Confidence:** <high / medium / low>, with the reason for that level.
+**This flips if:** <the conditions under which the pick changes>. Derive these from the strongest credible dissent the validation reviewer surfaced — the recommendation has to survive its best counter-argument.
+
 ## Dissenting views (conditional)
 
-Present only when the validation reviewer surfaced topic-wide criticism that does not fit any single facet's cons. Drop the section entirely when there is nothing to put here.
+Present only when the validation reviewer surfaced topic-wide criticism that does not fit any single facet's cons or the Recommendation's flip-conditions. Drop the section entirely when there is nothing to put here.
 
 ## Open questions / could not verify
 - <gaps the reviewer flagged that didn't get resolved>
 
 ## Sources
-[^1]: <Title> — <URL>
-[^2]: <Title> — <URL>
+[^1]: <Title> — [type · signal · date] — <URL>
+[^2]: <Title> — [type · signal · date] — <URL>
+
+`[type · signal · date]`: type is first-party practitioner/community · independent journalism · vendor/affiliate/SEO; signal is score / comment volume / star rating where the platform exposes it, omitted otherwise; date is the source's own date. This lets a reader audit how the opinion was weighed.
 ```

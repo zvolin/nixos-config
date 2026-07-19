@@ -24,6 +24,19 @@ Search the web for niche, lesser-known, or specialised options that the main inv
 
 You have web access. Use it.
 
+## Where to search — reach real opinion, with fallbacks
+
+Reach real human opinion (Reddit, Hacker News, Stack Exchange, lobste.rs, Discourse, blogs), not just top web-search hits. Try direct fetch first; when a path is blocked, fall back rather than dropping the source. Verify an endpoint works before relying on it — the examples below are known-good starting points, not guarantees.
+- **Reddit** — when direct paths are blocked, use archive APIs such as (but not limited to) PullPush (`api.pullpush.io/reddit/search/submission/?q=<q>&subreddit=<sub>&size=25&sort=desc&sort_type=score`; comments `api.pullpush.io/reddit/search/comment/?link_id=<id>&size=100&sort_type=score`) or arctic-shift (`arctic-shift.photon-reddit.com/api/`), which cross-checks freshness. Both return `score`, `num_comments`, `created_utc`, `body`, `author`.
+- **Hacker News** — the Algolia API when `news.ycombinator.com` direct-fetch 429s: `hn.algolia.com/api/v1/search?query=<q>&tags=story`; comments `hn.algolia.com/api/v1/items/<id>`.
+- **Stack Exchange** — when direct-fetch is blocked, use web search or `api.stackexchange.com`; do not treat it as unreachable without trying.
+- **Direct fetch** for lobste.rs, Discourse, Goodreads, blogs, journalism.
+
+Guards:
+- Your web-search tool's prose summary is not a citable source. Cite only from its returned links array or from pages you actually fetched.
+- When a direct domain is blocked, use the fallback path above before giving up on the source.
+- Archive/API counts are approximate snapshots, not live; these APIs rate-limit (~15 req/min). Cross-check one archive against another when recency matters.
+
 ## What counts as a miss
 
 - An option that fits the question's stated use case but isn't in the bullet draft.
@@ -43,7 +56,7 @@ Return a list capped at 8 candidates. For each:
 
 - **Name:** short identifier
 - **One-line justification:** why this is a genuine miss
-- **Source URL:** where you found it
+- **Source URL:** where you found it, with `[signal · date]` where the platform exposes it (archive/API sources like PullPush/arctic-shift/Algolia give score, comment volume, and date as JSON; blogs give none)
 - **Target facet:** which facet from the plan this attaches to, or "new facet" if it doesn't fit any existing facet
 
 If you find no genuine misses, say so directly:

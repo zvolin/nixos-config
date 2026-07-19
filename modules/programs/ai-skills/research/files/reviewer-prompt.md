@@ -22,6 +22,7 @@ Read the draft against the question, assumptions, and plan. Return findings in t
 - Major claims with no citation.
 - Scope drift: the draft answers a different question than the one asked.
 - Internal contradictions — claims in one facet section that conflict with claims in another, or pros/cons that contradict the reasoning paragraph.
+- Missing or unsupported Recommendation: the `## Recommendation` section is absent, its pick is not backed by cited evidence in the draft, or its flip-conditions do not trace to a real dissenting view stated in the draft.
 
 ### Suggested findings (should consider)
 
