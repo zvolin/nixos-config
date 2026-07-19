@@ -64,7 +64,11 @@ in
           approval_policy = "on-request";
           sandbox_mode = "workspace-write";
           sandbox_workspace_write.network_access = true;
+          # Codex trust is per-project-root, not recursive, and the config is a
+          # read-only Nix symlink — so runtime "trust this folder" writes fail.
+          # Declare trusted roots here instead; add new ones as a config change.
           projects."/home/zwolin".trust_level = "trusted";
+          projects."/home/zwolin/docs".trust_level = "trusted";
           projects."/persist/etc/nixos".trust_level = "trusted";
 
           # Native first-party web search (sandbox already has network).
