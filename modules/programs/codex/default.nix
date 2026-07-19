@@ -1,7 +1,29 @@
 { ... }:
+let
+  aiSharedContext = import ../_ai-context.nix;
+in
 {
   flake.modules.homeManager.codex =
-    { serena, ... }:
+    { pkgs, lib, ... }:
+    let
+      # Codex appends a JSON event payload as the final arg. On
+      # agent-turn-complete, toast the assistant's last message via notify-send
+      # (notify-send + dbus are already wired into the environment).
+      notifyWrapper = pkgs.writeShellApplication {
+        name = "codex-notify";
+        runtimeInputs = [
+          pkgs.jq
+          pkgs.libnotify
+        ];
+        text = ''
+          payload=''${1:-}
+          [ -z "$payload" ] && exit 0
+          msg=$(printf '%s' "$payload" | jq -r 'if .type == "agent-turn-complete" then (."last-assistant-message" // "Turn complete") else empty end')
+          [ -z "$msg" ] && exit 0
+          notify-send "Codex" "$msg"
+        '';
+      };
+    in
     {
       imports = [ ./_internals/agents.nix ];
 
@@ -10,12 +32,7 @@
         enableMcpIntegration = true;
 
         context = ''
-          # Environment
-
-          - NixOS on Apple Silicon (Asahi kernel, aarch64-linux)
-          - Tools may not be installed globally — check first, then use `nix run nixpkgs#<tool> -- <args>` to run once or `nix shell nixpkgs#<tool>` to get a shell with it
-          - You cannot use sudo. Do not attempt sudo or any command requiring root.
-          - This system uses impermanence — root btrfs subvolume is wiped on every boot. /persist/ survives. /home is a separate subvolume. This repo lives at /persist/etc/nixos (symlinked to /etc/nixos).
+          ${aiSharedContext}
 
           # Declarative Configuration
 
@@ -28,24 +45,13 @@
           - Claude applies its own bubblewrap isolation. Nesting it inside Codex's workspace-write sandbox breaks it: writes to `~/.claude` and other state dirs are denied, and the model API network is blocked.
           - Running `claude` escalated lets it reapply its own jail, so the net boundary is Claude's wrapper, not "no sandbox".
 
-          # Git Conventions
+          # Web and Tools
 
-          - Commit messages: single line, conventional commits format (`type(scope): description`). No body, no trailers.
-          - NEVER create merge commits — keep history linear (fast-forward, cherry-pick, or squash only).
-
-          # Gitignored Codex Artifacts
-
-          AGENTS.md, AGENTS.override.md, .agents/, and .codex are globally gitignored (configured in modules/programs/git.nix). Repos that want any of these tracked must whitelist them in their own .gitignore. Check with `git check-ignore -q <path>` before committing; do not use `git add -f`.
-
-          # MCP Tools
-
-          Prefer MCP tools over CLI equivalents when available:
-          - mcp-nixos for NixOS/Home Manager option lookups
-          - context7 for library documentation
-          - SearXNG `web_url_read` is the default URL fetcher — use it for blogs, docs, and most public URLs. For Google, Bing, DuckDuckGo, and other sites that fingerprint or rate-limit SearXNG's egress IP (for example Reddit, LinkedIn, or Cloudflare-protected SaaS), fetch the URL outside SearXNG (built-in web tools or `curl`).
-          - For general search, use the built-in web search. SearXNG's `searxng_web_search` is restricted to wiki/reference engines (Wikipedia, Wikidata, GitHub, Stack Overflow, Arch/NixOS wikis, currency) — use it only when targeting those.
-          - GitHub MCP for issues, PRs, code search
-          - Serena (`find_symbol`, `find_referencing_symbols`, `get_symbols_overview`) for semantic code navigation in the current project
+          - Use the built-in `web_search` tool to find information online (enabled via `web_search = "live"`). Do not shell out to `curl` for search.
+          - There is no native URL-fetch tool. To read a specific known URL, `curl` it (you get raw HTML); prefer `web_search` for find-and-read tasks.
+          - mcp-nixos for NixOS / Home Manager option lookups.
+          - context7 for library documentation.
+          - Use `gh` (installed and authenticated) for GitHub PRs, issues, and code search — structured output via `gh --json`.
         '';
 
         rules.nix-managed = ''
@@ -61,6 +67,18 @@
           projects."/home/zwolin".trust_level = "trusted";
           projects."/persist/etc/nixos".trust_level = "trusted";
 
+          # Native first-party web search (sandbox already has network).
+          web_search = "live";
+
+          # Nix owns the binary; skip the useless startup update call.
+          check_for_update_on_startup = false;
+
+          # No neovim opener option; the default emits dead vscode:// links in
+          # kitty+nvim. Plain path:line is cleaner.
+          file_opener = "none";
+
+          notify = [ (lib.getExe notifyWrapper) ];
+
           tui = {
             status_line = [
               "model-name"
@@ -71,25 +89,22 @@
               "weekly-limit"
             ];
             status_line_use_colors = true;
-          };
-
-          mcp_servers.serena = {
-            command = "${serena}/bin/serena";
-            args = [
-              "start-mcp-server"
-              "--context"
-              "codex"
-              "--project-from-cwd"
-              "--open-web-dashboard"
-              "false"
-            ];
-            required = true;
+            # In-terminal toast on turn-done AND approval-needed (kitty
+            # forwards OSC 9 → dbus). Pairs with `notify` (different events).
+            notifications = true;
           };
         };
 
         profiles.deep = {
           model = "gpt-5.6-sol";
           model_reasoning_effort = "xhigh";
+        };
+
+        # One-flag unattended mode (`codex --profile auto`); the
+        # workspace-write sandbox stays as the guardrail. The interactive
+        # default remains `on-request`.
+        profiles.auto = {
+          approval_policy = "never";
         };
       };
     };

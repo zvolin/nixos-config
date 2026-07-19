@@ -81,25 +81,11 @@
       "original": {
         "owner": "lifedever",
         "repo": "claude-rules",
+        "rev": "6d5f8bd62c2d96ca2e07c0c7b8159f75fd2323b6",
         "type": "github"
       }
     },
     "crane": {
-      "locked": {
-        "lastModified": 1775236976,
-        "narHash": "sha256-gCgX+AXN7K1gAIEqcLcZHxmC+QoZcwn9m6Z9r2Az+N8=",
-        "owner": "ipetkov",
-        "repo": "crane",
-        "rev": "6c23998526351a53ce734f0ac84940da988ccef1",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ipetkov",
-        "repo": "crane",
-        "type": "github"
-      }
-    },
-    "crane_2": {
       "locked": {
         "lastModified": 1766774972,
         "narHash": "sha256-8qxEFpj4dVmIuPn9j9z6NTbU+hrcGjBOvaxTzre5HmM=",
@@ -132,50 +118,6 @@
       "original": {
         "owner": "numtide",
         "repo": "devshell",
-        "type": "github"
-      }
-    },
-    "fenix": {
-      "inputs": {
-        "nixpkgs": [
-          "ferrex",
-          "nixpkgs"
-        ],
-        "rust-analyzer-src": "rust-analyzer-src"
-      },
-      "locked": {
-        "lastModified": 1775201252,
-        "narHash": "sha256-CFXf8rcU+NekWtu5fkI8x7QF9uoeJyaiNo/bvKK/lyY=",
-        "owner": "nix-community",
-        "repo": "fenix",
-        "rev": "0b88bfd10f819d000d35d296debe283db89b623b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "fenix",
-        "type": "github"
-      }
-    },
-    "ferrex": {
-      "inputs": {
-        "crane": "crane",
-        "fenix": "fenix",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1776124385,
-        "narHash": "sha256-Uq8CWpRlLw7Fw39x65r+vqbZOveYpvRoqsIHfzoOFVE=",
-        "owner": "vaporif",
-        "repo": "ferrex",
-        "rev": "afe4d140f06b964f045a43925b7a4d76f1f4aca9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "vaporif",
-        "repo": "ferrex",
         "type": "github"
       }
     },
@@ -412,23 +354,6 @@
         "type": "github"
       }
     },
-    "mcp-searxng": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1775402771,
-        "narHash": "sha256-DEZW6pG/t13I95ZmW7WyIJNfPd64d9cf55ceUyl0SAY=",
-        "owner": "ihor-sokoliuk",
-        "repo": "mcp-searxng",
-        "rev": "5927fae2c774f73721efd88066d0e53bc7722fbb",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ihor-sokoliuk",
-        "ref": "v1.0.3",
-        "repo": "mcp-searxng",
-        "type": "github"
-      }
-    },
     "mcp-servers-nix": {
       "inputs": {
         "nixpkgs": [
@@ -582,13 +507,11 @@
     "root": {
       "inputs": {
         "claude-rules": "claude-rules",
-        "ferrex": "ferrex",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "humanizer": "humanizer",
         "import-tree": "import-tree",
         "mcp-nixos": "mcp-nixos",
-        "mcp-searxng": "mcp-searxng",
         "mcp-servers-nix": "mcp-servers-nix",
         "nixos-apple-silicon": "nixos-apple-silicon",
         "nixpkgs": "nixpkgs_2",
@@ -600,23 +523,6 @@
         "tiny-dfr": "tiny-dfr",
         "wshobson-agents": "wshobson-agents",
         "xremap": "xremap"
-      }
-    },
-    "rust-analyzer-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1775174431,
-        "narHash": "sha256-jSw1C5MuyySiCpPgjdR+H0wPR3AgPRuylLunw+yd7A0=",
-        "owner": "rust-lang",
-        "repo": "rust-analyzer",
-        "rev": "9767050b2db436f5a770c5f91a548c88fd91ec71",
-        "type": "github"
-      },
-      "original": {
-        "owner": "rust-lang",
-        "ref": "nightly",
-        "repo": "rust-analyzer",
-        "type": "github"
       }
     },
     "rust-overlay": {
@@ -652,6 +558,7 @@
       "original": {
         "owner": "skills-directory",
         "repo": "skill-codex",
+        "rev": "0cce7fc7c49b08fd60ae05bdf7934590d7bc34b5",
         "type": "github"
       }
     },
@@ -701,6 +608,7 @@
       "original": {
         "owner": "obra",
         "repo": "superpowers",
+        "rev": "d884ae04edebef577e82ff7c4e143debd0bbec99",
         "type": "github"
       }
     },
@@ -834,7 +742,7 @@
     },
     "xremap": {
       "inputs": {
-        "crane": "crane_2",
+        "crane": "crane",
         "flake-parts": "flake-parts_5",
         "nixpkgs": [
           "nixpkgs"

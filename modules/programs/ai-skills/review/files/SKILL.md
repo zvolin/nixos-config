@@ -39,7 +39,7 @@ The invocation grammar, evaluated left-to-right, first match wins:
   2. `main`
   3. `Other` — free-form ref. If the entered ref doesn't resolve, re-ask once, then stop.
 
-**PR mode.** Derive `<owner>/<repo>` from `git remote get-url origin` (require an origin remote pointing at github.com — otherwise respond: "PR mode requires an `origin` remote on github.com." and stop). Call `pull_request_read` from the GitHub MCP with that owner/repo. If the call errors (nonexistent PR, permission denied, network), print the error and stop — do not attempt a worktree.
+**PR mode.** Derive `<owner>/<repo>` from `git remote get-url origin` (require an origin remote pointing at github.com — otherwise respond: "PR mode requires an `origin` remote on github.com." and stop). Fetch PR metadata with `gh pr view <n> --repo <owner>/<repo> --json headRefOid,headRefName,baseRefName,title,body,url,closingIssuesReferences`. If the command errors (nonexistent PR, permission denied, network), print the error and stop — do not attempt a worktree.
 
 On success, record the PR head SHA, base branch, title, body, URL, and linked issues. Fetch the head locally so reviewers can browse files:
 
@@ -270,10 +270,10 @@ Use the `Agent` tool with `subagent_type: general-purpose`, `model: opus`. The c
 - Worktree path + `cd` instruction.
 - Reference files: `<staging_dir>/adjudicated.md`, the diff.
 - PR metadata block (PR mode only): PR number, URL, title, body, linked issues — verbatim from Phase 0.
-- Repo remote: pass `<owner>/<repo>` from `git remote get-url origin` (both modes) so the reconciler can build a compare URL and, in PR mode, call the GitHub MCP checks endpoint.
+- Repo remote: pass `<owner>/<repo>` from `git remote get-url origin` (both modes) so the reconciler can build a compare URL and, in PR mode, run `gh pr checks <n> --repo <owner>/<repo>`.
 - Task: produce the single final report at absolute path `<staging_dir>/draft.md`:
   - **Summary** at top — what changed, why, and how (3–8 sentences, derived from PR body + diff shape).
-  - **Links** — PR URL (PR mode); compare URL constructed as `https://github.com/<owner>/<repo>/compare/<base>...<head>`; linked issues from the PR body (PR mode); CI status via the GitHub MCP checks endpoint (PR mode only — skip in branch / SHA modes); related past reviews found by listing `<repo_root>/docs/superpowers/reviews/*.md` on the working filesystem (these are gitignored, so do not consult any git ref) and matching filenames against the current `<name>` prefix or, in PR mode, `pr-<n>.md`.
+  - **Links** — PR URL (PR mode); compare URL constructed as `https://github.com/<owner>/<repo>/compare/<base>...<head>`; linked issues from the PR body (PR mode); CI status via `gh pr checks <n>` (PR mode only — skip in branch / SHA modes); related past reviews found by listing `<repo_root>/docs/superpowers/reviews/*.md` on the working filesystem (these are gitignored, so do not consult any git ref) and matching filenames against the current `<name>` prefix or, in PR mode, `pr-<n>.md`.
   - **Findings** — grouped by severity, then by area/file, with `file:line` + rationale.
   - **Cross-slice smells** — kept as a distinct group.
   - **Adjudicator rejections** — appendix, copied from `adjudicated.md`.

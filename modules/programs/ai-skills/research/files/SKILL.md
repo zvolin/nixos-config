@@ -48,7 +48,7 @@ Before the first tool call, confirm:
 
 - One-shot factual lookup such as "what year was X released". Go straight to web search.
 - Recall from a past conversation. Search project memory instead.
-- Find something in this codebase. Use Grep or Serena symbol tools.
+- Find something in this codebase. Use Grep.
 - In-conversation Q&A where the user does not want a saved artifact.
 - Topic already covered by a canonical source you can cite without rewriting.
 
@@ -57,8 +57,8 @@ Before the first tool call, confirm:
 | Action | Claude Code | Codex |
 |---|---|---|
 | Web search | `WebSearch` | built-in web search |
-| Read URL | SearXNG `web_url_read` (preferred), fallback `WebFetch` | built-in web fetch |
-| Read local files | `Read`, `Grep`, Serena (`find_symbol` etc.) | `Read`, `Grep`, Serena |
+| Read URL | `WebFetch` | `web_search`, or `curl` for a known URL |
+| Read local files | `Read`, `Grep`, Explore agent | `Read`, `Grep` |
 | Dispatch §8 reviewers | `Agent` tool → `research-coverage-reviewer`, `research-validation-reviewer` | `spawn` in parallel → `research-coverage-reviewer`, `research-validation-reviewer` |
 | Dispatch §12 draft reviewer | `Agent` tool (general-purpose) | subagent (general-purpose) |
 

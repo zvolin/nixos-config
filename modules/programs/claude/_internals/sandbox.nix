@@ -27,7 +27,6 @@ let
 
   tokenEnv = [
     "GH_TOKEN"
-    "GITHUB_PERSONAL_ACCESS_TOKEN"
   ];
 
   claudeEnv = [
@@ -93,19 +92,17 @@ let
     bind_rw() { [[ -e "$1" ]] && args+=(--bind    "$1" "$1"); }
     pass_env() { [[ -n "''${!1:-}" ]] && args+=(--setenv "$1" "''${!1}"); }
 
-    # Preload GH token so the MCP github server has credentials.
+    # Preload the GH token so the sandboxed `gh` CLI has credentials — it
+    # cannot reach the host keyring from inside the jail.
     if [ -z "''${GH_TOKEN:-}" ]; then
       GH_TOKEN=$(${lib.getExe pkgs.gh} auth token 2>/dev/null) || true
     fi
     export GH_TOKEN
-    export GITHUB_PERSONAL_ACCESS_TOKEN="$GH_TOKEN"
 
     # bind_rw skips missing sources, so without pre-creation any first-time
     # write lands in the tmpfs $HOME and dies on exit.
     mkdir -p \
       "$HOME/.claude" \
-      "$HOME/.ferrex" \
-      "$HOME/.serena" \
       "$HOME/.cargo" \
       "$HOME/.codex" \
       "$HOME/.agents" \
@@ -141,8 +138,6 @@ let
     bind_rw "$HOME/.claude"
     bind_rw "$HOME/.claude.json"
     bind_rw "$HOME/.gnupg"
-    bind_rw "$HOME/.ferrex"
-    bind_rw "$HOME/.serena"
     bind_rw "$HOME/.cargo"
     bind_rw "$HOME/.cache/gh"
     bind_rw "$HOME/.codex"

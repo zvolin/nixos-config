@@ -4,10 +4,6 @@
   ...
 }:
 let
-  # --- MCP tool name helpers (must match permissions.nix) ---
-  mcpPrefix = "mcp__plugin_claude-code-home-manager";
-  ferrex = tool: "${mcpPrefix}_ferrex__${tool}";
-  serena = tool: "${mcpPrefix}_serena__${tool}";
   # --- Bash validation hook ---
   blockedCommands = [
     "sudo"
@@ -22,7 +18,6 @@ let
     "git push --force"
     "git push -f"
   ];
-  blockedSubcommands = [ ]; # configurable, empty by default
   blockedPatterns = [
     "curl|sh"
     "curl|bash"
@@ -34,7 +29,6 @@ let
 
   blockedCommandsStr = builtins.concatStringsSep " " blockedCommands;
   deniedSubcommandsStr = builtins.concatStringsSep "\n" deniedSubcommands;
-  blockedSubcommandsStr = builtins.concatStringsSep "\n" blockedSubcommands;
 
   # Convert "source|sink" shorthand to "source.*\|.*sink" grep regex
   patternToRegex =
@@ -50,8 +44,8 @@ let
 
   checkBashCommandSrc =
     builtins.replaceStrings
-      [ "@blockedCommands@" "@blockedSubcommands@" "@deniedSubcommands@" "@blockedPatterns@" ]
-      [ blockedCommandsStr blockedSubcommandsStr deniedSubcommandsStr blockedPatternsStr ]
+      [ "@blockedCommands@" "@deniedSubcommands@" "@blockedPatterns@" ]
+      [ blockedCommandsStr deniedSubcommandsStr blockedPatternsStr ]
       (builtins.readFile ./check-bash-command.sh);
 
   check-bash-command =
@@ -75,41 +69,6 @@ let
           }
       '';
     };
-
-  # --- Confirm hooks ---
-
-  confirmEntries = [
-    {
-      tool = ferrex "store";
-      reason = "Storing to ferrex memory. This persists across sessions.";
-    }
-    {
-      tool = ferrex "forget";
-      reason = "Deleting ferrex memory. This is permanent.";
-    }
-    {
-      tool = serena "write_memory";
-      reason = "Writing to Serena memory.";
-    }
-    {
-      tool = serena "edit_memory";
-      reason = "Editing Serena memory.";
-    }
-    {
-      tool = serena "delete_memory";
-      reason = "Deleting Serena memory.";
-    }
-  ];
-
-  mkConfirmHook = entry: {
-    matcher = entry.tool;
-    hooks = [
-      {
-        type = "command";
-        command = ''echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"${entry.reason}"}}'  '';
-      }
-    ];
-  };
 in
 {
   programs.claude-code.settings = {
@@ -127,8 +86,6 @@ in
           }
         ];
       }
-    ]
-    # Confirm hooks for memory-mutating MCP tools
-    ++ (map mkConfirmHook confirmEntries);
+    ];
   };
 }

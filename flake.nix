@@ -51,7 +51,7 @@
     };
 
     superpowers = {
-      url = "github:obra/superpowers";
+      url = "github:obra/superpowers/d884ae04edebef577e82ff7c4e143debd0bbec99";
       flake = false;
     };
 
@@ -61,18 +61,13 @@
     };
 
     claude-rules = {
-      url = "github:lifedever/claude-rules";
+      url = "github:lifedever/claude-rules/6d5f8bd62c2d96ca2e07c0c7b8159f75fd2323b6";
       flake = false;
     };
 
     wshobson-agents = {
       url = "github:wshobson/agents";
       flake = false;
-    };
-
-    ferrex = {
-      url = "github:vaporif/ferrex";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     mcp-servers-nix = {
@@ -84,13 +79,8 @@
     # mcp-nixos's pinned nixpkgs builds fine. Remove when upstream fixes lupa.
     mcp-nixos.url = "github:utensils/mcp-nixos";
 
-    mcp-searxng = {
-      url = "github:ihor-sokoliuk/mcp-searxng/v1.0.3";
-      flake = false;
-    };
-
     skill-codex = {
-      url = "github:skills-directory/skill-codex";
+      url = "github:skills-directory/skill-codex/0cce7fc7c49b08fd60ae05bdf7934590d7bc34b5";
       flake = false;
     };
   };

@@ -19,7 +19,6 @@
         nixvim
         docker
         xremap
-        searxng
         tiny-dfr
         zvolin
       ];

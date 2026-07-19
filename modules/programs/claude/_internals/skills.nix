@@ -29,7 +29,7 @@
 
     pr = ''
       ---
-      description: Generate PR title and description, create via GitHub MCP
+      description: Generate PR title and description, create via gh
       ---
 
       Generate a pull request title and description.
@@ -67,15 +67,13 @@
 
       **Present the title and description** for the user to review and edit.
 
-      **After user confirms**, create the PR using the GitHub MCP `create_pull_request` tool with:
-      - owner/repo from `git remote get-url origin`
-      - head: current branch
-      - base: main (or master)
-      - title and body from above
+      **After user confirms**, push the branch if needed (`git push -u origin HEAD`), then create the PR with `gh`:
 
-      Push the branch first if needed (`git push -u origin HEAD`).
+      ```
+      gh pr create --base main --head "$(git branch --show-current)" --title "<title>" --body "<body>"
+      ```
 
-      Return the PR URL when done.
+      Use `--base master` if the repo's default branch is master. Return the PR URL that `gh pr create` prints.
     '';
 
     docs = ''
@@ -95,21 +93,11 @@
       - Commands section: new commands, changed workflows
       - Key implementation details: new patterns, dependencies
 
-      **Serena Memory** (via Serena MCP `write_memory` / `edit_memory` tools):
-      - Codebase structure changes
-      - New modules or key abstractions
-      - Patterns that future sessions should know about
-
       **Auto Memory** (`~/.claude/projects/<project>/memory/MEMORY.md`):
       - Common pitfalls discovered
       - Patterns that worked or failed
       - Project-specific conventions
-
-      **Ferrex** (via `/remember`):
-      - Key decisions made and rationale (as semantic triples)
-      - Error resolutions worth remembering (as episodic)
-      - Architecture choices (as semantic triples)
-      - Workflow knowledge (as procedural)
+      - Key decisions and their rationale
 
       3. Present a summary of what needs updating
       4. Apply updates after user approval

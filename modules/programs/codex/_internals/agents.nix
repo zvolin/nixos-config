@@ -69,7 +69,7 @@ let
         # (codex-rs/config/src/config_toml.rs); it is validated as required for
         # discovered agent files by validate_agent_role_file_developer_instructions.
         developer_instructions = parsed.body;
-        model_reasoning_effort = parsed.fm.reasoning_effort or "high";
+        model_reasoning_effort = parsed.fm.reasoning_effort or "medium";
       }
       // lib.optionalAttrs (parsed.fm ? model) { model = codexModel; }
     );
@@ -87,7 +87,7 @@ in
       ignored on this side — Claude Code's own loader uses it). The value is
       either Claude-format markdown (YAML frontmatter with `description`,
       optional `model`, optional `reasoning_effort`; then the prompt body)
-      or a path to such a file. `reasoning_effort` defaults to `"high"` when
+      or a path to such a file. `reasoning_effort` defaults to `"medium"` when
       the frontmatter omits it.
 
       The frontmatter is parsed at build time and re-emitted as Codex TOML

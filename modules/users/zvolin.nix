@@ -31,7 +31,6 @@
           codex
           connman-gui
           direnv
-          ferrex
           git
           humanizer
           hypridle

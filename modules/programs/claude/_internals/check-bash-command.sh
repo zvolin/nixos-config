@@ -56,16 +56,6 @@ while IFS= read -r subcmd; do
   fi
 done <<< "$DENIED_SUBCMDS"
 
-# Blocked subcommands (ask for confirmation)
-BLOCKED_SUBCMDS="@blockedSubcommands@"
-while IFS= read -r subcmd; do
-  [[ -z "$subcmd" ]] && continue
-  subcmd_re=$(echo "$subcmd" | sed 's/ /[[:space:]]+/g')
-  if echo "$COMMAND" | grep -qE "(^|[^a-zA-Z0-9_])${subcmd_re}([^a-zA-Z0-9_]|$)"; then
-    block "${subcmd} detected. Confirm with user before proceeding."
-  fi
-done <<< "$BLOCKED_SUBCMDS"
-
 # Catch piping remote content to shell/interpreter
 PATTERNS="@blockedPatterns@"
 while IFS= read -r pattern; do
