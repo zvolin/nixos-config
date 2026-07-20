@@ -1,5 +1,5 @@
 diff --git a/skills/engineering/wayfinder/SKILL.md b/skills/engineering/wayfinder/SKILL.md
-index 42e3644..3496df7 100644
+index 42e3644..a3c7334 100644
 --- a/skills/engineering/wayfinder/SKILL.md
 +++ b/skills/engineering/wayfinder/SKILL.md
 @@ -22,7 +22,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
@@ -34,7 +34,7 @@ index 42e3644..3496df7 100644
  - **Task** (HITL or AFK): Manual work that must happen before a *decision* can be made — nothing to decide, prototype, or research, but the discussion is blocked until it's done. Signing up for a service so its API can be judged, provisioning access, moving data so its shape can be seen. This is the one type that *does* rather than decides — and it earns its place by unblocking a decision, not by delivering the destination. The agent drives it alone where it can (AFK); otherwise it hands the human a precise checklist (HITL). Resolved when the work is done; the answer records what was done and any resulting facts (credentials location, new URLs, row counts) later tickets depend on.
 
  ## Fog of war
-@@ -108,7 +108,7 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
+@@ -108,12 +108,12 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
 
  User invokes with a loose idea.
 
@@ -43,17 +43,37 @@ index 42e3644..3496df7 100644
  2. **Map the frontier.** Grill again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** — the way to the destination is already clear, the whole journey small enough for one session — you don't need a map. Stop and ask the user how they'd like to proceed.
  3. **Create the map** (label `wayfinder:map`): Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
  4. **Create the tickets you can specify now** as child issues of the map — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
-@@ -121,8 +121,8 @@ User invokes with a map (URL or number). A ticket is **optional** — without on
+ 5. **Fire the research subagents.** For each `research` ticket you just created, spin up a `/research` subagent to resolve it in parallel, capturing its findings on a throwaway `research/<name>` branch with a context pointer from the ticket.
+-6. Stop — charting is one session's work; it hand-resolves nothing.
++6. Stop — charting is one session's work; it hand-resolves nothing. End with the [closing handoff](#closing-handoff): the map was just created, so the trailer points the first work session at it.
+
+ ### Work through the map
+
+@@ -121,8 +121,21 @@ User invokes with a map (URL or number). A ticket is **optional** — without on
 
  1. Load the **map** — the low-res view, not every ticket body.
  2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
 -3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`.
 -4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
+-5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
 +3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `brainstorming` and `/domain-modeling`.
 +4. Record the resolution: write the answer into the ticket body, set `status: closed`, and **append a context pointer** to the map's Decisions-so-far (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md)).
- 5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
++5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets. Then: if this resolution leaves both the frontier and **Not yet specified** empty, the map is complete — say so and stop, no trailer. Otherwise end with the [closing handoff](#closing-handoff).
 
  The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.
++
++## Closing handoff
++
++When a session ends leaving a map to return to, close the final message with the usual narration, then a blank line, then a **fenced code block** holding exactly two commands, one per line: a context-clear, then the wayfinder re-invocation on the map. The fence is the point — two adjacent lines in plain message prose reflow into one when the terminal renders markdown, while a fenced block renders verbatim and stays copy-selectable.
++
++Emit the two commands in the **current harness's** syntax:
++
++- **Claude Code** — `/clear`, then `/wayfinder <map-path>`.
++- **Codex** — `/clear`, then `$wayfinder <map-path>` (Codex invokes skills with a `$` prefix, not `/`).
++
++`<map-path>` is the map's relative path; see [WAYFINDING-OPS.md](WAYFINDING-OPS.md) for where it lives — for the local-markdown tracker, `docs/superpowers/wayfinder/<effort-slug>/map.md`. The trailer carries the **map path only**, no ticket argument: the next session picks the first frontier ticket itself ([Work through the map](#work-through-the-map), step 2). The narration above the trailer may still name the next ticket and flag HITL — that is context, not a command.
++
++Skip the trailer when there is no map to return to: the no-fog dead-end in [Chart the map](#chart-the-map) step 2 (no map was created) and the map-complete exit in [Work through the map](#work-through-the-map) step 5 (frontier and **Not yet specified** both empty).
 diff --git a/skills/engineering/wayfinder/WAYFINDING-OPS.md b/skills/engineering/wayfinder/WAYFINDING-OPS.md
 new file mode 100644
 index 0000000..1bba7c6
