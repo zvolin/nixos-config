@@ -31,6 +31,7 @@
           codex
           connman-gui
           direnv
+          dissent-review
           git
           humanizer
           hypridle

@@ -1,5 +1,5 @@
 diff --git a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
-index b1613eb..4817ebc 100644
+index b1613eb..b66c246 100644
 --- a/skills/writing-plans/SKILL.md
 +++ b/skills/writing-plans/SKILL.md
 @@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
@@ -85,7 +85,7 @@ index b1613eb..4817ebc 100644
  ````
 
  ## No Placeholders
-@@ -135,11 +153,33 @@ Every step must contain the actual content an engineer needs. These are **plan f
+@@ -135,11 +153,30 @@ Every step must contain the actual content an engineer needs. These are **plan f
  - Steps that describe what to do without showing how (code blocks required for code steps)
  - References to types, functions, or methods not defined in any task
 
@@ -99,15 +99,6 @@ index b1613eb..4817ebc 100644
 +
 +Proportional to decision weight — a minor choice gets one line each, a major choice gets a paragraph. If one option clearly dominates, auto-select and state why.
 +
-+## Prose Quality
-+
-+All non-code text in the plan (descriptions, context, rationale) must read like a person wrote it. Apply the `humanizer` skill patterns — strip AI-isms as you write, don't produce slop then clean it up.
-+
-+**Applies to:** Goal statement, Architecture summary, task descriptions, explanatory notes.
-+**Does NOT apply to:** code blocks, file paths, commands, expected output, step labels.
-+
-+Watch for: significance inflation, promotional language, copula avoidance ("serves as" instead of "is"), superficial -ing phrases, filler, generic conclusions, rule-of-three padding. Be direct and specific.
-+
  ## Remember
  - Exact file paths always
 -- Complete code in every step — if a step changes code, show the code
@@ -118,25 +109,33 @@ index b1613eb..4817ebc 100644
 +- Reuse existing utilities and dependencies before introducing new ones
 +- Follow the existing conventions and style used in the project, unless there's a clear reason not to
 +- Every task carries a `**Rules:**` field, every plan header carries a `**Polish:**` line — both copied from the spec. Refuse to ship the plan without them.
++
++## Dissent Review
++
++Run this **before** the self-review checklist — it can force a restructuring change, so the cheap structural checks should run on the plan you keep. This is the first fresh eyes on the plan side.
++
++Invoke the `dissent-review` skill with `artifact=plan` and the plan path. It dispatches a cold dissent reviewer against the decomposition — a wrong task shape, a spec requirement no task covers, over-built tasks, a step that won't survive contact — collects your honest per-finding responses, dispatches a neutral adjudicator, and folds back apply / skip / ask. A finding big enough to restructure the plan comes back as `ask`; decide it with the user before continuing. If dissent could not run, it surfaces a loud "dissent did NOT run on `<path>`" notice — carry that to the user.
 
  ## Self-Review
 
-@@ -151,24 +191,19 @@ After writing the complete plan, look at the spec with fresh eyes and check the
+@@ -151,24 +188,23 @@ After writing the complete plan, look at the spec with fresh eyes and check the
 
  **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
 -If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
--
--## Execution Handoff
 +**4. Vertical-slice check:** Is each task a vertical slice? Could you demo it independently after it's done? If a task only delivers one layer (only schema, only endpoints), collapse it with the tasks that complete the feature. Exception: tasks with `**Task type:** prerequisite` at the root of the dependency graph.
 
--After saving the plan, offer execution choice:
+-## Execution Handoff
 +**5. Dependency graph validation:** No cycles, no references to undefined task IDs, no duplicate task IDs. Per-task `depends on:` fields match the `## Task Dependency Graph` table. Tasks appear in topological order in the document.
 
--**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
--
--**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
+-After saving the plan, offer execution choice:
 +If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
+
+-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
++## Humanize the Plan
+
+-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
++Run this **last**, after the self-review checklist, on the plan both reviews have finished rewriting. Invoke the `humanizer` skill on the plan's non-code prose — the Goal, the Architecture summary, task descriptions, rationale, and explanatory notes. It does not touch code blocks, file paths, commands, expected output, or step labels. If the prose is already clean this is a no-op.
 
 -**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
 +## Execution Handoff

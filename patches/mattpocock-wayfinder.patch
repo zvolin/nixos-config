@@ -1,5 +1,5 @@
 diff --git a/skills/engineering/wayfinder/SKILL.md b/skills/engineering/wayfinder/SKILL.md
-index 42e3644..a3c7334 100644
+index 42e3644..d82de90 100644
 --- a/skills/engineering/wayfinder/SKILL.md
 +++ b/skills/engineering/wayfinder/SKILL.md
 @@ -22,7 +22,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
@@ -34,7 +34,7 @@ index 42e3644..a3c7334 100644
  - **Task** (HITL or AFK): Manual work that must happen before a *decision* can be made — nothing to decide, prototype, or research, but the discussion is blocked until it's done. Signing up for a service so its API can be judged, provisioning access, moving data so its shape can be seen. This is the one type that *does* rather than decides — and it earns its place by unblocking a decision, not by delivering the destination. The agent drives it alone where it can (AFK); otherwise it hands the human a precise checklist (HITL). Resolved when the work is done; the answer records what was done and any resulting facts (credentials location, new URLs, row counts) later tickets depend on.
 
  ## Fog of war
-@@ -108,12 +108,12 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
+@@ -108,12 +108,13 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
 
  User invokes with a loose idea.
 
@@ -45,22 +45,44 @@ index 42e3644..a3c7334 100644
  4. **Create the tickets you can specify now** as child issues of the map — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
  5. **Fire the research subagents.** For each `research` ticket you just created, spin up a `/research` subagent to resolve it in parallel, capturing its findings on a throwaway `research/<name>` branch with a context pointer from the ticket.
 -6. Stop — charting is one session's work; it hand-resolves nothing.
-+6. Stop — charting is one session's work; it hand-resolves nothing. End with the [closing handoff](#closing-handoff): the map was just created, so the trailer points the first work session at it.
++6. **Dissent the map** — run [Dissent the map](#dissent-the-map) with `scope = whole map + all new tickets`. The map is already stable: charting fires its research subagents onto throwaway branches and resolves nothing into the map, so the dissent does not wait on those branches.
++7. Stop — charting is one session's work; it hand-resolves nothing. End with the [closing handoff](#closing-handoff): the map was just created, so the trailer points the first work session at it.
 
  ### Work through the map
 
-@@ -121,8 +121,21 @@ User invokes with a map (URL or number). A ticket is **optional** — without on
+@@ -121,8 +122,43 @@ User invokes with a map (URL or number). A ticket is **optional** — without on
 
  1. Load the **map** — the low-res view, not every ticket body.
  2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
 -3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`.
 -4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
--5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
 +3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `brainstorming` and `/domain-modeling`.
 +4. Record the resolution: write the answer into the ticket body, set `status: closed`, and **append a context pointer** to the map's Decisions-so-far (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md)).
-+5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets. Then: if this resolution leaves both the frontier and **Not yet specified** empty, the map is complete — say so and stop, no trailer. Otherwise end with the [closing handoff](#closing-handoff).
+ 5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
++6. **Dissent the changed region** — if the just-closed ticket is `grilling` or `prototype`, run [Dissent the map](#dissent-the-map) with `scope = changed region: <just-closed ticket id> plus any tickets this resolution added or altered`. Skip `research` and `task`: those are type-driven, with no agent discretion to review.
++7. If this resolution leaves both the frontier and **Not yet specified** empty, the map is complete — say so and stop, no trailer. Otherwise end with the [closing handoff](#closing-handoff).
 
  The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.
++
++## Dissent the map
++
++An adversarial review of the map, routed through the shared `dissent-review` skill with `artifact=map`. **Advisory**: it never edits live tracker state, because that would collide with the sessions wayfinder runs concurrently.
++
++Invoke `dissent-review` with `artifact=map`, the map path (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md) — `docs/superpowers/wayfinder/<effort-slug>/map.md` for the local-markdown tracker), and these raw values, which wayfinder already holds:
++
++- **destination** — the map's `## Destination` block, verbatim.
++- **chart state** — `charted` for a fresh map (from Chart step 6) or `re-chartered`.
++- **closed ticket ids** — the ids whose `status:` is `closed`.
++- **tracker bindings** — the location, claim, blocking, and frontier conventions from [WAYFINDING-OPS.md](WAYFINDING-OPS.md).
++- **review scope** — what the reviewer should read. Chart passes `whole map + all new tickets`; a Work-through resolution passes `changed region: <just-closed ticket id> plus any tickets it added or altered`. The reviewer confines its findings to this region.
++
++`dissent-review` runs one rubric-driven dissent reviewer (route integrity, plan soundness, completeness critic) over the given scope, collects your honest responses, runs the neutral adjudicator, and returns apply / skip / ask outcomes.
++
++**Advisory fold-back.** Do NOT autonomously edit tracker state. `apply` means "recommend this edit": fold it into the map through the normal resolution flow — structural fixes applied by you, decisions recorded, forks taken to the human. `skip` goes to the rejections appendix. `ask` escalates with both views.
++
++**Humanize (advisory too).** After the fold-back, invoke the `humanizer` skill on the reviewed map prose only — the map body, the notes, the ticket bodies. It never touches tracker state (the frontmatter `type` / `status` / `claimed-by` / `blocked-by`) or blocking edges.
++
++If dissent could not run, surface a loud "dissent did NOT run on `<map-path>`" notice and continue.
 +
 +## Closing handoff
 +
@@ -73,7 +95,7 @@ index 42e3644..a3c7334 100644
 +
 +`<map-path>` is the map's relative path; see [WAYFINDING-OPS.md](WAYFINDING-OPS.md) for where it lives — for the local-markdown tracker, `docs/superpowers/wayfinder/<effort-slug>/map.md`. The trailer carries the **map path only**, no ticket argument: the next session picks the first frontier ticket itself ([Work through the map](#work-through-the-map), step 2). The narration above the trailer may still name the next ticket and flag HITL — that is context, not a command.
 +
-+Skip the trailer when there is no map to return to: the no-fog dead-end in [Chart the map](#chart-the-map) step 2 (no map was created) and the map-complete exit in [Work through the map](#work-through-the-map) step 5 (frontier and **Not yet specified** both empty).
++Skip the trailer when there is no map to return to: the no-fog dead-end in [Chart the map](#chart-the-map) step 2 (no map was created) and the map-complete exit in [Work through the map](#work-through-the-map) step 7 (frontier and **Not yet specified** both empty).
 diff --git a/skills/engineering/wayfinder/WAYFINDING-OPS.md b/skills/engineering/wayfinder/WAYFINDING-OPS.md
 new file mode 100644
 index 0000000..1bba7c6
