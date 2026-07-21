@@ -8,14 +8,26 @@ let
   cfg = config.programs.codex;
   tomlFormat = pkgs.formats.toml { };
 
-  # Claude frontmatter `model:` → Codex model tier. Codex has no distinct
-  # ultra tier yet, so opus and sonnet both land on the top tier; haiku maps
-  # to the lighter `terra` tier. Update when new Codex tiers ship.
+  # Claude frontmatter `model:` → Codex model tier. `sonnet` means "as cheap
+  # as safe": Codex has no mid tier, so it rounds `sonnet` up to the top tier.
+  # That is a faithful rendering of "not cheap", not a leak — `terra` is the
+  # deliberately-declined weak-implementer risk. opus also lands on the top
+  # tier; haiku maps to the lighter `terra` tier. Trigger: when a mid Codex
+  # tier ships, add one line here and every `sonnet` agent cheapens
+  # automatically.
   modelMap = {
     opus = "gpt-5.6";
     sonnet = "gpt-5.6";
     haiku = "gpt-5.6-terra";
   };
+
+  # Mirrors what Codex's `model_reasoning_effort` field actually accepts.
+  # Resolution and clamp rules are documented on `programs.codex.agents` below.
+  codexEfforts = [
+    "low"
+    "medium"
+    "high"
+  ];
 
   # Agents load from `config_folder.join("agents")` in
   # codex-rs/core/src/config/agent_roles.rs (verified against codex 0.122.0),
@@ -58,6 +70,10 @@ let
       parsed = parseAgent source;
       claudeModel = parsed.fm.model or "sonnet";
       codexModel = modelMap.${claudeModel} or "gpt-5.6";
+      # Effort resolution and clamp rules: see the `programs.codex.agents`
+      # option description below.
+      rawEffort = parsed.fm.reasoning_effort or parsed.fm.effort or "medium";
+      reasoningEffort = if lib.elem rawEffort codexEfforts then rawEffort else "high";
     in
     tomlFormat.generate "codex-agent-${name}.toml" (
       {
@@ -69,7 +85,7 @@ let
         # (codex-rs/config/src/config_toml.rs); it is validated as required for
         # discovered agent files by validate_agent_role_file_developer_instructions.
         developer_instructions = parsed.body;
-        model_reasoning_effort = parsed.fm.reasoning_effort or "medium";
+        model_reasoning_effort = reasoningEffort;
       }
       // lib.optionalAttrs (parsed.fm ? model) { model = codexModel; }
     );
@@ -86,9 +102,13 @@ in
       and becomes the TOML `name` field (any `name:` in the frontmatter is
       ignored on this side — Claude Code's own loader uses it). The value is
       either Claude-format markdown (YAML frontmatter with `description`,
-      optional `model`, optional `reasoning_effort`; then the prompt body)
-      or a path to such a file. `reasoning_effort` defaults to `"medium"` when
-      the frontmatter omits it.
+      optional `model`, optional `reasoning_effort`, optional `effort`; then
+      the prompt body) or a path to such a file.
+
+      Codex reasoning effort resolves as `reasoning_effort` (explicit
+      per-client override), else Claude's native `effort:` key, else the
+      `"medium"` default. Claude-only effort values (`xhigh`, `max`) are
+      clamped down to `high`, since Codex accepts only low/medium/high.
 
       The frontmatter is parsed at build time and re-emitted as Codex TOML
       at `~/.codex/agents/<name>.toml`, so the same source file feeds both

@@ -2,6 +2,7 @@
 name: research-validation-reviewer
 description: Validate research-skill options against real-world opinions and weak points; used by §8 of the research skill.
 model: opus
+effort: high
 ---
 
 # Validation reviewer

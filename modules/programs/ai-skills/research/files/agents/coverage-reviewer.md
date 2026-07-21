@@ -2,6 +2,7 @@
 name: research-coverage-reviewer
 description: Find niche alternatives the main research pass missed; used by §8 of the research skill.
 model: opus
+effort: high
 ---
 
 # Coverage reviewer
