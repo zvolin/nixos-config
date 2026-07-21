@@ -73,7 +73,10 @@ in
 {
   programs.claude-code.settings = {
     skipDangerousModePermissionPrompt = true;
-    permissions.defaultMode = "bypassPermissions";
+    # Safe fail-closed floor for unwrapped launches / jail-setup failure. The
+    # wrapper injects --dangerously-skip-permissions for autonomy; this static
+    # value must stay maximally conservative so a raw-binary launch is prompted.
+    permissions.defaultMode = "default";
 
     hooks.PreToolUse = [
       # Bash command validation (shfmt AST)

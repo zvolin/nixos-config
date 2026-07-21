@@ -25,7 +25,10 @@ in
       };
     in
     {
-      imports = [ ./_internals/agents.nix ];
+      imports = [
+        ./_internals/agents.nix
+        ./_internals/sandbox.nix
+      ];
 
       programs.codex = {
         enable = true;
@@ -38,12 +41,6 @@ in
 
           - This is a NixOS system. To change system or user config, edit Nix files — do not create or modify dotfiles, system configs, or service files directly.
           - Home Manager is a NixOS module (not standalone). There is no `home-manager switch` command.
-
-          # Running Claude Code
-
-          - To run Claude Code (the `claude` CLI), request escalated / unsandboxed execution.
-          - Claude applies its own bubblewrap isolation. Nesting it inside Codex's workspace-write sandbox breaks it: writes to `~/.claude` and other state dirs are denied, and the model API network is blocked.
-          - Running `claude` escalated lets it reapply its own jail, so the net boundary is Claude's wrapper, not "no sandbox".
 
           # Web and Tools
 
@@ -106,13 +103,6 @@ in
         profiles.deep = {
           model = "gpt-5.6-sol";
           model_reasoning_effort = "xhigh";
-        };
-
-        # One-flag unattended mode (`codex --profile auto`); the
-        # workspace-write sandbox stays as the guardrail. The interactive
-        # default remains `on-request`.
-        profiles.auto = {
-          approval_policy = "never";
         };
       };
     };

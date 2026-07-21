@@ -1,6 +1,6 @@
 --- a/plugins/skill-codex/skills/codex/SKILL.md
 +++ b/plugins/skill-codex/skills/codex/SKILL.md
-@@ -6,76 +6,60 @@
+@@ -6,76 +6,58 @@
  # Codex Skill Guide
 
  ## Running a Task
@@ -50,7 +50,7 @@
 -- When resuming, pipe the new prompt via stdin: `echo "new prompt" | codex exec resume --last 2>/dev/null`. The resumed session automatically uses the same model, reasoning effort, and sandbox mode from the original session.
 -- Restate the chosen model, reasoning effort, and sandbox mode when proposing follow-up actions.
 +
-+Invoke codex directly. A wrapper handles stdin/stderr safety, the sandbox default, and a liveness watcher. You do not need to add stdin/stderr redirects yourself.
++Invoke codex directly. A wrapper handles stdin/stderr safety and a liveness watcher; containment comes from the outer Claude jail, not a codex --sandbox flag. You do not need to add stdin/stderr redirects yourself.
 +
 +```
 +codex exec --skip-git-repo-check -C "<dir>" "your prompt"
@@ -75,8 +75,6 @@
 +- `watch.log` — periodic liveness samples every 5 min, tagging each as `ok` or `HANG?`. `HANG?` means all three signals (CPU, TCP socket count, IO delta) were zero in the same sample — worth checking, not a definitive verdict.
 +
 +## Defaults
-+
-+The wrapper applies `--sandbox read-only` when no `--sandbox` is passed. Override only when the task needs to modify files. Ask the user via `AskUserQuestion` before using `--sandbox danger-full-access`.
 +
 +Model defaults (`gpt-5.6-terra`, reasoning effort `medium`) come from `~/.codex/config.toml`. Pass `-m <model>` and `--config model_reasoning_effort=<level>` only when the user specifies a different choice.
 +
