@@ -21,14 +21,14 @@ index 49a7c42..bf23aff 100644
  Each sub-agent outputs:
 
 diff --git a/skills/engineering/improve-codebase-architecture/HTML-REPORT.md b/skills/engineering/improve-codebase-architecture/HTML-REPORT.md
-index 17f6d2c..d641d7f 100644
+index 17f6d2c..d48a58d 100644
 --- a/skills/engineering/improve-codebase-architecture/HTML-REPORT.md
 +++ b/skills/engineering/improve-codebase-architecture/HTML-REPORT.md
 @@ -1,6 +1,6 @@
  # HTML Report Format
 
 -The architectural review is rendered as a single self-contained HTML file in the OS temp directory. Tailwind and Mermaid both come from CDNs. Mermaid handles graph-shaped diagrams reliably; hand-built divs and inline SVG handle the more editorial visuals (mass diagrams, cross-sections). Mix the two — don't lean on Mermaid for everything, it'll start to look generic.
-+The architectural review is a self-contained HTML report. On Claude Code it is emitted with the Artifact tool (native Mermaid, inlined CSS, no filesystem or display dependency); elsewhere it is written to `docs/architecture-reports/<timestamp>.html` and its path printed. Either way, every asset is inlined — no CDN `<script src>`. Mermaid handles graph-shaped diagrams reliably; hand-built divs and inline SVG handle the more editorial visuals (mass diagrams, cross-sections). Mix the two — don't lean on Mermaid for everything, it'll start to look generic.
++The architectural review is a self-contained HTML report. By default it is written to `docs/architecture-reports/latest.html` — overwritten each run, path printed — on every harness; that path is gitignored and uncommitted. On Claude Code it can additionally be published with the Artifact tool as an explicit opt-in (native Mermaid, hosted view), which uploads the analysis to an external host. Either way, every asset is inlined — no CDN `<script src>`. In the local file, hand-built divs and inline SVG carry both the graph-shaped diagrams and the more editorial visuals (mass diagrams, cross-sections); the opt-in Artifact renders graph-shaped diagrams as live Mermaid. Don't lean on one diagram style for everything — it'll start to look generic.
 
  ## Scaffold
 
@@ -41,9 +41,9 @@ index 17f6d2c..d641d7f 100644
 -      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 -      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
 -    </script>
-+    <!-- No CDN scripts. On Claude Code the Artifact tool renders ```mermaid blocks and
-+         supplies the page skeleton; the docs/architecture-reports fallback inlines a
-+         <style> block (hand-written utility CSS, not the Tailwind CDN) and static inline SVG. -->
++    <!-- No CDN scripts. The local report inlines a <style> block (hand-written utility
++         CSS, not the Tailwind CDN) and static inline SVG; on Claude Code the Artifact
++         tool can additionally render mermaid blocks if the user opts to publish. -->
      <style>
        /* small custom layer for things Tailwind doesn't cover cleanly:
           dashed seam lines, hand-drawn-feeling arrow heads, etc. */
@@ -52,12 +52,12 @@ index 17f6d2c..d641d7f 100644
  - Keep diagrams ~320px tall so before/after sits comfortably side by side without scrolling.
  - Use `text-xs uppercase tracking-wider` for module labels inside diagrams — they should read as schematic, not as UI.
 -- The only scripts are the Tailwind CDN and the Mermaid ESM import. The report is otherwise static — no app code, no interactivity beyond Mermaid's own rendering.
-+- No CDN scripts and no app code — the report is static. On Claude Code the Artifact tool renders the Mermaid; the fallback file uses inlined CSS and static SVG.
++- No CDN scripts and no app code — the report is static. The local report uses inlined CSS and static SVG; on Claude Code the opt-in Artifact renders any Mermaid.
 
  ## Top recommendation section
 
 diff --git a/skills/engineering/improve-codebase-architecture/SKILL.md b/skills/engineering/improve-codebase-architecture/SKILL.md
-index b56969e..3e55a4e 100644
+index b56969e..5e31fc8 100644
 --- a/skills/engineering/improve-codebase-architecture/SKILL.md
 +++ b/skills/engineering/improve-codebase-architecture/SKILL.md
 @@ -11,7 +11,7 @@ Surface architectural friction and propose **deepening opportunities** — refac
@@ -81,19 +81,21 @@ index b56969e..3e55a4e 100644
 
  - Where does understanding one concept require bouncing between many small modules?
  - Where are modules **shallow** — interface nearly as complex as the implementation?
-@@ -36,9 +36,9 @@ Apply the **deletion test** to anything you suspect is shallow: would deleting i
+@@ -36,9 +36,11 @@ Apply the **deletion test** to anything you suspect is shallow: would deleting i
 
  ### 2. Present candidates as an HTML report
 
 -Write a self-contained HTML file to the OS temp directory so nothing lands in the repo. Resolve the temp dir from `$TMPDIR`, falling back to `/tmp` (or `%TEMP%` on Windows), and write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Open it for the user — `xdg-open <path>` on Linux, `open <path>` on macOS, `start <path>` on Windows — and tell them the absolute path.
-+Present the candidates as a self-contained HTML report. On Claude Code, emit it with the **Artifact tool** — it renders Mermaid natively and takes inlined CSS, so nothing touches the filesystem or a display server. Where the Artifact tool is unavailable (Codex, or any harness without it), write the report to `docs/architecture-reports/<timestamp>.html` — a gitignored path, so nothing lands in the repo — and print the absolute path. Derive `<timestamp>` as `YYYYMMDD-HHMMSS` so each run gets a fresh file.
++Always write a self-contained HTML report to `docs/architecture-reports/latest.html`, overwriting the previous run's file, and print its absolute path. That path is gitignored, so nothing lands in the repo; overwriting a single `latest.html` — rather than an accumulating `<timestamp>.html` — keeps at most one plaintext structural analysis on disk per repo. Inline every asset: a `<style>` block and static inline SVG, no CDN `<script src>`. The local file cannot render live Mermaid, so all its diagrams are static; the diagram guidance below covers how. This write is the complete default on Claude Code and Codex alike — no branch before it.
 
 -The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via CDN** for diagrams where a graph/flow/sequence reliably communicates the structure. Mix Mermaid with hand-crafted CSS/SVG visuals — use Mermaid when relationships are graph-shaped (call graphs, dependencies, sequences), and hand-built divs/SVG when you want something more editorial (mass diagrams, cross-sections, collapse animations). Each candidate gets a **before/after visualisation**. Be visual.
-+Inline every asset: no `<script src>` to a CDN. Render diagrams as Mermaid where relationships are graph-shaped (call graphs, dependencies, sequences) — as ```mermaid fenced blocks on the Artifact, or inlined into the fallback file — and hand-built CSS/SVG for editorial visuals (mass diagrams, cross-sections, collapse animations). Mix the two; each candidate gets a **before/after visualisation**. Be visual.
++Then, on Claude Code only, offer the Artifact publish as an explicit opt-in that names the consequence — for example: *"This report can also be published as a claude.ai Artifact (live Mermaid, hosted view). That uploads the code-structure analysis to an external host, so skip it for confidential repos. Publish?"* Only an affirmative answer triggers the Artifact tool, which publishes the same report.
++
++In the local file, render graph-shaped relationships (call graphs, dependencies, sequences) as static inline SVG, and hand-build CSS/SVG for the editorial visuals (mass diagrams, cross-sections, collapse animations); if the user opts into the Artifact, those graph-shaped diagrams become live `mermaid` fenced blocks there. Mix the styles; each candidate gets a **before/after visualisation**. Be visual.
 
  For each candidate, render a card with:
 
-@@ -51,7 +51,7 @@ For each candidate, render a card with:
+@@ -51,7 +53,7 @@ For each candidate, render a card with:
 
  End the report with a **Top recommendation** section: which candidate you'd tackle first and why.
 
@@ -102,7 +104,7 @@ index b56969e..3e55a4e 100644
 
  **ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly in the card (e.g. a warning callout: _"contradicts ADR-0007 — but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
 
-@@ -61,11 +61,11 @@ Do NOT propose interfaces yet. After the file is written, ask the user: "Which o
+@@ -61,11 +63,11 @@ Do NOT propose interfaces yet. After the file is written, ask the user: "Which o
 
  ### 3. Grilling loop
 
