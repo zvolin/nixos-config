@@ -89,7 +89,11 @@ in
               "git-branch"
               "context-used"
               "context-window-size"
-              "five-hour-limit"
+              # OpenAI removed the rolling 5-hour window for Plus/Pro/Business
+              # (2026-07-12), so "five-hour-limit" renders blank and is dropped.
+              # No reset-ETA token exists: the backend returns resetsAt but no
+              # status-line element surfaces it. Adopt a native token when one
+              # lands — openai/codex#18812, openai/codex#24080.
               "weekly-limit"
             ];
             status_line_use_colors = true;
