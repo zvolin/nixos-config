@@ -6,21 +6,28 @@ in
   flake.modules.homeManager.codex =
     { pkgs, lib, ... }:
     let
+      notify = import ../../services/_notify-push.nix { inherit pkgs; };
       # Codex appends a JSON event payload as the final arg. On
-      # agent-turn-complete, toast the assistant's last message via notify-send
-      # (notify-send + dbus are already wired into the environment).
+      # agent-turn-complete, push the assistant's last message to the phone
+      # and toast it locally via notify-send.
       notifyWrapper = pkgs.writeShellApplication {
         name = "codex-notify";
         runtimeInputs = [
           pkgs.jq
           pkgs.libnotify
+          notify.package
         ];
         text = ''
           payload=''${1:-}
           [ -z "$payload" ] && exit 0
           msg=$(printf '%s' "$payload" | jq -r 'if .type == "agent-turn-complete" then (."last-assistant-message" // "Turn complete") else empty end')
           [ -z "$msg" ] && exit 0
-          notify-send "Codex" "$msg"
+          # Push FIRST: this wrapper runs under `set -euo pipefail`
+          # (writeShellApplication), and the remote push is the point. It must
+          # not be killed by a failing local toast, which is exactly what happens
+          # in a detached/headless session with no dbus target.
+          notify-push "Codex" default white_check_mark "$msg"
+          notify-send "Codex" "$msg" || true
         '';
       };
     in

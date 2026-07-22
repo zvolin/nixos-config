@@ -20,6 +20,8 @@
         docker
         xremap
         tiny-dfr
+        ntfy
+        zellij
         zvolin
       ];
 

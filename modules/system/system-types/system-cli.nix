@@ -6,6 +6,7 @@
       cli-tools
       openssh
       shell
+      tailscale
     ];
 
     programs.gnupg.agent = {

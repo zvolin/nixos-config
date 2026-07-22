@@ -31,6 +31,9 @@ let
       *.rs)  format rustfmt ${lib.getExe pkgs.rustfmt} "$file_path" ;;
     esac 2>/dev/null || true
   '';
+  notify = import ../../../services/_notify-push.nix { inherit pkgs; };
+  notify-push = lib.getExe notify.package;
+  claude-title = import ./_notify-title.nix { inherit pkgs lib; };
 in
 {
   programs.claude-code.settings.hooks = {
@@ -42,18 +45,28 @@ in
             type = "command";
             command = ''
               input=$(cat)
-              message=$(echo "$input" | jq -r '.message // "Needs your attention"')
-              if [ -n "$CLAUDE_SESSION_NAME" ]; then
-                title="Claude Code - $CLAUDE_SESSION_NAME"
-              else
-                cwd=$(echo "$input" | jq -r '.cwd // empty')
-                if [ -n "$cwd" ]; then
-                  title="Claude Code - term:$(basename "$cwd")"
-                else
-                  title="Claude Code"
-                fi
-              fi
-              notify-send -i ${claude-icon} "$title" "$message"
+              title=$(${claude-title} "$input")
+              message=$(printf '%s' "$input" | jq -r '.message // "Needs your attention"')
+              ${notify-push} "$title" high warning "$message"
+              notify-send -i ${claude-icon} "$title" "$message" || true
+            '';
+          }
+        ];
+      }
+    ];
+
+    # Turn-complete: default-priority push first, then a toast for parity with
+    # the Notification hook and Codex's turn-complete behavior.
+    Stop = [
+      {
+        hooks = [
+          {
+            type = "command";
+            command = ''
+              input=$(cat)
+              title=$(${claude-title} "$input")
+              ${notify-push} "$title" default white_check_mark "Turn complete"
+              notify-send -i ${claude-icon} "$title" "Turn complete" || true
             '';
           }
         ];
