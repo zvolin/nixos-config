@@ -126,6 +126,7 @@
           "**/docs/plans/"
           "**/docs/insights/"
           "**/docs/superpowers/"
+          "**/docs/research/"
           "**/docs/LLM_CONTEXT.md"
           "**/docs/architecture-reports/"
           "**/.serena/"
