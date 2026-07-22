@@ -47,5 +47,12 @@ in
         };
       };
     };
+
+    # Preserve Claude Code's claude-cli:// deep-link handler declaratively. The
+    # zathura module enables xdg.mimeApps, which makes ~/.config/mimeapps.list a
+    # read-only store symlink — so Claude Code can no longer self-register this
+    # handler at runtime. Declaring it here keeps deep-links working. Claude Code
+    # still writes the .desktop file itself into ~/.local/share/applications.
+    xdg.mimeApps.defaultApplications."x-scheme-handler/claude-cli" = "claude-code-url-handler.desktop";
   };
 }
