@@ -1,33 +1,70 @@
 diff --git a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
-index 075a103..0e86fb4 100644
+index 075a103..95d0488 100644
 --- a/skills/executing-plans/SKILL.md
 +++ b/skills/executing-plans/SKILL.md
-@@ -7,47 +7,54 @@ description: Use when you have a written implementation plan to execute in a sep
+@@ -7,47 +7,96 @@ description: Use when you have a written implementation plan to execute in a sep
 
  ## Overview
 
 -Load plan, review critically, execute all tasks, report when complete.
 +Router that loads a plan file, reads its execution strategy, and dispatches the appropriate execution skill. This is the entry point for plan execution — invoke this skill after writing-plans produces the plan.
++
++Announce: "I'm using the executing-plans skill to dispatch this plan."
++
++## Wayfinder implementation-ticket mode
++
++Before normal plan routing, branch on an optional implementation-ticket path.
++Direct execution without one supplies a plan path, remains tracker-free, and
++uses normal plan routing without a ticket mutation. With a ticket, use only the
++supplied original normalized path and call Wayfinder's **ticket-level mutation
++primitive** in validation-only mode. Under its lock/CAS contract, require an
++existing canonical repository-root-relative regular-file ticket with `type:
++implementation`, `status: open`, `phase: superpowers:executing-plans`, current
++revision, caller-owned active claim, no active blocker, and canonical existing
++`spec` and `plan`. The canonical existing `plan` file must contain exactly one
++`## Wayfinder ticket handoff` YAML block. Its canonical ticket path and
++`origin-ticket-id` must match the original ticket and its `next-phase` must be
++`superpowers:executing-plans`. Revalidate the canonical `plan` field while
++locked, then use that plan path for normal plan routing and executor dispatch.
++Reject absolute, escaping, symlinked, missing, directory, noncanonical, stale,
++malformed, or mismatched inputs without writing and never create or select a
++successor ticket.
++
++Dispatch the existing executor with this ticket context, but do not release it
++at dispatch. Its existing final user-approval gate is the terminal approval
++gate. Prepare verification evidence as a draft. Only after verified execution
++and that approval, call the primitive on the same original path with expected
++revision/status/phase/owner. That approved terminal mutation appends a
++`## Verification evidence` heading with commands run, exit status, date, and a
++concise output summary, then CAS-updates:
++
++```yaml
++status: closed
++phase: implemented
++spec: <existing canonical spec path>
++plan: <existing canonical plan path>
++```
++
++Retain `claimed-by`, `origin-ticket`, `origin-ticket-id`, `map-path`,
++`blocked-by`, unknown frontmatter, and unrelated body content. Do not write the
++ticket directly. Missing evidence, failed verification, malformed handoff, a
++guard/CAS mismatch, or absent approval writes no ticket or body update. Only
++Wayfinder's documented lease-repair mutation may change a stale claim. After
++`/clear` without approval, Wayfinder selects the retained open executing ticket
++and re-enters this mode; after success, return to `$wayfinder <map-path>`.
 
 -**Announce at start:** "I'm using the executing-plans skill to implement this plan."
--
++## The Process
+
 -**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (Claude Code, Codex CLI, Codex App, and Copilot CLI all qualify; see the per-platform tool refs in `../using-superpowers/references/`). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
-+Announce: "I'm using the executing-plans skill to dispatch this plan."
-
- ## The Process
-
--### Step 1: Load and Review Plan
--1. Read plan file
--2. Review critically - identify any questions or concerns about the plan
--3. If concerns: Raise them with your human partner before starting
--4. If no concerns: Create todos for the plan items and proceed
 +### Step 1: Load Plan
-+
+
+-## The Process
 +1. Read the plan file.
 +2. Read `## Execution Strategy` — it must name exactly one of: `Subagents`, `Agent teams`. If the token is missing or is anything else, STOP and surface the error to the user — do not fall through to inline. The router defines no unrecognized-token default.
 +3. Read `## Task Dependency Graph` — extract the batch ordering.
 +4. **Already-complete check (Subagents and inline paths only):** read the Durable Progress ledger from the main tree:
-+   `LEDGER="$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`.
++   `LEDGER="$(../subagent-driven-development/scripts/sdd-workspace "$PLAN")/progress.md"`.
 +   A task is done iff a line matching `^Task N: complete` exists in that file (prefix match). A missing ledger means nothing is done yet. Do not read plan-file checkboxes for this — the ledger is the resume signal.
 +5. If every task already matches `^Task N: complete`, announce "Plan already complete" and stop.
 +
@@ -35,25 +72,30 @@ index 075a103..0e86fb4 100644
 +
 +Route on the `## Execution Strategy` token (exact match):
 
--### Step 2: Execute Tasks
+-### Step 1: Load and Review Plan
+-1. Read plan file
+-2. Review critically - identify any questions or concerns about the plan
+-3. If concerns: Raise them with your human partner before starting
+-4. If no concerns: Create todos for the plan items and proceed
 +**Subagents (default):** Invoke superpowers:subagent-driven-development with the plan path. SDD handles worktree setup, batch dispatch, reviews, the Durable Progress ledger, and polish. The router touches no resume state here — SDD owns the ledger.
+
+-### Step 2: Execute Tasks
++**Agent teams:** Spawn an Agent team. The team lead reads the plan and coordinates, and enforces the per-task review gate. Agent teams handle their own coordination and progress tracking — run no ledger precheck on this branch.
 
 -For each task:
 -1. Mark as in_progress
 -2. Follow each step exactly (plan has bite-sized steps)
 -3. Run verifications as specified
 -4. Mark as completed
-+**Agent teams:** Spawn an Agent team. The team lead reads the plan and coordinates, and enforces the per-task review gate. Agent teams handle their own coordination and progress tracking — run no ledger precheck on this branch.
++**Inline-Degraded Path:** Only when BOTH conditions hold: (1) subagent support is unavailable on this platform; (2) the user explicitly acknowledges degraded mode when prompted — "I understand this runs without subagent review gates." If the user declines, stop and explain that full-quality execution requires subagent support. The inline path executes tasks sequentially; before executing, invoke superpowers:using-git-worktrees. As each task finishes, append the bare `Task N: complete` line to `"$(../subagent-driven-development/scripts/sdd-workspace "$PLAN")/progress.md"` (job 1 only — this path has no per-task review gate for Minor roll-up and records no commit range), creating the file if it does not exist. Do not flip plan-file checkboxes.
 
 -### Step 3: Complete Development
-+**Inline-Degraded Path:** Only when BOTH conditions hold: (1) subagent support is unavailable on this platform; (2) the user explicitly acknowledges degraded mode when prompted — "I understand this runs without subagent review gates." If the user declines, stop and explain that full-quality execution requires subagent support. The inline path executes tasks sequentially; before executing, invoke superpowers:using-git-worktrees. As each task finishes, append the bare `Task N: complete` line to `"$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"` (job 1 only — this path has no per-task review gate for Minor roll-up and records no commit range), creating the file if it does not exist. Do not flip plan-file checkboxes.
++### Step 3: Polish Phase (Inline-Degraded Path only)
 
 -After all tasks complete and verified:
 -- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
 -- **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
 -- Follow that skill to verify tests, present options, execute choice
-+### Step 3: Polish Phase (Inline-Degraded Path only)
-+
 +After every task is complete and verified, dispatch the post-implementation-polish skill against the full implementation. The Polish line in the plan header (`**Polish:** post-implementation-polish → <rules>`) names the rules the polish subagent loads. Polish runs once per plan in the same worktree as the implementation — no fresh checkout. If polish flags blockers, address them and re-run polish; max 3 polish iterations before escalating to the user. After polish, invoke superpowers:finishing-a-development-branch.
 
  ## When to Stop and Ask for Help
@@ -77,7 +119,7 @@ index 075a103..0e86fb4 100644
  **Return to Review (Step 1) when:**
  - Partner updates the plan based on your feedback
  - Fundamental approach needs rethinking
-@@ -55,16 +62,16 @@ After all tasks complete and verified:
+@@ -55,16 +104,16 @@ After all tasks complete and verified:
  **Don't force through blockers** - stop and ask.
 
  ## Remember
@@ -89,7 +131,7 @@ index 075a103..0e86fb4 100644
 -- Never start implementation on main/master branch without explicit user consent
 +- This skill is a router — read the plan, choose a path, delegate.
 +- The plan file is the contract, not conversation state.
-+- Resume state lives in the Durable Progress ledger (`.superpowers/sdd/progress.md`), read via the `^Task N: complete` prefix match — never plan-file checkboxes.
++- Resume state lives in the Durable Progress ledger (`.superpowers/sdd/<plan-slug>/progress.md`, resolved via `sdd-workspace "$PLAN"`), read via the `^Task N: complete` prefix match — never plan-file checkboxes.
 +- Never start implementation on main/master branch without explicit user consent.
 +- Inline execution is degraded — always prefer subagent dispatch.
 

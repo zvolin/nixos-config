@@ -1,5 +1,5 @@
 diff --git a/skills/engineering/wayfinder/SKILL.md b/skills/engineering/wayfinder/SKILL.md
-index 42e3644..d82de90 100644
+index 42e3644..ab9bdbe 100644
 --- a/skills/engineering/wayfinder/SKILL.md
 +++ b/skills/engineering/wayfinder/SKILL.md
 @@ -22,7 +22,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
@@ -11,9 +11,12 @@ index 42e3644..d82de90 100644
 
  ### The map body
 
-@@ -64,9 +64,9 @@ Each ticket is a **child issue** of the map; the tracker's issue id is its ident
+@@ -62,11 +62,11 @@ Each ticket is a **child issue** of the map; the tracker's issue id is its ident
+ <the decision or investigation this ticket resolves>
+ ```
 
- Each ticket carries a `wayfinder:<type>` label — one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)).
+-Each ticket carries a `wayfinder:<type>` label — one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)).
++Each ticket carries a `wayfinder:<type>` label — one of `research`, `prototype`, `grilling`, `task`, or `implementation` (see [Ticket Types](#ticket-types)).
 
 -A session **claims** a ticket by assigning it to the dev driving the map, **first**, before any work, so concurrent sessions skip it. That assignee _is_ the claim: an open, unassigned ticket is unclaimed.
 +A session **claims** a ticket by setting its `claimed-by:` (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md)), **first**, before any work, so concurrent sessions skip it. That `claimed-by:` value is the claim; an `open` ticket with empty `claimed-by:` is unclaimed.
@@ -23,7 +26,7 @@ index 42e3644..d82de90 100644
 
  The answer isn't part of the body — it's recorded on resolution (see [Work through the map](#work-through-the-map)). Assets created while resolving a ticket are linked from the issue, not pasted in.
 
-@@ -75,8 +75,8 @@ The answer isn't part of the body — it's recorded on resolution (see [Work thr
+@@ -75,9 +75,10 @@ The answer isn't part of the body — it's recorded on resolution (see [Work thr
  Every ticket is either **HITL** — human in the loop, worked *with* a human who speaks for themselves — or **AFK**, driven by the agent alone. A HITL ticket only resolves through that live exchange; the agent never stands in for the human's side of it (a grilling agent that answers its own questions has broken this).
 
  - **Research** (AFK): Reading documentation, third-party APIs, or local resources like knowledge bases to surface a fact a decision waits on. Resolved by a `/research` **subagent**. Use when knowledge outside the current working directory is required.
@@ -32,9 +35,11 @@ index 42e3644..d82de90 100644
 +- **Prototype** (HITL): Raise the fidelity of the discussion by making a cheap, rough, concrete artifact to react to — an outline, a rough take, a stub, or rough UI/logic code made by hand. Links the prototype as an asset. Use when "how should it look" or "how should it behave" is the key question.
 +- **Grilling** (HITL): Conversation via the brainstorming and /domain-modeling skills, one question at a time. The default case.
  - **Task** (HITL or AFK): Manual work that must happen before a *decision* can be made — nothing to decide, prototype, or research, but the discussion is blocked until it's done. Signing up for a service so its API can be judged, provisioning access, moving data so its shape can be seen. This is the one type that *does* rather than decides — and it earns its place by unblocking a decision, not by delivering the destination. The agent drives it alone where it can (AFK); otherwise it hands the human a precise checklist (HITL). Resolved when the work is done; the answer records what was done and any resulting facts (credentials location, new URLs, row counts) later tickets depend on.
++- **Implementation** (AFK): The execution handoff for one actionable native decision. Create or reuse it only after that decision closes; its validated state and artifacts are defined in [WAYFINDING-OPS.md](WAYFINDING-OPS.md). It is not a successor decision ticket.
 
  ## Fog of war
-@@ -108,12 +108,13 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
+
+@@ -108,21 +109,80 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
 
  User invokes with a loose idea.
 
@@ -50,12 +55,13 @@ index 42e3644..d82de90 100644
 
  ### Work through the map
 
-@@ -121,8 +122,43 @@ User invokes with a map (URL or number). A ticket is **optional** — without on
+ User invokes with a map (URL or number). A ticket is **optional** — without one, you pick the next decision, not the user.
 
  1. Load the **map** — the low-res view, not every ticket body.
- 2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
+-2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
 -3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`.
 -4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
++2. Choose the ticket. If the user named one, use it. Otherwise apply the selector in [WAYFINDING-OPS.md](WAYFINDING-OPS.md). **Claim it** before any work.
 +3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `brainstorming` and `/domain-modeling`.
 +4. Record the resolution: write the answer into the ticket body, set `status: closed`, and **append a context pointer** to the map's Decisions-so-far (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md)).
  5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
@@ -63,6 +69,29 @@ index 42e3644..d82de90 100644
 +7. If this resolution leaves both the frontier and **Not yet specified** empty, the map is complete — say so and stop, no trailer. Otherwise end with the [closing handoff](#closing-handoff).
 
  The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.
++
++## Implementation handoff
++
++After an actionable native decision closes, create or reuse its implementation
++ticket, then claim it before handoff. The selected chunk determines the Codex
++handoff after `/clear`:
++
++| Selected chunk | Codex handoff after /clear |
++|---|---|
++| map/decision work | $wayfinder <map-path> |
++| implementation brainstorming | $superpowers:brainstorming <implementation-ticket-path> |
++| plan writing | $superpowers:writing-plans <implementation-ticket-path> |
++| plan execution | $superpowers:executing-plans <implementation-ticket-path> |
++
++Each downstream invocation receives the original ticket path and ID, mutates
++only that ticket, and never creates or selects a successor. Direct phase skills
++do not mutate tickets; downstream skills invoke the ticket mutation primitive
++only after their ordinary approval gate. Each generated spec or plan contains
++exactly one `## Wayfinder ticket handoff` YAML block with the canonical ticket
++path, origin ID, and legal `next-phase`; malformed or duplicate blocks are
++no-write failures. A newly discovered decision creates a linked native ticket,
++adds its canonical path to `blocked-by` through the guarded primitive, and
++removes it only after that native ticket closes.
 +
 +## Dissent the map
 +
@@ -98,10 +127,10 @@ index 42e3644..d82de90 100644
 +Skip the trailer when there is no map to return to: the no-fog dead-end in [Chart the map](#chart-the-map) step 2 (no map was created) and the map-complete exit in [Work through the map](#work-through-the-map) step 7 (frontier and **Not yet specified** both empty).
 diff --git a/skills/engineering/wayfinder/WAYFINDING-OPS.md b/skills/engineering/wayfinder/WAYFINDING-OPS.md
 new file mode 100644
-index 0000000..1bba7c6
+index 0000000..da34ea8
 --- /dev/null
 +++ b/skills/engineering/wayfinder/WAYFINDING-OPS.md
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,170 @@
 +# Wayfinding operations (local-markdown tracker)
 +
 +Where the map, its child tickets, blocking, and the frontier query physically
@@ -129,7 +158,7 @@ index 0000000..1bba7c6
 +
 +```yaml
 +---
-+type: research        # one of: research | prototype | grilling | task
++type: research        # one of: research | prototype | grilling | task (implementation tickets use the richer contract under "Implementation ticket validation")
 +status: open          # one of: open | closed
 +claimed-by:           # a name, or empty = unclaimed
 +blocked-by: []        # a list of ticket ids this one waits on, e.g. [01, 03]
@@ -160,3 +189,115 @@ index 0000000..1bba7c6
 +2. Write the answer into the ticket body (below the `## Question` block).
 +3. Append one gist line to the map's `## Decisions so far`, linking the ticket by
 +   a relative path: `- [<ticket title>](tickets/NN-slug.md) — <one-line gist>`.
++
++## Implementation ticket validation
++
++An implementation ticket is created only after an actionable native decision
++has closed. It uses this frontmatter contract:
++
++```yaml
++---
++type: implementation
++status: open
++phase: superpowers:brainstorming
++map-path: docs/superpowers/wayfinder/example/map.md
++origin-ticket-id: 12
++origin-ticket: docs/superpowers/wayfinder/example/tickets/12-auth-flow.md
++spec:
++plan:
++claimed-by:
++blocked-by: []
++revision: 1
++---
++```
++
++First resolve the physical repository root with `git rev-parse --show-toplevel`,
++then `realpath -e`. Resolve every non-empty ticket, map, origin, artifact,
++blocker, and handoff path with `realpath -e`; it must be an in-root regular file
++and its stored value must equal the canonical root-relative path. Reject absolute,
++lexically escaping, symlink-escaping, missing, directory, and noncanonical values.
++The valid states are:
++
++| Status | Phase | spec | plan |
++| --- | --- | --- | --- |
++| open | superpowers:brainstorming | empty | empty |
++| open | superpowers:writing-plans | valid file | empty |
++| open | superpowers:executing-plans | valid file | valid file |
++| closed | implemented | valid file | valid file |
++
++Reject every other implementation-state/path combination. A closed or
++implemented ticket is terminal and is never selected.
++
++## Creation lock
++
++Create an implementation ticket under a `mkdir` (or `O_EXCL`) creation lock keyed
++by the canonical physical `origin-ticket` path plus `origin-ticket-id`. While
++holding it, scan by that pair: reuse exactly one existing ticket, fail without a
++replacement for duplicate pairs, or create one new ticket at revision 1. Same IDs
++with different canonical origins are distinct. Write the canonical origin
++resolution before unlock; every acquired lock is released on success and failure,
++and cleanup failure is a protocol failure.
++
++## Selection and claims
++
++The selector validates a ticket, accepts an empty or caller-matching
++`claimed-by`, rejects another owner and active blockers, and
++first chooses eligible `superpowers:executing-plans`, then eligible
++`superpowers:writing-plans`; sort each resume phase by numeric ticket ID. It
++then records a reasoned choice between eligible native decision work and eligible
++implementation `superpowers:brainstorming` work. Claim the selected ticket before
++handoff, using the mutation primitive below. Native tickets remain eligible under
++the existing frontier rules.
++
++## Atomic release
++
++Every claim, release, blocker update, and repair calls one mandatory ordered
++ticket-level compare-and-swap primitive. Normalize the ticket to its physical
++path; acquire its scoped `mkdir`/`O_EXCL` lock; reread and revalidate expected
++revision, status, phase, owner, blockers, artifacts, and canonical paths under
++that lock; preserve its mode into a same-directory temporary file; write the
++authorized update; atomically rename it over the ticket; remove the temporary file
++on every pre-rename failure; then unlock. Cleanup failure is a protocol failure.
++Each lifecycle mutation and repair increments revision exactly once. Normal
++transitions compare expected status, phase, revision, and owner and retain
++`claimed-by`. An initial guarded claim may change an empty `claimed-by:` to its
++expected owner; no normal transition combines with repair.
++
++The downstream owner releases the same ticket only after it has persisted its
++artifact and phase. A declined approval retains the ticket, claim, and current phase;
++a failed or interrupted stage retains the claimed ticket for recovery. On a
++successful transition, retain the claim while preserving `origin-ticket-id`.
++
++## Repair
++
++On an implementation ticket, `blocked-by` is a YAML sequence of canonical
++native-ticket paths — unlike a native map ticket's `blocked-by`, which lists bare
++ticket ids. Missing,
++malformed, missing-target, non-native, unparseable-ID, and open entries are active
++blockers. Add through the primitive; remove one only through a guarded mutation
++after its referenced native ticket closes.
++
++Use the mutation primitive for same-ticket block/resume, artifact rollback,
++contradiction repair, corrupt closed-state repair, and the final terminal
++closed/implemented transition. A stale owner may be reclaimed only by a recorded
++lease-repair reclaim: require expected current owner, replacement owner, non-empty
++reason, and prior revision; record a dated body note and replace it under the ticket
++lock. It is the only operation that changes a non-empty `claimed-by` value.
++Never create a successor ticket while repairing or resuming.
++
++The repair table is deterministic and is not combined with a normal transition:
++
++| Invalid state | Repair |
++| --- | --- |
++| `spec` is invalid in `superpowers:writing-plans` | Clear only `spec`; return to `superpowers:brainstorming`. |
++| `plan` is invalid in `superpowers:executing-plans` | Clear only `plan`; return to `superpowers:writing-plans`. |
++| Phase/artifact contradiction | Clear the newest invalid artifact; return to the immediately preceding valid phase. |
++| Invalid `closed`/`implemented` | Clear only invalid artifacts; return to the latest valid open phase. |
++
++Preserve every valid artifact, all unknown frontmatter and body content, and
++verification evidence. Never reopen a valid terminal ticket.
++
++Before every transition to closed/implemented, record a `## Verification evidence`
++section with commands run, exit status, date, and a concise output summary.
++A terminal transition that lacks this evidence is invalid; it remains open and is
++returned to the same ticket's recovery flow.

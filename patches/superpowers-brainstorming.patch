@@ -1,5 +1,5 @@
 diff --git a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
-index b0d52b2..99bdf68 100644
+index b0d52b2..336bf70 100644
 --- a/skills/brainstorming/SKILL.md
 +++ b/skills/brainstorming/SKILL.md
 @@ -23,13 +23,17 @@ You MUST create a task for each of these items and complete them in order:
@@ -26,7 +26,7 @@ index b0d52b2..99bdf68 100644
 
  ## Process Flow
 
-@@ -37,28 +41,37 @@ You MUST create a task for each of these items and complete them in order:
+@@ -37,28 +41,76 @@ You MUST create a task for each of these items and complete them in order:
  digraph brainstorming {
      "Explore project context" [shape=box];
      "Ask clarifying questions" [shape=box];
@@ -73,10 +73,49 @@ index b0d52b2..99bdf68 100644
 
 -**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
 +**Terminal state:** Announce the spec path and strategy, then tell the user to clear context and invoke writing-plans. Do NOT invoke writing-plans directly — the user does it in a clean session. Do NOT ask the user to pick a strategy — the heuristic selection is fixed in the spec.
++
++## Wayfinder implementation-ticket mode
++
++When the invocation supplies an implementation-ticket path, use that supplied,
++normalized path as the original ticket for the entire stage. Direct
++brainstorming use has no ticket path and is tracker-free: do not read, claim,
++create, select, or mutate any ticket.
++
++Before the ordinary brainstorming workflow, call Wayfinder's **ticket-level
++mutation primitive** in validation-only mode. Under its ticket lock and CAS
++contract, require the original path to resolve with `realpath -e` to an existing
++canonical repository-root-relative regular file whose frontmatter is `type:
++implementation`, `status: open`, `phase: superpowers:brainstorming`, current
++`revision`, caller-owned active `claimed-by`, no active `blocked-by` entry, and
++empty `spec` and `plan`. Reject absolute, escaping, symlinked, missing,
++directory, noncanonical, stale, or mismatched inputs without writing. Never
++select or create a successor ticket.
++
++After the existing spec review and explicit user approval, write the spec as a
++draft, canonicalize its root-relative path, and require exactly one
++`## Wayfinder ticket handoff` YAML block. Its canonical ticket path and
++`origin-ticket-id` must match the original ticket, and `next-phase` must be
++`superpowers:writing-plans`. Only then call the primitive on that same original
++ticket path with the expected revision/status/phase/owner to CAS-update:
++
++```yaml
++status: open
++phase: superpowers:writing-plans
++spec: <canonical root-relative spec path>
++plan:
++```
++
++Retain `claimed-by`, `origin-ticket`, `origin-ticket-id`, `map-path`,
++`blocked-by`, unknown frontmatter, and body content. Do not write the ticket
++directly. A declined approval retains its claim, brainstorming phase, and
++artifacts. A failed or interrupted stage leaves the spec as a draft and retains
++the open brainstorming phase; a guard or CAS failure writes no ticket update.
++Only Wayfinder's documented lease-repair mutation may change a stale claim.
++After a successful release, end with `/clear`, then `$wayfinder <map-path>`.
 
  ## The Process
 
-@@ -77,6 +90,25 @@ digraph brainstorming {
+@@ -77,6 +129,25 @@ digraph brainstorming {
  - Propose 2-3 different approaches with trade-offs
  - Present options conversationally with your recommendation and reasoning
  - Lead with your recommended option and explain why
@@ -102,7 +141,7 @@ index b0d52b2..99bdf68 100644
 
  **Presenting the design:**
 
-@@ -106,29 +138,43 @@ digraph brainstorming {
+@@ -106,29 +177,43 @@ digraph brainstorming {
  - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
    - (User preferences for spec location override this default)
  - Use elements-of-style:writing-clearly-and-concisely skill if available
@@ -139,11 +178,11 @@ index b0d52b2..99bdf68 100644
 -**Implementation:**
 +**Select execution strategy:**
 +Apply the Strategy Selection Heuristics (below). Announce the choice with a one-line reason. Do NOT ask the user to confirm.
-+
-+> "Selected execution strategy: **<strategy>**. Reason: <one line grounded in the heuristics>."
 
 -- Invoke the writing-plans skill to create a detailed implementation plan
 -- Do NOT invoke any other skill. writing-plans is the next step.
++> "Selected execution strategy: **<strategy>**. Reason: <one line grounded in the heuristics>."
++
 +**Transition to planning:**
 +Do NOT invoke writing-plans directly. Announce the narration, then a blank line, then a **fenced code block** holding exactly two commands, one per line: a context-clear, then the writing-plans invocation on the spec:
 +
@@ -158,7 +197,7 @@ index b0d52b2..99bdf68 100644
 
  ## Key Principles
 
-@@ -139,6 +185,45 @@ Wait for the user's response. If they request changes, make them and re-run the
+@@ -139,6 +224,45 @@ Wait for the user's response. If they request changes, make them and re-run the
  - **Incremental validation** - Present design, get approval before moving on
  - **Be flexible** - Go back and clarify when something doesn't make sense
 
