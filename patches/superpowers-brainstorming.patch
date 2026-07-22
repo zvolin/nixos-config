@@ -102,7 +102,7 @@ index b0d52b2..99bdf68 100644
 
  **Presenting the design:**
 
-@@ -106,29 +138,40 @@ digraph brainstorming {
+@@ -106,29 +138,43 @@ digraph brainstorming {
  - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
    - (User preferences for spec location override this default)
  - Use elements-of-style:writing-clearly-and-concisely skill if available
@@ -145,17 +145,20 @@ index b0d52b2..99bdf68 100644
 -- Invoke the writing-plans skill to create a detailed implementation plan
 -- Do NOT invoke any other skill. writing-plans is the next step.
 +**Transition to planning:**
-+Do NOT invoke writing-plans directly. Announce:
++Do NOT invoke writing-plans directly. Announce the narration, then a blank line, then a **fenced code block** holding exactly two commands, one per line: a context-clear, then the writing-plans invocation on the spec:
 +
-+> "Spec saved to `<path>`. Strategy: **<strategy>**. To continue, clear context and invoke writing-plans with this spec:
-+> `/clear`
-+> then: `/writing-plans <spec-path>`"
++> "Spec saved to `<path>`. Strategy: **<strategy>**. To continue, clear context and invoke writing-plans with this spec."
++
++Emit the two commands in the **current harness's** syntax:
++
++- **Claude Code** — `/clear`, then `/writing-plans <spec-path>`.
++- **Codex** — `/clear`, then `$writing-plans <spec-path>` (Codex invokes skills with a `$` prefix, not `/`).
 +
 +writing-plans reads the spec file, not conversation state. Do NOT invoke any implementation or execution skill from here.
 
  ## Key Principles
 
-@@ -139,6 +182,45 @@ Wait for the user's response. If they request changes, make them and re-run the
+@@ -139,6 +185,45 @@ Wait for the user's response. If they request changes, make them and re-run the
  - **Incremental validation** - Present design, get approval before moving on
  - **Be flexible** - Go back and clarify when something doesn't make sense
 

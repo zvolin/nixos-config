@@ -118,7 +118,7 @@ index b1613eb..b66c246 100644
 
  ## Self-Review
 
-@@ -151,24 +188,23 @@ After writing the complete plan, look at the spec with fresh eyes and check the
+@@ -151,24 +188,25 @@ After writing the complete plan, look at the spec with fresh eyes and check the
 
  **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
@@ -141,15 +141,17 @@ index b1613eb..b66c246 100644
 +## Execution Handoff
 
 -**Which approach?"**
-+After saving the plan, announce:
++After saving the plan, announce the narration, then a blank line, then a **fenced code block** holding exactly two commands, one per line: a context-clear, then the executing-plans invocation on the plan:
 
 -**If Subagent-Driven chosen:**
 -- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
 -- Fresh subagent per task + two-stage review
-+> "Plan complete and saved to `<path>`. Strategy from spec: **<strategy>**. To execute, clear context and invoke executing-plans:
-+>
-+> `/clear`
-+> then: `/executing-plans <plan-path>`"
++> "Plan complete and saved to `<path>`. Strategy from spec: **<strategy>**. To execute, clear context and invoke executing-plans."
++
++Emit the two commands in the **current harness's** syntax:
++
++- **Claude Code** — `/clear`, then `/executing-plans <plan-path>`.
++- **Codex** — `/clear`, then `$executing-plans <plan-path>` (Codex invokes skills with a `$` prefix, not `/`).
 
 -**If Inline Execution chosen:**
 -- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
