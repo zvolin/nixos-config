@@ -180,23 +180,65 @@ let
         bind_ro "$HOME/.local/state/nix"
         bind_ro "$HOME/.nix-profile"
 
-        # Scoped GnuPG: config + public material RO, agent socket RW (below).
-        # Deliberately NOT private-keys-v1.d — signing goes through gpg-agent
-        # over the socket, so private keys never enter the jail. Fallback if
-        # signing breaks: replace this block with `bind_rw "$HOME/.gnupg"`.
-        # This block is shared, so the fallback loosens BOTH clients together;
-        # the coupling is accepted by design (same gpg-agent/user/host, low-risk
-        # rare path). No per-client gnupg scoping — YAGNI unless a client-specific
-        # signing failure actually appears.
+        # Scoped GnuPG. Config RO; public keybox copied to a throwaway dir and
+        # bound RW (below); private-keys-v1.d is NEVER bound — signing goes
+        # through the host gpg-agent over its socket, so private keys never
+        # enter the jail.
+        #
+        # public-keys.d is a keyboxd SQLite keybox that needs a WRITABLE dir
+        # even for read-only key lookups (keyboxd takes a dotlock inside it), so
+        # a plain RO bind returns EROFS and gpg reports "no default secret key:
+        # Read-only file system". We copy public-keys.d + trustdb.gpg to a
+        # per-launch temp dir, strip stale locks, and bind the copies RW; the
+        # AI's writes land on the throwaway copy and are discarded on exit, so
+        # the real keyring cannot be mutated. pubring.kbx does not exist under
+        # use-keyboxd, so its former bind is dropped.
+        #
+        # Fallback if signing breaks: replace this whole block with
+        # `bind_rw "$HOME/.gnupg"` AND `bind_rw "/run/user/$(id -u)/gnupg"` — the
+        # second is required because the --tmpfs below removes host gpg-agent
+        # socket access, so `bind_rw "$HOME/.gnupg"` alone would restore the
+        # keyring but leave signing broken. This block is shared, so the fallback
+        # loosens BOTH clients together; the coupling is accepted by design (same
+        # gpg-agent/user/host, low-risk rare path). No per-client gnupg scoping —
+        # YAGNI unless a client-specific signing failure actually appears.
         bind_ro "$HOME/.gnupg/gpg.conf"
         bind_ro "$HOME/.gnupg/gpg-agent.conf"
         bind_ro "$HOME/.gnupg/common.conf"
-        bind_ro "$HOME/.gnupg/trustdb.gpg"
-        bind_ro "$HOME/.gnupg/pubring.kbx"
-        bind_ro "$HOME/.gnupg/public-keys.d"
 
-        # GnuPG >= 2.1.13 puts the agent socketdir at /run/user/$UID/gnupg.
-        bind_rw "/run/user/$(id -u)/gnupg"
+        if [[ -n "''${XDG_RUNTIME_DIR:-}" ]] && [[ -d "$XDG_RUNTIME_DIR" ]]; then
+          gnupg_tmp="$XDG_RUNTIME_DIR/${name}-gnupg.$$"
+          mkdir -p "$gnupg_tmp"
+        else
+          gnupg_tmp=$(mktemp -d)
+        fi
+        # If a copy fails partway, drop the partial so the bind guard below skips
+        # it and gpg falls back cleanly instead of binding a truncated keybox.
+        if [[ -d "$HOME/.gnupg/public-keys.d" ]]; then
+          if cp -a "$HOME/.gnupg/public-keys.d/." "$gnupg_tmp/public-keys.d/"; then
+            rm -f "$gnupg_tmp/public-keys.d/".#lk* "$gnupg_tmp/public-keys.d/"*.lock
+          else
+            rm -rf "$gnupg_tmp/public-keys.d"
+          fi
+        fi
+        if [[ -e "$HOME/.gnupg/trustdb.gpg" ]]; then
+          cp -a "$HOME/.gnupg/trustdb.gpg" "$gnupg_tmp/trustdb.gpg" || rm -f "$gnupg_tmp/trustdb.gpg"
+        fi
+        [[ -d "$gnupg_tmp/public-keys.d" ]] && args+=(--bind "$gnupg_tmp/public-keys.d" "$HOME/.gnupg/public-keys.d")
+        [[ -e "$gnupg_tmp/trustdb.gpg" ]]   && args+=(--bind "$gnupg_tmp/trustdb.gpg"   "$HOME/.gnupg/trustdb.gpg")
+
+        # Confine keyboxd to the jail: tmpfs over the agent socket dir, then bind
+        # only the two gpg-agent sockets. With S.keyboxd unreachable the jailed
+        # gpg cannot connect to a host keyboxd; it launches its own against the
+        # copied keybox above, so the tamper protection holds regardless of host
+        # state. The --tmpfs MUST be appended BEFORE the socket binds, or bwrap
+        # mounts it over them and they vanish. S.gpg-agent.ssh is deliberately
+        # bound (the ssh bridge / SSH_AUTH_SOCK block below reuse it); dropping
+        # either socket breaks signing or the ssh bridge — do not remove one in a
+        # later cleanup.
+        args+=(--tmpfs "/run/user/$(id -u)/gnupg")
+        bind_rw "/run/user/$(id -u)/gnupg/S.gpg-agent"
+        bind_rw "/run/user/$(id -u)/gnupg/S.gpg-agent.ssh"
 
         # HM-managed ~/.ssh/{config,known_hosts} symlink into /nix/store
         # (root-owned → appears nobody in the userns, which OpenSSH rejects);
