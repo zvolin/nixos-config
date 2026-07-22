@@ -13,10 +13,9 @@
       big = text: "${sized (size * 1.1) text}";
       small = text: "${sized (size * 0.8) text}";
       tiny = text: "${sized (size * 0.6) text}";
-      systemctl = "${pkgs.systemd}/bin/systemctl";
-      hypridle-status = pkgs.writeShellScript "hypridle-status" ''
-        if ! ${systemctl} --user is-active hypridle.service >/dev/null 2>&1; then
-          echo '{"text": "󰒳 ", "tooltip": "hypridle disabled"}'
+      amphetamine-status = pkgs.writeShellScript "amphetamine-status" ''
+        if [ -e "$XDG_RUNTIME_DIR/amphetamine" ]; then
+          echo '{"text": "󰒳 ", "tooltip": "amphetamine mode on"}'
         fi
       '';
     in
@@ -178,12 +177,12 @@
               orientation = "inherit";
               modules = [
                 "battery"
-                "custom/hypridle"
+                "custom/amphetamine"
               ];
             };
 
-            "custom/hypridle" = {
-              exec = "${hypridle-status}";
+            "custom/amphetamine" = {
+              exec = "${amphetamine-status}";
               return-type = "json";
               format = "${sized (size * 1.2) "{}"}";
               interval = 5;
@@ -296,7 +295,7 @@
             margin: 0px;
           }
 
-          #custom-hypridle {
+          #custom-amphetamine {
             margin-left: 6px;
             margin-right: -4px;
           }
