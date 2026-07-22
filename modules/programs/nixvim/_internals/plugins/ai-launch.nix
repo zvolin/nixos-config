@@ -2,8 +2,9 @@
 pkgs.writeShellScriptBin "ai-launch" ''
   set -u
 
-  id="$1"
-  project="$2"
+  callback_id="$1"
+  id="$2"
+  project="$3"
 
   agent=$(printf '%s\n' claude codex \
     | ${pkgs.fzf}/bin/fzf \
@@ -15,7 +16,7 @@ pkgs.writeShellScriptBin "ai-launch" ''
 
   if [ -n "''${NVIM:-}" ]; then
     ${pkgs.neovim}/bin/nvim --server "$NVIM" \
-      --remote-expr "v:lua.ai_rename($id, '$agent')" >/dev/null 2>&1 || true
+      --remote-expr "v:lua.ai_rename($callback_id, '$agent')" >/dev/null 2>&1 || true
   fi
 
   if [ "$agent" = "claude" ]; then

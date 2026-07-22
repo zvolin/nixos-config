@@ -26,9 +26,14 @@ in
 
       local shell_terms = {}
       local shell_last = 1
+      local function set_shell_last(id) shell_last = id end
+      local function shell_label(_, id) return "shell-" .. id end
 
       local ai_terms = {}
       local ai_last = 1
+      local ai_callback_last = 0
+      local function set_ai_last(id) ai_last = id end
+      local function ai_label(term, id) return ((term and term.agent) or "ai") .. "-" .. id end
 
       ---------------------------------------------------------------
       -- Helpers
@@ -40,50 +45,71 @@ in
           and vim.api.nvim_get_current_tabpage() == term_tabpage
       end
 
-      -- Find the lowest unused ID in a terms table
       local function next_id(terms)
-        local id = 1
-        while terms[id] and terms[id].bufnr
-              and vim.api.nvim_buf_is_valid(terms[id].bufnr) do
-          id = id + 1
+        local highest = 0
+        for id in pairs(terms) do
+          if id > highest then highest = id end
         end
-        return id
+        return highest + 1
+      end
+
+      local function has_valid_buffer(term)
+        return term and term.bufnr and vim.api.nvim_buf_is_valid(term.bufnr)
+      end
+
+      local function compact_terms(terms, set_last, label_for)
+        local members = {}
+        for id, term in pairs(terms) do
+          table.insert(members, { old_id = id, term = term })
+        end
+        table.sort(members, function(a, b) return a.old_id < b.old_id end)
+
+        for id in pairs(terms) do terms[id] = nil end
+        for id, member in ipairs(members) do
+          member.term.logical_id = id
+          member.term.display_name = label_for(member.term, id)
+          terms[id] = member.term
+        end
+        set_last(#members)
+        vim.schedule(function() vim.cmd("redrawtabline") end)
+      end
+
+      local function remove_term(term, terms, set_last, label_for)
+        local removed_id = term.logical_id
+        if not removed_id or terms[removed_id] ~= term then return nil end
+
+        terms[removed_id] = nil
+        compact_terms(terms, set_last, label_for)
+        return terms[removed_id] or terms[#terms]
       end
 
       ---------------------------------------------------------------
       -- Exit handling
       ---------------------------------------------------------------
 
-      local function find_live_replacement()
-        for _, t in pairs(shell_terms) do
-          if t.bufnr and vim.api.nvim_buf_is_valid(t.bufnr) and t:is_open() then
-            return t
-          end
-        end
-        for _, t in pairs(ai_terms) do
-          if t.bufnr and vim.api.nvim_buf_is_valid(t.bufnr) and t:is_open() then
-            return t
-          end
+      local function find_live_replacement(group_replacement, other_terms)
+        if has_valid_buffer(group_replacement) then return group_replacement end
+        for _, term in pairs(other_terms) do
+          if has_valid_buffer(term) then return term end
         end
         return nil
       end
 
-      local function handle_term_exit(term, terms, id)
-        terms[id] = nil
-
+      local function handle_term_exit(term, terms, set_last, label_for, other_terms)
+        if term.exit_detached then
+          term.exit_detached = nil
+          return
+        end
+        local group_replacement = remove_term(term, terms, set_last, label_for)
+        local replacement = find_live_replacement(group_replacement, other_terms)
         local bufnr = term.bufnr
         if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then return end
 
-        -- Collect windows before mutating to avoid invalidation mid-loop
-        local wins = vim.fn.win_findbuf(bufnr)
         local to_close = {}
         local to_replace = {}
-
-        for _, win in ipairs(wins) do
+        for _, win in ipairs(vim.fn.win_findbuf(bufnr)) do
           if vim.api.nvim_win_is_valid(win) then
-            local tab_wins = vim.api.nvim_tabpage_list_wins(
-              vim.api.nvim_win_get_tabpage(win)
-            )
+            local tab_wins = vim.api.nvim_tabpage_list_wins(vim.api.nvim_win_get_tabpage(win))
             if #tab_wins > 1 then
               table.insert(to_close, win)
             else
@@ -93,27 +119,18 @@ in
         end
 
         for _, win in ipairs(to_close) do
-          if vim.api.nvim_win_is_valid(win) then
-            vim.api.nvim_win_close(win, true)
-          end
+          if vim.api.nvim_win_is_valid(win) then vim.api.nvim_win_close(win, true) end
         end
-
         for _, win in ipairs(to_replace) do
           if vim.api.nvim_win_is_valid(win) then
-            local replacement = find_live_replacement()
             if replacement then
               vim.api.nvim_win_set_buf(win, replacement.bufnr)
-            elseif in_term_tab() then
-              if source_tab and vim.api.nvim_tabpage_is_valid(source_tab) then
-                vim.api.nvim_set_current_tabpage(source_tab)
-              end
+            elseif in_term_tab() and source_tab and vim.api.nvim_tabpage_is_valid(source_tab) then
+              vim.api.nvim_set_current_tabpage(source_tab)
             end
           end
         end
-
-        if vim.api.nvim_buf_is_valid(bufnr) then
-          vim.api.nvim_buf_delete(bufnr, { force = true })
-        end
+        if vim.api.nvim_buf_is_valid(bufnr) then vim.api.nvim_buf_delete(bufnr, { force = true }) end
       end
 
       ---------------------------------------------------------------
@@ -219,60 +236,68 @@ in
       ---------------------------------------------------------------
 
       local function get_shell(id)
-        if not id or id < 1 then id = shell_last end
-        shell_last = id
+        if not id or id < 1 then id = next_id(shell_terms) end
         local term = shell_terms[id]
-        if term and (not term.bufnr or not vim.api.nvim_buf_is_valid(term.bufnr)) then
-          shell_terms[id] = nil
-          term = nil
-        end
         if not term then
           term = terminal.Terminal:new({
-            id = id,
-            display_name = "shell-" .. id,
+            display_name = shell_label(nil, id),
             direction = "tab",
             hidden = true,
             close_on_exit = false,
             on_exit = function(t)
-              vim.schedule(function() handle_term_exit(t, shell_terms, id) end)
+              vim.schedule(function()
+                handle_term_exit(t, shell_terms, set_shell_last, shell_label, ai_terms)
+              end)
             end,
           })
+          term.logical_id = id
           shell_terms[id] = term
+          set_shell_last(math.max(shell_last, id))
         end
         return term
       end
 
       local function get_ai(id)
-        if not id or id < 1 then id = ai_last end
-        ai_last = id
+        if not id or id < 1 then id = next_id(ai_terms) end
         local term = ai_terms[id]
-        if term and (not term.bufnr or not vim.api.nvim_buf_is_valid(term.bufnr)) then
-          ai_terms[id] = nil
-          term = nil
-        end
         if not term then
           local project = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+          ai_callback_last = ai_callback_last + 1
+          local callback_id = ai_callback_last
           term = terminal.Terminal:new({
-            cmd = "${ai-launch}/bin/ai-launch " .. id .. " " .. vim.fn.shellescape(project),
-            id = 1000 + id,
-            display_name = "ai-" .. id,
+            cmd = "${ai-launch}/bin/ai-launch "
+              .. callback_id
+              .. " "
+              .. id
+              .. " "
+              .. vim.fn.shellescape(project),
+            display_name = ai_label(nil, id),
             direction = "tab",
             hidden = true,
             close_on_exit = false,
             on_exit = function(t)
-              vim.schedule(function() handle_term_exit(t, ai_terms, id) end)
+              vim.schedule(function()
+                handle_term_exit(t, ai_terms, set_ai_last, ai_label, shell_terms)
+              end)
             end,
           })
+          term.logical_id = id
+          term.callback_id = callback_id
+          term.agent = "ai"
           ai_terms[id] = term
+          set_ai_last(math.max(ai_last, id))
         end
         return term
       end
 
-      function _G.ai_rename(id, agent)
-        local term = ai_terms[id]
-        if term then
-          term.display_name = agent .. "-" .. id
-          vim.schedule(function() vim.cmd("redrawtabline") end)
+      function _G.ai_rename(callback_id, agent)
+        for _, term in pairs(ai_terms) do
+          if term.callback_id == callback_id then
+            term.agent = agent
+            term.display_name = ai_label(term, term.logical_id)
+            vim.schedule(function() vim.cmd("redrawtabline") end)
+            break
+          end
         end
         return ""
       end
@@ -342,7 +367,7 @@ in
 
       -- Telescope picker over a single terminal group.
       -- terms is keyed by logical id (1-9); the key, not term.id, is what
-      -- focus_term expects (ai_terms' term.id is 1000 + key).
+      -- focus_term expects.
       local function pick_term(get_term_fn, terms)
         local function is_live(t) return t.bufnr and vim.api.nvim_buf_is_valid(t.bufnr) end
         local entries = {}
@@ -425,6 +450,26 @@ in
         show_term(get_term_fn(id))
       end
 
+      local function close_current_term(terms, set_last, label_for, other_terms)
+        if not in_term_tab() then return end
+        local bufnr = vim.api.nvim_get_current_buf()
+        local term = terminal.find(function(candidate) return candidate.bufnr == bufnr end)
+        if not term then return end
+        local id = term.logical_id
+        if not id or terms[id] ~= term then return end
+        local replacement = find_live_replacement(
+          remove_term(term, terms, set_last, label_for),
+          other_terms
+        )
+        if replacement then
+          show_term(replacement)
+        elseif source_tab and vim.api.nvim_tabpage_is_valid(source_tab) then
+          vim.api.nvim_set_current_tabpage(source_tab)
+        end
+        term.exit_detached = true
+        term:shutdown()
+      end
+
       -- When the terminal tab is closed externally, clean up state.
       -- Don't jump — neovim auto-selects an adjacent tab, and toggle_tab /
       -- handle_term_exit handle explicit returns to source_tab.
@@ -448,7 +493,9 @@ in
       end
 
       -- Shell: <C-t> prefix
-      bind({ "n", "i", "t" }, "<C-t><C-t>", function() toggle_tab(get_shell) end)
+      bind({ "n", "i", "t" }, "<C-t><C-t>", function()
+        toggle_tab(get_shell, shell_last)
+      end)
       bind({ "n", "i", "t" }, "<C-t><Tab>", function() pick_term(get_shell, shell_terms) end)
       for i = 1, 9 do
         bind({ "n", "i", "t" }, "<C-t>" .. i, function() focus_term(get_shell, i) end)
@@ -460,17 +507,16 @@ in
         show_term(get_shell(next_id(shell_terms)))
       end)
       bind("t", "<C-t>x", function()
-        if not in_term_tab() then return end
-        local bufnr = vim.api.nvim_get_current_buf()
-        local term = terminal.find(function(t) return t.bufnr == bufnr end)
-        if term then term:shutdown() end
+        close_current_term(shell_terms, set_shell_last, shell_label, ai_terms)
       end)
 
       -- Remap increment since <C-a> is taken by the AI prefix
       bind("n", "g<C-a>", "<C-a>")
 
       -- AI: <C-a> prefix
-      bind({ "n", "i", "t" }, "<C-a><C-a>", function() toggle_tab(get_ai) end)
+      bind({ "n", "i", "t" }, "<C-a><C-a>", function()
+        toggle_tab(get_ai, ai_last)
+      end)
       bind({ "n", "i", "t" }, "<C-a><Tab>", function() pick_term(get_ai, ai_terms) end)
       for i = 1, 9 do
         bind({ "n", "i", "t" }, "<C-a>" .. i, function() focus_term(get_ai, i) end)
@@ -482,10 +528,7 @@ in
         show_term(get_ai(next_id(ai_terms)))
       end)
       bind("t", "<C-a>x", function()
-        if not in_term_tab() then return end
-        local bufnr = vim.api.nvim_get_current_buf()
-        local term = terminal.find(function(t) return t.bufnr == bufnr end)
-        if term then term:shutdown() end
+        close_current_term(ai_terms, set_ai_last, ai_label, shell_terms)
       end)
     '';
   };
