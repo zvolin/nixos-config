@@ -340,6 +340,83 @@ in
         show_term(get_term_fn(id))
       end
 
+      -- Telescope picker over a single terminal group.
+      -- terms is keyed by logical id (1-9); the key, not term.id, is what
+      -- focus_term expects (ai_terms' term.id is 1000 + key).
+      local function pick_term(get_term_fn, terms)
+        local function is_live(t) return t.bufnr and vim.api.nvim_buf_is_valid(t.bufnr) end
+        local entries = {}
+        for id, term in pairs(terms) do
+          if is_live(term) then
+            table.insert(entries, { logical_id = id, term = term })
+          end
+        end
+        if #entries == 0 then
+          vim.notify("No terminals in this group", vim.log.levels.INFO)
+          return
+        end
+        -- Stable initial order by id; fzf-native reorders once the user types.
+        table.sort(entries, function(a, b) return a.logical_id < b.logical_id end)
+
+        local pickers = require("telescope.pickers")
+        local finders = require("telescope.finders")
+        local conf = require("telescope.config").values
+        local actions = require("telescope.actions")
+        local action_state = require("telescope.actions.state")
+        local previewers = require("telescope.previewers")
+
+        pickers.new({}, {
+          prompt_title = "Terminals",
+          sorting_strategy = "ascending",
+          finder = finders.new_table({
+            results = entries,
+            entry_maker = function(e)
+              return {
+                value = e.term,
+                display = e.term.display_name,
+                ordinal = e.term.display_name,
+                logical_id = e.logical_id,
+              }
+            end,
+          }),
+          sorter = conf.generic_sorter({}),
+          previewer = previewers.new_buffer_previewer({
+            define_preview = function(self, entry)
+              local lines = {}
+              if is_live(entry.value) then
+                -- Copy only the tail: bounds cost on long-lived shells and
+                -- shows the most recent output. strict_indexing=false clamps
+                -- a shorter buffer safely.
+                lines = vim.api.nvim_buf_get_lines(entry.value.bufnr, -500, -1, false)
+              end
+              vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+              -- Scroll to the last line so the most recent output is visible.
+              local win = self.state.winid
+              if win and vim.api.nvim_win_is_valid(win) then
+                vim.api.nvim_win_set_cursor(win, { math.max(1, #lines), 0 })
+              end
+            end,
+          }),
+          attach_mappings = function(prompt_bufnr)
+            actions.select_default:replace(function()
+              local entry = action_state.get_selected_entry()
+              actions.close(prompt_bufnr)
+              if not entry then return end
+              -- The snapshot is stale if the terminal exited while the picker
+              -- was open; re-validate so selection reaches the previewed
+              -- terminal rather than silently spawning a fresh one.
+              local term = entry.value
+              if not is_live(term) then
+                vim.notify("Terminal no longer exists", vim.log.levels.INFO)
+                return
+              end
+              focus_term(get_term_fn, entry.logical_id)
+            end)
+            return true
+          end,
+        }):find()
+      end
+
       -- Split current window and open a new terminal
       local function split_term(get_term_fn, terms, direction)
         if not in_term_tab() then return end
@@ -372,6 +449,7 @@ in
 
       -- Shell: <C-t> prefix
       bind({ "n", "i", "t" }, "<C-t><C-t>", function() toggle_tab(get_shell) end)
+      bind({ "n", "i", "t" }, "<C-t><Tab>", function() pick_term(get_shell, shell_terms) end)
       for i = 1, 9 do
         bind({ "n", "i", "t" }, "<C-t>" .. i, function() focus_term(get_shell, i) end)
       end
@@ -393,6 +471,7 @@ in
 
       -- AI: <C-a> prefix
       bind({ "n", "i", "t" }, "<C-a><C-a>", function() toggle_tab(get_ai) end)
+      bind({ "n", "i", "t" }, "<C-a><Tab>", function() pick_term(get_ai, ai_terms) end)
       for i = 1, 9 do
         bind({ "n", "i", "t" }, "<C-a>" .. i, function() focus_term(get_ai, i) end)
       end
