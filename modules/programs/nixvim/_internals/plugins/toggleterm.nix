@@ -1,4 +1,7 @@
-{ ... }:
+{ pkgs, ... }:
+let
+  ai-launch = import ./ai-launch.nix { inherit pkgs; };
+in
 {
   programs.nixvim = {
     plugins.toggleterm = {
@@ -24,8 +27,8 @@
       local shell_terms = {}
       local shell_last = 1
 
-      local claude_terms = {}
-      local claude_last = 1
+      local ai_terms = {}
+      local ai_last = 1
 
       ---------------------------------------------------------------
       -- Helpers
@@ -57,7 +60,7 @@
             return t
           end
         end
-        for _, t in pairs(claude_terms) do
+        for _, t in pairs(ai_terms) do
           if t.bufnr and vim.api.nvim_buf_is_valid(t.bufnr) and t:is_open() then
             return t
           end
@@ -160,20 +163,20 @@
         end
         table.sort(shell_entries, function(a, b) return a.id > b.id end)
 
-        -- Claude terminals (ascending order, lowest IDs closest to center)
-        local claude_entries = {}
-        for id, t in pairs(claude_terms) do
+        -- AI terminals (ascending order, lowest IDs closest to center)
+        local ai_entries = {}
+        for id, t in pairs(ai_terms) do
           if t.bufnr and vim.api.nvim_buf_is_valid(t.bufnr) then
             local hl = entry_hl(t.bufnr)
-            table.insert(claude_entries, { id = id, str = hl .. " " .. t.display_name .. " %#BufferLineFill#" })
+            table.insert(ai_entries, { id = id, str = hl .. " " .. t.display_name .. " %#BufferLineFill#" })
           end
         end
-        table.sort(claude_entries, function(a, b) return a.id < b.id end)
+        table.sort(ai_entries, function(a, b) return a.id < b.id end)
 
         local left = {}
         for _, p in ipairs(shell_entries) do table.insert(left, p.str) end
         local right = {}
-        for _, p in ipairs(claude_entries) do table.insert(right, p.str) end
+        for _, p in ipairs(ai_entries) do table.insert(right, p.str) end
 
         local lstr = table.concat(left)
         local rstr = table.concat(right)
@@ -239,32 +242,39 @@
         return term
       end
 
-      local function get_claude(id)
-        if not id or id < 1 then id = claude_last end
-        claude_last = id
-        local term = claude_terms[id]
+      local function get_ai(id)
+        if not id or id < 1 then id = ai_last end
+        ai_last = id
+        local term = ai_terms[id]
         if term and (not term.bufnr or not vim.api.nvim_buf_is_valid(term.bufnr)) then
-          claude_terms[id] = nil
+          ai_terms[id] = nil
           term = nil
         end
         if not term then
           local project = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
-          local name = "vim:" .. project .. " #" .. id
           term = terminal.Terminal:new({
-            cmd = "claude",
+            cmd = "${ai-launch}/bin/ai-launch " .. id .. " " .. vim.fn.shellescape(project),
             id = 1000 + id,
-            display_name = "claude-" .. id,
+            display_name = "ai-" .. id,
             direction = "tab",
             hidden = true,
             close_on_exit = false,
             on_exit = function(t)
-              vim.schedule(function() handle_term_exit(t, claude_terms, id) end)
+              vim.schedule(function() handle_term_exit(t, ai_terms, id) end)
             end,
-            env = { CLAUDE_SESSION_NAME = name },
           })
-          claude_terms[id] = term
+          ai_terms[id] = term
         end
         return term
+      end
+
+      function _G.ai_rename(id, agent)
+        local term = ai_terms[id]
+        if term then
+          term.display_name = agent .. "-" .. id
+          vim.schedule(function() vim.cmd("redrawtabline") end)
+        end
+        return ""
       end
 
       ---------------------------------------------------------------
@@ -378,19 +388,19 @@
         if term then term:shutdown() end
       end)
 
-      -- Remap increment since <C-a> is taken by claude prefix
+      -- Remap increment since <C-a> is taken by the AI prefix
       bind("n", "g<C-a>", "<C-a>")
 
-      -- Claude: <C-a> prefix
-      bind({ "n", "i", "t" }, "<C-a><C-a>", function() toggle_tab(get_claude) end)
+      -- AI: <C-a> prefix
+      bind({ "n", "i", "t" }, "<C-a><C-a>", function() toggle_tab(get_ai) end)
       for i = 1, 9 do
-        bind({ "n", "i", "t" }, "<C-a>" .. i, function() focus_term(get_claude, i) end)
+        bind({ "n", "i", "t" }, "<C-a>" .. i, function() focus_term(get_ai, i) end)
       end
-      bind("t", "<C-a>v", function() split_term(get_claude, claude_terms, "v") end)
-      bind("t", "<C-a>s", function() split_term(get_claude, claude_terms, "h") end)
+      bind("t", "<C-a>v", function() split_term(get_ai, ai_terms, "v") end)
+      bind("t", "<C-a>s", function() split_term(get_ai, ai_terms, "h") end)
       bind("t", "<C-a>n", function()
         if not in_term_tab() then return end
-        show_term(get_claude(next_id(claude_terms)))
+        show_term(get_ai(next_id(ai_terms)))
       end)
       bind("t", "<C-a>x", function()
         if not in_term_tab() then return end
