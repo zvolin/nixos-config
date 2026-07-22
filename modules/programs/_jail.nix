@@ -236,7 +236,9 @@ let
         # bound (the ssh bridge / SSH_AUTH_SOCK block below reuse it); dropping
         # either socket breaks signing or the ssh bridge — do not remove one in a
         # later cleanup.
-        args+=(--tmpfs "/run/user/$(id -u)/gnupg")
+        # --perms 0700 is required: gpg ignores a socket dir with any group/other
+        # bits (bwrap defaults to 0755) and falls back to a keyless ~/.gnupg agent.
+        args+=(--perms 0700 --tmpfs "/run/user/$(id -u)/gnupg")
         bind_rw "/run/user/$(id -u)/gnupg/S.gpg-agent"
         bind_rw "/run/user/$(id -u)/gnupg/S.gpg-agent.ssh"
 
