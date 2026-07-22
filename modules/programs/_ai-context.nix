@@ -21,6 +21,7 @@
 
   - Commit messages MUST be a single line (header only): `type(scope): description`. No body, no blank line after the header, no trailers. Do NOT add `Co-Authored-By` trailers. Use `git commit -m "..."` — no HEREDOC. When a repository documents its own commit convention, follow that instead.
   - NEVER create merge commits — keep history linear (`git merge --ff-only`, `git cherry-pick`, or `git merge --squash`). If fast-forward is not possible, rebase then fast-forward.
+  - The default branch must contain only commits signed with your key. Commits on local and feature branches may be unsigned, but a global pre-push hook rejects any push that would land an unsigned or wrong-key commit on the default branch. To push one anyway, add `--no-verify`.
 
   # Gitignored Artifacts
 
