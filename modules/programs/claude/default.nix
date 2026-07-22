@@ -25,6 +25,10 @@ in
       context = ''
         ${aiSharedContext}
 
+        # Publishing Artifacts
+
+        HARD-GATE: the Artifact tool uploads to claude.ai (Anthropic servers). Propose publishing an artifact when it genuinely helps, but NEVER publish one without the user's explicit consent.
+
         # MCP Tools
 
         Prefer MCP tools over their CLI/built-in equivalents:
