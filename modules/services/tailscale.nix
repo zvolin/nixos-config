@@ -36,19 +36,20 @@
 
       # Enable Tailscale SSH declaratively. tailscaled intercepts tailnet port 22
       # at the daemon level once `--ssh` is set, so the phone reaches a full
-      # terminal with `ssh mbp-m2` over the tailnet, then `remote-session`
-      # (`zellij attach --create remote`) -- no public port, no password, no key
-      # on the phone (tailnet identity is the auth).
+      # terminal with `ssh mbp-m2` over the tailnet, then `zj` (fzf session
+      # picker) or the `nvim` alias to enter a project's zellij session -- no
+      # public port, no password, no key on the phone (tailnet identity is the
+      # auth).
       #
       # Phone-side app ladder (the final pick is dogfood ticket 35's call):
       # TabSSH -> Termux + extra-keys -> Unexpected Keyboard IME.
       #
-      # This must be a RETRYING unit, not a fire-once oneshot, for the same
-      # reason as tailscale-serve-zellij: on a fresh boot the node is not yet
-      # authenticated (auth stays the one-time manual `sudo tailscale up`), so
-      # `tailscale set` fails until BackendState == "Running". Retry every 30 s
-      # until Running, then apply `--ssh` (idempotent; the preference persists in
-      # the bind-mounted /var/lib/tailscale state) and exit 0.
+      # This must be a RETRYING unit, not a fire-once oneshot: on a fresh boot
+      # the node is not yet authenticated (auth stays the one-time manual
+      # `sudo tailscale up`), so `tailscale set` fails until
+      # BackendState == "Running". Retry every 30 s until Running, then apply
+      # `--ssh` (idempotent; the preference persists in the bind-mounted
+      # /var/lib/tailscale state) and exit 0.
       #
       # `--ssh` takes effect only if the tailnet ACL has an `ssh` stanza with
       # action "accept" (admin console, not declarable here). A "check" action

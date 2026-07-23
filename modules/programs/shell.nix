@@ -143,6 +143,8 @@
         htop = "btop";
         tree = "eza --tree";
         ping = "gping";
+        nvim = "nvim-project";
+        vim = "nvim-project";
       };
     };
 }
