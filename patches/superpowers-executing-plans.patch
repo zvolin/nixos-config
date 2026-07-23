@@ -1,8 +1,8 @@
 diff --git a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
-index 075a103..95d0488 100644
+index 075a103..02df359 100644
 --- a/skills/executing-plans/SKILL.md
 +++ b/skills/executing-plans/SKILL.md
-@@ -7,47 +7,96 @@ description: Use when you have a written implementation plan to execute in a sep
+@@ -7,47 +7,98 @@ description: Use when you have a written implementation plan to execute in a sep
 
  ## Overview
 
@@ -43,15 +43,17 @@ index 075a103..95d0488 100644
 +phase: implemented
 +spec: <existing canonical spec path>
 +plan: <existing canonical plan path>
++claimed-by:
 +```
 +
-+Retain `claimed-by`, `origin-ticket`, `origin-ticket-id`, `map-path`,
++Clear `claimed-by`, and retain `origin-ticket`, `origin-ticket-id`, `map-path`,
 +`blocked-by`, unknown frontmatter, and unrelated body content. Do not write the
 +ticket directly. Missing evidence, failed verification, malformed handoff, a
-+guard/CAS mismatch, or absent approval writes no ticket or body update. Only
-+Wayfinder's documented lease-repair mutation may change a stale claim. After
-+`/clear` without approval, Wayfinder selects the retained open executing ticket
-+and re-enters this mode; after success, return to `$wayfinder <map-path>`.
++guard/CAS mismatch, or absent approval writes no ticket or body update and leaves
++the claim in place for lease-repair recovery. Only Wayfinder's documented
++lease-repair mutation may change a stale claim. After `/clear` without approval,
++Wayfinder surfaces the retained open executing ticket as a possible stale claim to
++reclaim; after success, return to `$wayfinder <map-path>`.
 
 -**Announce at start:** "I'm using the executing-plans skill to implement this plan."
 +## The Process
@@ -119,7 +121,7 @@ index 075a103..95d0488 100644
  **Return to Review (Step 1) when:**
  - Partner updates the plan based on your feedback
  - Fundamental approach needs rethinking
-@@ -55,16 +104,16 @@ After all tasks complete and verified:
+@@ -55,16 +106,16 @@ After all tasks complete and verified:
  **Don't force through blockers** - stop and ask.
 
  ## Remember

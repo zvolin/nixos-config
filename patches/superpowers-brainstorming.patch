@@ -1,5 +1,5 @@
 diff --git a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
-index b0d52b2..7c6298f 100644
+index b0d52b2..b093c52 100644
 --- a/skills/brainstorming/SKILL.md
 +++ b/skills/brainstorming/SKILL.md
 @@ -23,13 +23,16 @@ You MUST create a task for each of these items and complete them in order:
@@ -25,7 +25,7 @@ index b0d52b2..7c6298f 100644
 
  ## Process Flow
 
-@@ -37,28 +40,76 @@ You MUST create a task for each of these items and complete them in order:
+@@ -37,28 +40,79 @@ You MUST create a task for each of these items and complete them in order:
  digraph brainstorming {
      "Explore project context" [shape=box];
      "Ask clarifying questions" [shape=box];
@@ -102,19 +102,22 @@ index b0d52b2..7c6298f 100644
 +phase: superpowers:writing-plans
 +spec: <canonical root-relative spec path>
 +plan:
++claimed-by:
 +```
 +
-+Retain `claimed-by`, `origin-ticket`, `origin-ticket-id`, `map-path`,
++Clear `claimed-by`, and retain `origin-ticket`, `origin-ticket-id`, `map-path`,
 +`blocked-by`, unknown frontmatter, and body content. Do not write the ticket
-+directly. A declined approval retains its claim, brainstorming phase, and
-+artifacts. A failed or interrupted stage leaves the spec as a draft and retains
-+the open brainstorming phase; a guard or CAS failure writes no ticket update.
-+Only Wayfinder's documented lease-repair mutation may change a stale claim.
-+After a successful release, end with `/clear`, then `$wayfinder <map-path>`.
++directly. A declined approval writes nothing, retaining its claim, brainstorming
++phase, and artifacts so the live session keeps iterating, and emits no Wayfinder
++trailer. A failed or interrupted stage leaves the spec as a draft and retains the
++claimed open brainstorming phase for lease-repair recovery; a guard or CAS failure
++writes no ticket update. Only Wayfinder's documented lease-repair mutation may
++change a stale claim. After a successful release, end with `/clear`, then
++`$wayfinder <map-path>`.
 
  ## The Process
 
-@@ -77,6 +128,25 @@ digraph brainstorming {
+@@ -77,6 +131,25 @@ digraph brainstorming {
  - Propose 2-3 different approaches with trade-offs
  - Present options conversationally with your recommendation and reasoning
  - Lead with your recommended option and explain why
@@ -140,7 +143,7 @@ index b0d52b2..7c6298f 100644
 
  **Presenting the design:**
 
-@@ -106,29 +176,34 @@ digraph brainstorming {
+@@ -106,29 +179,34 @@ digraph brainstorming {
  - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
    - (User preferences for spec location override this default)
  - Use elements-of-style:writing-clearly-and-concisely skill if available
@@ -189,7 +192,7 @@ index b0d52b2..7c6298f 100644
 
  ## Key Principles
 
-@@ -139,6 +214,45 @@ Wait for the user's response. If they request changes, make them and re-run the
+@@ -139,6 +217,45 @@ Wait for the user's response. If they request changes, make them and re-run the
  - **Incremental validation** - Present design, get approval before moving on
  - **Be flexible** - Go back and clarify when something doesn't make sense
 

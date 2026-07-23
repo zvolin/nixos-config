@@ -1,5 +1,5 @@
 diff --git a/skills/engineering/wayfinder/SKILL.md b/skills/engineering/wayfinder/SKILL.md
-index 42e3644..ab9bdbe 100644
+index 42e3644..ed80710 100644
 --- a/skills/engineering/wayfinder/SKILL.md
 +++ b/skills/engineering/wayfinder/SKILL.md
 @@ -22,7 +22,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
@@ -39,7 +39,7 @@ index 42e3644..ab9bdbe 100644
 
  ## Fog of war
 
-@@ -108,21 +109,80 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
+@@ -108,21 +109,83 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
 
  User invokes with a loose idea.
 
@@ -73,8 +73,11 @@ index 42e3644..ab9bdbe 100644
 +## Implementation handoff
 +
 +After an actionable native decision closes, create or reuse its implementation
-+ticket, then claim it before handoff. The selected chunk determines the Codex
-+handoff after `/clear`:
++ticket, then claim it before handoff. The claim is an ownership token the working
++phase session holds while it is active and releases on clean exit, so the next
++Wayfinder run resumes an unclaimed in-flight ticket automatically; a crash leaves
++an orphaned claim that only a lease-repair reclaim clears. The selected chunk
++determines the Codex handoff after `/clear`:
 +
 +| Selected chunk | Codex handoff after /clear |
 +|---|---|
@@ -127,10 +130,10 @@ index 42e3644..ab9bdbe 100644
 +Skip the trailer when there is no map to return to: the no-fog dead-end in [Chart the map](#chart-the-map) step 2 (no map was created) and the map-complete exit in [Work through the map](#work-through-the-map) step 7 (frontier and **Not yet specified** both empty).
 diff --git a/skills/engineering/wayfinder/WAYFINDING-OPS.md b/skills/engineering/wayfinder/WAYFINDING-OPS.md
 new file mode 100644
-index 0000000..da34ea8
+index 0000000..7f6409a
 --- /dev/null
 +++ b/skills/engineering/wayfinder/WAYFINDING-OPS.md
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,175 @@
 +# Wayfinding operations (local-markdown tracker)
 +
 +Where the map, its child tickets, blocking, and the frontier query physically
@@ -240,14 +243,15 @@ index 0000000..da34ea8
 +
 +## Selection and claims
 +
-+The selector validates a ticket, accepts an empty or caller-matching
-+`claimed-by`, rejects another owner and active blockers, and
-+first chooses eligible `superpowers:executing-plans`, then eligible
-+`superpowers:writing-plans`; sort each resume phase by numeric ticket ID. It
-+then records a reasoned choice between eligible native decision work and eligible
-+implementation `superpowers:brainstorming` work. Claim the selected ticket before
-+handoff, using the mutation primitive below. Native tickets remain eligible under
-+the existing frontier rules.
++The selector validates a ticket, accepts an empty `claimed-by`, and rejects any
++non-empty `claimed-by` and any active blocker, surfacing a rejected in-flight
++claim as a possible stale claim to reclaim. It first chooses eligible
++`superpowers:executing-plans`, then eligible `superpowers:writing-plans`, sorting
++each phase by ascending numeric ticket id, then records a reasoned choice between
++eligible native decision work and eligible implementation
++`superpowers:brainstorming`. Wayfinder claims the selected ticket through the
++mutation primitive below before handoff. Native tickets remain eligible under the
++existing frontier rules.
 +
 +## Atomic release
 +
@@ -258,15 +262,19 @@ index 0000000..da34ea8
 +that lock; preserve its mode into a same-directory temporary file; write the
 +authorized update; atomically rename it over the ticket; remove the temporary file
 +on every pre-rename failure; then unlock. Cleanup failure is a protocol failure.
-+Each lifecycle mutation and repair increments revision exactly once. Normal
-+transitions compare expected status, phase, revision, and owner and retain
-+`claimed-by`. An initial guarded claim may change an empty `claimed-by:` to its
-+expected owner; no normal transition combines with repair.
++Each lifecycle mutation and repair increments revision exactly once. A successful
++normal transition compares expected status, phase, revision, and owner, writes its
++authorized fields, clears `claimed-by`, and increments revision once. An initial
++guarded claim may change an empty `claimed-by:` to its expected owner; no normal
++transition combines with repair.
 +
 +The downstream owner releases the same ticket only after it has persisted its
-+artifact and phase. A declined approval retains the ticket, claim, and current phase;
-+a failed or interrupted stage retains the claimed ticket for recovery. On a
-+successful transition, retain the claim while preserving `origin-ticket-id`.
++artifact and phase. A declined approval writes nothing, retaining the ticket,
++claim, and current phase so the live session keeps iterating; a failed or
++interrupted stage writes nothing and leaves the claim for lease-repair recovery. A
++normal release clears the caller's own `claimed-by` back to empty while preserving
++`origin-ticket-id`; lease-repair remains the only operation that reassigns a
++non-empty `claimed-by` to a different owner.
 +
 +## Repair
 +
@@ -282,7 +290,7 @@ index 0000000..da34ea8
 +closed/implemented transition. A stale owner may be reclaimed only by a recorded
 +lease-repair reclaim: require expected current owner, replacement owner, non-empty
 +reason, and prior revision; record a dated body note and replace it under the ticket
-+lock. It is the only operation that changes a non-empty `claimed-by` value.
++lock. It is the only operation that reassigns a non-empty `claimed-by` to a different owner.
 +Never create a successor ticket while repairing or resuming.
 +
 +The repair table is deterministic and is not combined with a normal transition:
