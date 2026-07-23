@@ -100,7 +100,7 @@ index d8ca081..7666ddf 100644
 +
 +## Batch Dispatch from Dependency Graph
 +
-+On plan load, read `## Task Dependency Graph` and compute parallel batches by topological sort. A task's dependency is "already complete" when the Durable Progress ledger — resolved from the main tree as `"$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"` — contains a line matching `^Task N: complete` (prefix match), never a plan-file checkbox. Batch 1 = tasks whose deps are all already complete (or have none); Batch 2 = tasks whose deps are all in Batch 1; and so on.
++On plan load, read `## Task Dependency Graph` and compute parallel batches by topological sort. A task's dependency is "already complete" when the Durable Progress ledger — resolved from the main tree as `"$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"` — contains a line matching `^Task N: complete` (prefix match). Batch 1 = tasks whose deps are all already complete (or have none); Batch 2 = tasks whose deps are all in Batch 1; and so on.
 +
 +The dependency graph determines task ordering. The controller never starts a task before its dependencies are complete. Within a batch, the controller dispatches tasks sequentially by default. Parallel dispatch within a batch is permitted only when the tasks' `**Files:**` lists are fully disjoint — no shared files between any two tasks in the batch. The controller checks file lists before deciding; if any overlap exists, dispatch those tasks sequentially. The controller waits for the entire batch to complete (all reviews passed) before dispatching the next batch.
 +

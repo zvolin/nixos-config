@@ -67,7 +67,7 @@ index 075a103..02df359 100644
 +3. Read `## Task Dependency Graph` — extract the batch ordering.
 +4. **Already-complete check (Subagents and inline paths only):** read the Durable Progress ledger from the main tree:
 +   `LEDGER="$(../subagent-driven-development/scripts/sdd-workspace "$PLAN")/progress.md"`.
-+   A task is done iff a line matching `^Task N: complete` exists in that file (prefix match). A missing ledger means nothing is done yet. Do not read plan-file checkboxes for this — the ledger is the resume signal.
++   A task is done iff a line matching `^Task N: complete` exists in that file (prefix match). A missing ledger means nothing is done yet. The ledger is the resume signal.
 +5. If every task already matches `^Task N: complete`, announce "Plan already complete" and stop.
 +
 +### Step 2: Dispatch
@@ -89,7 +89,7 @@ index 075a103..02df359 100644
 -2. Follow each step exactly (plan has bite-sized steps)
 -3. Run verifications as specified
 -4. Mark as completed
-+**Inline-Degraded Path:** Only when BOTH conditions hold: (1) subagent support is unavailable on this platform; (2) the user explicitly acknowledges degraded mode when prompted — "I understand this runs without subagent review gates." If the user declines, stop and explain that full-quality execution requires subagent support. The inline path executes tasks sequentially; before executing, invoke superpowers:using-git-worktrees. As each task finishes, append the bare `Task N: complete` line to `"$(../subagent-driven-development/scripts/sdd-workspace "$PLAN")/progress.md"` (job 1 only — this path has no per-task review gate for Minor roll-up and records no commit range), creating the file if it does not exist. Do not flip plan-file checkboxes.
++**Inline-Degraded Path:** Only when BOTH conditions hold: (1) subagent support is unavailable on this platform; (2) the user explicitly acknowledges degraded mode when prompted — "I understand this runs without subagent review gates." If the user declines, stop and explain that full-quality execution requires subagent support. The inline path executes tasks sequentially; before executing, invoke superpowers:using-git-worktrees. As each task finishes, append the bare `Task N: complete` line to `"$(../subagent-driven-development/scripts/sdd-workspace "$PLAN")/progress.md"` (job 1 only — this path has no per-task review gate for Minor roll-up and records no commit range), creating the file if it does not exist.
 
 -### Step 3: Complete Development
 +### Step 3: Polish Phase (Inline-Degraded Path only)
@@ -133,7 +133,7 @@ index 075a103..02df359 100644
 -- Never start implementation on main/master branch without explicit user consent
 +- This skill is a router — read the plan, choose a path, delegate.
 +- The plan file is the contract, not conversation state.
-+- Resume state lives in the Durable Progress ledger (`.superpowers/sdd/<plan-slug>/progress.md`, resolved via `sdd-workspace "$PLAN"`), read via the `^Task N: complete` prefix match — never plan-file checkboxes.
++- Resume state lives in the Durable Progress ledger (`.superpowers/sdd/<plan-slug>/progress.md`, resolved via `sdd-workspace "$PLAN"`), read via the `^Task N: complete` prefix match.
 +- Never start implementation on main/master branch without explicit user consent.
 +- Inline execution is degraded — always prefer subagent dispatch.
 

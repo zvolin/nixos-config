@@ -1,5 +1,5 @@
 diff --git a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
-index b1613eb..bd7b9ae 100644
+index b1613eb..b29f44f 100644
 --- a/skills/writing-plans/SKILL.md
 +++ b/skills/writing-plans/SKILL.md
 @@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
@@ -68,7 +68,7 @@ index b1613eb..bd7b9ae 100644
  # [Feature Name] Implementation Plan
 
 -> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to dispatch this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
++> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to dispatch this plan.
 
  **Goal:** [One sentence describing what this builds]
 
@@ -116,7 +116,36 @@ index b1613eb..bd7b9ae 100644
  **Files:**
  - Create: `exact/path/to/file.py`
  - Modify: `exact/path/to/existing.py:123-145`
-@@ -117,12 +178,6 @@ def function(input):
+@@ -92,7 +153,7 @@ include this section.]
+   and return types. A task's implementer sees only their own task; this
+   block is how they learn the names and types neighboring tasks use.]
+
+-- [ ] **Step 1: Write the failing test**
++- **Step 1: Write the failing test**
+
+ ```python
+ def test_specific_behavior():
+@@ -100,29 +161,23 @@ def test_specific_behavior():
+     assert result == expected
+ ```
+
+-- [ ] **Step 2: Run test to verify it fails**
++- **Step 2: Run test to verify it fails**
+
+ Run: `pytest tests/path/test.py::test_name -v`
+ Expected: FAIL with "function not defined"
+
+-- [ ] **Step 3: Write minimal implementation**
++- **Step 3: Write minimal implementation**
+
+ ```python
+ def function(input):
+     return expected
+ ```
+
+-- [ ] **Step 4: Run test to verify it passes**
++- **Step 4: Run test to verify it passes**
+
  Run: `pytest tests/path/test.py::test_name -v`
  Expected: PASS
 
