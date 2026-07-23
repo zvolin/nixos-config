@@ -57,6 +57,18 @@ in
         return term and term.bufnr and vim.api.nvim_buf_is_valid(term.bufnr)
       end
 
+      local function resolve_toggle_target(terms, default_id)
+        local current_buf = vim.api.nvim_get_current_buf()
+        local current_term = terminal.find(function(candidate)
+          return candidate.bufnr == current_buf
+        end)
+        local id = current_term and current_term.logical_id
+        if id and terms[id] == current_term and has_valid_buffer(current_term) then
+          return id
+        end
+        return default_id
+      end
+
       local function compact_terms(terms, set_last, label_for)
         local members = {}
         for id, term in pairs(terms) do
@@ -368,6 +380,12 @@ in
       -- Telescope picker over a single terminal group.
       -- terms is keyed by logical id (1-9); the key, not term.id, is what
       -- focus_term expects.
+      local function set_preview_cursor(win, lines)
+        if #lines > 0 and win and vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_win_set_cursor(win, { #lines, 0 })
+        end
+      end
+
       local function pick_term(get_term_fn, terms)
         local function is_live(t) return t.bufnr and vim.api.nvim_buf_is_valid(t.bufnr) end
         local entries = {}
@@ -416,10 +434,7 @@ in
               end
               vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
               -- Scroll to the last line so the most recent output is visible.
-              local win = self.state.winid
-              if win and vim.api.nvim_win_is_valid(win) then
-                vim.api.nvim_win_set_cursor(win, { math.max(1, #lines), 0 })
-              end
+              set_preview_cursor(self.state.winid, lines)
             end,
           }),
           attach_mappings = function(prompt_bufnr)
@@ -494,7 +509,7 @@ in
 
       -- Shell: <C-t> prefix
       bind({ "n", "i", "t" }, "<C-t><C-t>", function()
-        toggle_tab(get_shell, shell_last)
+        toggle_tab(get_shell, resolve_toggle_target(shell_terms, shell_last))
       end)
       bind({ "n", "i", "t" }, "<C-t><Tab>", function() pick_term(get_shell, shell_terms) end)
       for i = 1, 9 do
@@ -515,7 +530,7 @@ in
 
       -- AI: <C-a> prefix
       bind({ "n", "i", "t" }, "<C-a><C-a>", function()
-        toggle_tab(get_ai, ai_last)
+        toggle_tab(get_ai, resolve_toggle_target(ai_terms, ai_last))
       end)
       bind({ "n", "i", "t" }, "<C-a><Tab>", function() pick_term(get_ai, ai_terms) end)
       for i = 1, 9 do
@@ -530,6 +545,19 @@ in
       bind("t", "<C-a>x", function()
         close_current_term(ai_terms, set_ai_last, ai_label, shell_terms)
       end)
+
+      if vim.g.toggleterm_harness then
+        _G.toggleterm_harness = {
+          resolve_toggle_target = resolve_toggle_target,
+          set_preview_cursor = set_preview_cursor,
+          state = {
+            ai_terms = ai_terms,
+            shell_terms = shell_terms,
+          },
+          set_ai_last = set_ai_last,
+          set_shell_last = set_shell_last,
+        }
+      end
     '';
   };
 }

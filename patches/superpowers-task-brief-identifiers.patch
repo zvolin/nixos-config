@@ -1,0 +1,17 @@
+diff --git a/skills/subagent-driven-development/scripts/task-brief b/skills/subagent-driven-development/scripts/task-brief
+--- a/skills/subagent-driven-development/scripts/task-brief
++++ b/skills/subagent-driven-development/scripts/task-brief
+@@ -27,7 +27,11 @@
+ awk -v n="$n" '
+   /^```/ { infence = !infence }
+-  !infence && /^#+[ \t]+Task[ \t]+[0-9]+/ {
+-    intask = ($0 ~ ("^#+[ \t]+Task[ \t]+" n "([^0-9]|$)"))
++  !infence && /^#+[ \t]+Task[ \t]+/ {
++    heading = $0
++    sub(/^#+[ \t]+Task[ \t]+/, "", heading)
++    task_id = heading
++    sub(/[ \t:.].*$/, "", task_id)
++    intask = (task_id == n)
+   }
+   intask { print }
+ ' "$plan" > "$out"
