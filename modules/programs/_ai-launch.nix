@@ -32,9 +32,8 @@ pkgs.writeShellScriptBin "ai-launch" ''
     zellij action rename-tab "$agent-$id" >/dev/null 2>&1 || true
   fi
 
-  if [ "$agent" = "claude" ]; then
-    export CLAUDE_SESSION_NAME="$project #$id"
-  fi
+  export AI_SESSION_PROJECT="$project"
+  export AI_SESSION_TAB="$id"
 
   exec "$agent"
 ''

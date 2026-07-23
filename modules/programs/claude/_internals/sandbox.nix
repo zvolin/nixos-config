@@ -18,7 +18,8 @@ let
     preCreateFiles = [ ".claude.json" ];
     extraEnv = [
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"
-      "CLAUDE_SESSION_NAME"
+      "AI_SESSION_PROJECT"
+      "AI_SESSION_TAB"
     ];
     pathPrefix = [ codexTools.codexWrap ];
   };

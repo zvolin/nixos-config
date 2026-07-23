@@ -8,27 +8,39 @@ in
     let
       guard = import ../_command-guard { inherit pkgs lib; };
       notify = import ../../services/_notify-push.nix { inherit pkgs; };
-      # Codex appends a JSON event payload as the final arg. On
-      # agent-turn-complete, push the assistant's last message to the phone
-      # and toast it locally via notify-send.
-      notifyWrapper = pkgs.writeShellApplication {
-        name = "codex-notify";
+      notifyTitle = import ../_notify-title.nix {
+        inherit pkgs lib;
+        client = "codex";
+      };
+      # Codex delivers PreToolUse payloads on stdin (not argv). Fire a desktop +
+      # remote notification only for the two attention tools; stays a pure
+      # notifier (empty stdout, exit 0) so it never alters Codex control flow.
+      attentionNotify = pkgs.writeShellApplication {
+        name = "codex-attention-notify";
         runtimeInputs = [
           pkgs.jq
           pkgs.libnotify
           notify.package
         ];
         text = ''
-          payload=''${1:-}
+          payload=$(cat)
           [ -z "$payload" ] && exit 0
-          msg=$(printf '%s' "$payload" | jq -r 'if .type == "agent-turn-complete" then (."last-assistant-message" // "Turn complete") else empty end')
-          [ -z "$msg" ] && exit 0
-          # Push FIRST: this wrapper runs under `set -euo pipefail`
-          # (writeShellApplication), and the remote push is the point. It must
-          # not be killed by a failing local toast, which is exactly what happens
-          # in a detached/headless session with no dbus target.
-          notify-push "Codex" default white_check_mark "$msg"
-          notify-send "Codex" "$msg" || true
+          tool_name=$(printf '%s' "$payload" | jq -r '.tool_name // empty')
+          title=$(${notifyTitle} "$payload")
+          case "$tool_name" in
+            request_user_input)
+              body=$(printf '%s' "$payload" | jq -r \
+                '.tool_input.questions[0].question // .tool_input.questions[0].header // "Input requested"') ;;
+            update_plan)
+              body="Plan ready for review" ;;
+            *)
+              body="Codex needs your attention" ;;
+          esac
+          # Push FIRST: this runs under `set -euo pipefail`; a failing local
+          # toast (e.g. no dbus target) must not kill the remote push.
+          notify-push "$title" high warning "$body"
+          notify-send "$title" "$body" || true
+          exit 0
         '';
       };
     in
@@ -87,8 +99,6 @@ in
           # kitty+nvim. Plain path:line is cleaner.
           file_opener = "none";
 
-          notify = [ (lib.getExe notifyWrapper) ];
-
           tui = {
             status_line = [
               "model-name"
@@ -103,10 +113,27 @@ in
               "weekly-limit"
             ];
             status_line_use_colors = true;
-            # In-terminal toast on turn-done AND approval-needed (kitty
-            # forwards OSC 9 → dbus). Pairs with `notify` (different events).
-            notifications = true;
+            # OSC 9 cannot carry the custom header and would double-fire against
+            # the PreToolUse hook; the hook covers needs-you on both channels.
+            notifications = false;
           };
+
+          # PreToolUse fires regardless of approval policy, so under the jail's
+          # yolo bypass it is the live "Codex needs you" trigger. Confined to the
+          # two attention tools; must not match shell/apply_patch (per-command
+          # noise). async: stays a pure notifier.
+          hooks.PreToolUse = [
+            {
+              matcher = "request_user_input|update_plan";
+              hooks = [
+                {
+                  type = "command";
+                  command = "${lib.getExe attentionNotify}";
+                  async = true;
+                }
+              ];
+            }
+          ];
         };
 
         profiles.deep = {

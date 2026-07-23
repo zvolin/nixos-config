@@ -10,6 +10,10 @@ let
   codexJail = jail.mkJail {
     name = "codex";
     policy = jail.clients.codex;
+    extraEnv = [
+      "AI_SESSION_PROJECT"
+      "AI_SESSION_TAB"
+    ];
     preCreateDirs = [
       ".codex"
       ".agents"
