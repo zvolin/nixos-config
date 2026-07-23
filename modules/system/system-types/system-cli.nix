@@ -4,6 +4,7 @@
     imports = with inputs.self.modules.nixos; [
       system-minimal
       cli-tools
+      mosh
       openssh
       shell
       tailscale
