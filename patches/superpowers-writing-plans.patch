@@ -1,5 +1,5 @@
 diff --git a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
-index b1613eb..b44683c 100644
+index b1613eb..843e257 100644
 --- a/skills/writing-plans/SKILL.md
 +++ b/skills/writing-plans/SKILL.md
 @@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
@@ -179,10 +179,10 @@ index b1613eb..b44683c 100644
 +## Execution Handoff
 
 -**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
-+After saving the plan, announce the narration, then a blank line, then a **fenced code block** holding exactly two commands, one per line: a context-clear, then the executing-plans invocation on the plan:
++After saving the plan, present one message that both invites review and carries the next step: announce the narration, then a blank line, then a **fenced code block** holding exactly two commands, one per line — a context-clear, then the executing-plans invocation on the plan.
 
 -**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
-+> "Plan complete and saved to `<path>`. Strategy from spec: **<strategy>**. To execute, clear context and invoke executing-plans."
++> "Plan complete and saved to `<path>`. Strategy from spec: **<strategy>**. Review the plan and tell me anything you want changed. Otherwise, clear context and run the next step:"
 
 -**Which approach?"**
 +Emit the two commands in the **current harness's** syntax:
@@ -196,4 +196,4 @@ index b1613eb..b44683c 100644
 -**If Inline Execution chosen:**
 -- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
 -- Batch execution with checkpoints for review
-+Do NOT invoke SDD, Agent teams, or any other execution skill directly. The executing-plans router handles dispatch.
++The gate now waits. If the user requests changes, make them, re-run the dissent review, self-review, and humanize passes, and re-present this fused gate. If the user is happy, they clear context and run the command. Do NOT invoke SDD, Agent teams, or any other execution skill directly — the executing-plans router handles dispatch.
