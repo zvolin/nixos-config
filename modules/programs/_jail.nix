@@ -158,6 +158,12 @@ let
           --tmpfs "$HOME"
         )
 
+        # The codex NixOS arm creates /etc/codex system-wide, so this binds in
+        # both clients' jails, not just Codex's. Harmless: it's a public hook-config
+        # symlink into the already-bound /etc/static → /nix/store, no secret. bind_ro
+        # is defensive only — it no-ops if that arm is ever dropped.
+        bind_ro "/etc/codex"
+
         # Resolve symlinks so /etc/nixos and /persist/etc/nixos bind the same path.
         pwd_abs=$(realpath "$PWD")
         # When launched from $HOME, binding $pwd_abs over the tmpfs $HOME re-exposes

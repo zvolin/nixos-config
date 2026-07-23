@@ -6,6 +6,7 @@ in
   flake.modules.homeManager.codex =
     { pkgs, lib, ... }:
     let
+      guard = import ../_command-guard { inherit pkgs lib; };
       notify = import ../../services/_notify-push.nix { inherit pkgs; };
       # Codex appends a JSON event payload as the final arg. On
       # agent-turn-complete, push the assistant's last message to the phone
@@ -60,6 +61,7 @@ in
 
         rules.nix-managed = ''
           prefix_rule(pattern=["claude"], decision="allow")
+          ${guard.forbiddenRules}
         '';
 
         settings = {
@@ -112,5 +114,36 @@ in
           model_reasoning_effort = "xhigh";
         };
       };
+    };
+
+  flake.modules.nixos.codex =
+    { pkgs, lib, ... }:
+    let
+      guard = import ../_command-guard { inherit pkgs lib; };
+      denyGuard = guard.mkGuardScript {
+        name = "codex-check-bash-command";
+        softDecision = "deny";
+      };
+    in
+    {
+      # Codex's managed System config layer (is_managed by virtue of living under
+      # /etc/codex on Linux — the loader hardcodes this dir and ignores
+      # CODEX_HOME). Managed layers skip the hook trust-hash check, so this raw
+      # /nix/store command runs across rebuilds with no re-trust. Only the
+      # [[hooks.PreToolUse]] block lives here; every other Codex setting stays in
+      # the HM-generated ~/.codex/config.toml User layer, and the two layers merge.
+      #
+      # This arm deliberately does NOT wire the HM module via
+      # home-manager.sharedModules: the HM codex module is already imported once,
+      # per-user, in modules/users/zvolin.nix. Wiring it a second time would
+      # evaluate it twice and silently duplicate list options (notify, status_line).
+      environment.etc."codex/config.toml".text = ''
+        [[hooks.PreToolUse]]
+        matcher = "^Bash$"
+
+        [[hooks.PreToolUse.hooks]]
+        type = "command"
+        command = "${denyGuard}/bin/${denyGuard.name}"
+      '';
     };
 }

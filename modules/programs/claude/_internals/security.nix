@@ -4,71 +4,12 @@
   ...
 }:
 let
-  # --- Bash validation hook ---
-  blockedCommands = [
-    "sudo"
-    "doas"
-    "eval"
-    "dd"
-    "mkfs"
-    "shred"
-  ];
-  deniedSubcommands = [
-    "git push"
-    "git push --force"
-    "git push -f"
-  ];
-  blockedPatterns = [
-    "curl|sh"
-    "curl|bash"
-    "wget|sh"
-    "wget|bash"
-    "curl|python"
-    "wget|python"
-  ];
+  guard = import ../../_command-guard { inherit pkgs lib; };
 
-  blockedCommandsStr = builtins.concatStringsSep " " blockedCommands;
-  deniedSubcommandsStr = builtins.concatStringsSep "\n" deniedSubcommands;
-
-  # Convert "source|sink" shorthand to "source.*\|.*sink" grep regex
-  patternToRegex =
-    pattern:
-    let
-      parts = builtins.split "\\|" pattern;
-      source = builtins.elemAt parts 0;
-      sink = builtins.elemAt parts 2;
-    in
-    "${source}.*\\|.*${sink}";
-
-  blockedPatternsStr = builtins.concatStringsSep "\n" (map patternToRegex blockedPatterns);
-
-  checkBashCommandSrc =
-    builtins.replaceStrings
-      [ "@blockedCommands@" "@deniedSubcommands@" "@blockedPatterns@" ]
-      [ blockedCommandsStr deniedSubcommandsStr blockedPatternsStr ]
-      (builtins.readFile ./check-bash-command.sh);
-
-  check-bash-command =
-    let
-      script = pkgs.writeShellScriptBin "claude-check-bash-command" checkBashCommandSrc;
-    in
-    pkgs.symlinkJoin {
-      name = "claude-check-bash-command";
-      paths = [ script ];
-      buildInputs = [ pkgs.makeWrapper ];
-      postBuild = ''
-        wrapProgram $out/bin/claude-check-bash-command \
-          --prefix PATH : ${
-            lib.makeBinPath [
-              pkgs.shfmt
-              pkgs.jq
-              pkgs.coreutils
-              pkgs.gnugrep
-              pkgs.gawk
-            ]
-          }
-      '';
-    };
+  check-bash-command = guard.mkGuardScript {
+    name = "claude-check-bash-command";
+    softDecision = "ask";
+  };
 in
 {
   programs.claude-code.settings = {
@@ -85,7 +26,7 @@ in
         hooks = [
           {
             type = "command";
-            command = "${check-bash-command}/bin/claude-check-bash-command";
+            command = "${check-bash-command}/bin/${check-bash-command.name}";
           }
         ];
       }

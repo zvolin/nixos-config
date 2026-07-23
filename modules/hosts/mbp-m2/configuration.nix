@@ -22,6 +22,7 @@
         tiny-dfr
         ntfy
         zellij
+        codex
         zvolin
       ];
 

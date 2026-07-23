@@ -13,7 +13,7 @@ fi
 
 block() {
   jq -n --arg reason "$1" \
-    '{ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "ask", permissionDecisionReason: $reason } }'
+    '{ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "@softDecision@", permissionDecisionReason: $reason } }'
   exit 0
 }
 
@@ -41,7 +41,7 @@ for cmd in $COMMANDS; do
   cmd_base=$(basename "$cmd")
   for blocked in $BLOCKED; do
     if [[ "$cmd_base" == "$blocked" ]]; then
-      block "${cmd_base} detected. Confirm with user before proceeding."
+      block "${cmd_base} detected. @softBlockReasonCmd@"
     fi
   done
 done
@@ -61,7 +61,7 @@ PATTERNS="@blockedPatterns@"
 while IFS= read -r pattern; do
   [[ -z "$pattern" ]] && continue
   if echo "$COMMAND" | grep -qE "$pattern"; then
-    block "Piping remote content to shell/interpreter. Confirm with user."
+    block "Piping remote content to shell/interpreter. @softBlockReasonPipe@"
   fi
 done <<< "$PATTERNS"
 
