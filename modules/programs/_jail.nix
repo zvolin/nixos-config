@@ -88,11 +88,6 @@ let
       rawBinary = lib.getExe pkgs.codex;
       unleashFlags = [
         "--dangerously-bypass-approvals-and-sandbox"
-        # Codex's config-declared PreToolUse hook would otherwise stall on a
-        # startup trust-review prompt, and that trust can never persist here:
-        # the config is a Nix store symlink whose path changes every rebuild.
-        # Safe because this flag only applies inside the already-jailed client.
-        "--dangerously-bypass-hook-trust"
       ];
       markerEnv = "CODEX_SANDBOX";
     };

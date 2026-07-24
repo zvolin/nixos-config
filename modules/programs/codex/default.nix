@@ -7,42 +7,6 @@ in
     { pkgs, lib, ... }:
     let
       guard = import ../_command-guard { inherit pkgs lib; };
-      notify = import ../../services/_notify-push.nix { inherit pkgs; };
-      notifyTitle = import ../_notify-title.nix {
-        inherit pkgs lib;
-        client = "codex";
-      };
-      # Codex delivers PreToolUse payloads on stdin (not argv). Fire a desktop +
-      # remote notification only for the two attention tools; stays a pure
-      # notifier (empty stdout, exit 0) so it never alters Codex control flow.
-      attentionNotify = pkgs.writeShellApplication {
-        name = "codex-attention-notify";
-        runtimeInputs = [
-          pkgs.jq
-          pkgs.libnotify
-          notify.package
-        ];
-        text = ''
-          payload=$(cat)
-          [ -z "$payload" ] && exit 0
-          tool_name=$(printf '%s' "$payload" | jq -r '.tool_name // empty')
-          title=$(${notifyTitle} "$payload")
-          case "$tool_name" in
-            request_user_input)
-              body=$(printf '%s' "$payload" | jq -r \
-                '.tool_input.questions[0].question // .tool_input.questions[0].header // "Input requested"') ;;
-            update_plan)
-              body="Plan ready for review" ;;
-            *)
-              body="Codex needs your attention" ;;
-          esac
-          # Push FIRST: this runs under `set -euo pipefail`; a failing local
-          # toast (e.g. no dbus target) must not kill the remote push.
-          notify-push "$title" high warning "$body"
-          notify-send "$title" "$body" || true
-          exit 0
-        '';
-      };
     in
     {
       imports = [
@@ -114,26 +78,11 @@ in
             ];
             status_line_use_colors = true;
             # OSC 9 cannot carry the custom header and would double-fire against
-            # the PreToolUse hook; the hook covers needs-you on both channels.
+            # the attention hook (now in the NixOS arm's /etc/codex/config.toml);
+            # that hook covers needs-you on both channels.
             notifications = false;
           };
 
-          # PreToolUse fires regardless of approval policy, so under the jail's
-          # yolo bypass it is the live "Codex needs you" trigger. Confined to the
-          # two attention tools; must not match shell/apply_patch (per-command
-          # noise). async: stays a pure notifier.
-          hooks.PreToolUse = [
-            {
-              matcher = "request_user_input|update_plan";
-              hooks = [
-                {
-                  type = "command";
-                  command = "${lib.getExe attentionNotify}";
-                  async = true;
-                }
-              ];
-            }
-          ];
         };
 
         profiles.deep = {
@@ -151,14 +100,60 @@ in
         name = "codex-check-bash-command";
         softDecision = "deny";
       };
+      notify = import ../../services/_notify-push.nix { inherit pkgs; };
+      notifyTitle = import ../_notify-title.nix {
+        inherit pkgs lib;
+        client = "codex";
+      };
+      # Codex delivers PreToolUse payloads on stdin (not argv). Fire a desktop +
+      # remote notification only for the two attention tools; stays a pure
+      # notifier (empty stdout, exit 0) so it never alters Codex control flow.
+      attentionNotify = pkgs.writeShellApplication {
+        name = "codex-attention-notify";
+        runtimeInputs = [
+          pkgs.jq
+          pkgs.libnotify
+          notify.package
+        ];
+        text = ''
+          payload=$(cat)
+          [ -z "$payload" ] && exit 0
+          # Bail cleanly on a non-JSON payload. The hook is synchronous, so a jq
+          # parse failure under `set -e` would abort non-zero mid tool call.
+          printf '%s' "$payload" | jq empty 2>/dev/null || exit 0
+          tool_name=$(printf '%s' "$payload" | jq -r '.tool_name // empty')
+          title=$(${notifyTitle} "$payload")
+          case "$tool_name" in
+            request_user_input)
+              body=$(printf '%s' "$payload" | jq -r \
+                '.tool_input.questions[0].question // .tool_input.questions[0].header // "Input requested"') ;;
+            update_plan)
+              body="Plan ready for review" ;;
+            *)
+              body="Codex needs your attention" ;;
+          esac
+          # Push FIRST: this runs under `set -euo pipefail`; a failing local
+          # toast (e.g. no dbus target) must not kill the remote push.
+          notify-push "$title" high warning "$body"
+          notify-send "$title" "$body" || true
+          exit 0
+        '';
+      };
     in
     {
       # Codex's managed System config layer (is_managed by virtue of living under
       # /etc/codex on Linux — the loader hardcodes this dir and ignores
-      # CODEX_HOME). Managed layers skip the hook trust-hash check, so this raw
-      # /nix/store command runs across rebuilds with no re-trust. Only the
-      # [[hooks.PreToolUse]] block lives here; every other Codex setting stays in
+      # CODEX_HOME). Managed layers skip the hook trust-hash check, so these raw
+      # /nix/store commands run across rebuilds with no re-trust and no
+      # --dangerously-bypass-hook-trust flag. Both Codex PreToolUse hooks live
+      # here: the deny-guard (^Bash$) and the attention notifier
+      # (request_user_input|update_plan). Their matchers do not overlap, so the
+      # two stay independent within this layer. Every other Codex setting stays in
       # the HM-generated ~/.codex/config.toml User layer, and the two layers merge.
+      #
+      # The attention notifier is synchronous (no async): codex-cli 0.144.4 skips
+      # async hooks entirely. It does cheap local work (a bounded ntfy curl + a
+      # dbus toast) at natural pause points, so the inline latency is negligible.
       #
       # This arm deliberately does NOT wire the HM module via
       # home-manager.sharedModules: the HM codex module is already imported once,
@@ -171,6 +166,13 @@ in
         [[hooks.PreToolUse.hooks]]
         type = "command"
         command = "${denyGuard}/bin/${denyGuard.name}"
+
+        [[hooks.PreToolUse]]
+        matcher = "request_user_input|update_plan"
+
+        [[hooks.PreToolUse.hooks]]
+        type = "command"
+        command = "${lib.getExe attentionNotify}"
       '';
     };
 }

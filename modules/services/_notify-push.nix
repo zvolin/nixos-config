@@ -20,7 +20,7 @@ rec {
       tags=''${3:-}
       message=''${4:-}
       # Fire-and-forget: a push failure must never break the hook or the agent.
-      curl -fsS \
+      curl -fsS --connect-timeout 2 --max-time 5 \
         -H "Title: $title" \
         -H "Priority: $priority" \
         -H "Tags: $tags" \
