@@ -51,6 +51,7 @@
           skill-codex
           superpowers
           terminal
+          termux
           threat-modeling-expert
           waybar
           wofi
