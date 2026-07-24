@@ -32,8 +32,16 @@
 
         oh-my-zsh.enable = true;
 
-        # enable direnv for claude
         initContent = lib.mkOrder 500 ''
+          # Unify XDG_RUNTIME_DIR so the mosh login shell (no logind session)
+          # resolves the same /run/user/<uid> zellij socket as the desktop.
+          # No-op where pam_systemd already set it.
+          if [ -z "$XDG_RUNTIME_DIR" ]; then
+            runtime_dir="/run/user/$(id -u)"
+            [ -d "$runtime_dir" ] && export XDG_RUNTIME_DIR="$runtime_dir"
+          fi
+
+          # enable direnv for claude
           if command -v direnv >/dev/null 2>&1; then
             if [ -n "$CLAUDECODE" ]; then
               eval "$(direnv hook zsh)"
@@ -65,8 +73,16 @@
         historyFileSize = 50000;
         historySize = 20000;
 
-        # enable direnv for claude
         bashrcExtra = ''
+          # Unify XDG_RUNTIME_DIR so the mosh login shell (no logind session)
+          # resolves the same /run/user/<uid> zellij socket as the desktop.
+          # No-op where pam_systemd already set it.
+          if [ -z "$XDG_RUNTIME_DIR" ]; then
+            runtime_dir="/run/user/$(id -u)"
+            [ -d "$runtime_dir" ] && export XDG_RUNTIME_DIR="$runtime_dir"
+          fi
+
+          # enable direnv for claude
           if command -v direnv >/dev/null 2>&1; then
             if [ -n "$CLAUDECODE" ]; then
               eval "$(direnv hook bash)"

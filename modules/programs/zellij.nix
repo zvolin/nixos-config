@@ -149,8 +149,12 @@
                   // (zellij kdl parser), so reference the agent layout by name.
                   bind "Alt t" { NewTab { layout "agent"; }; }
                   bind "Alt Shift t" { NewTab; }
-                  bind "Alt e" { EditScrollback; }
+                  bind "Alt e" { SwitchToMode "Scroll"; }
+                  bind "Alt s" { EditScrollback; }
                   bind "Alt x" { CloseTab; }
+              }
+              scroll {
+                  bind "Esc" "Enter" { SwitchToMode "Locked"; }
               }
           }
         '';
