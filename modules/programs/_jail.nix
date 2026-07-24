@@ -83,6 +83,43 @@ let
       rawBinary = lib.getExe pkgs.claude-code;
       unleashFlags = [ "--dangerously-skip-permissions" ];
       markerEnv = "CLAUDE_SANDBOX";
+      # Persistent trust seed: a guarded in-place read-modify-write of the
+      # RW-bound ~/.claude.json, for the cwd and (when different) the git root.
+      # ~/.claude.json is a bind MOUNTPOINT inside the jail, so a rename over it
+      # (mktemp+mv) fails EBUSY, so the write happens in place. That's required
+      # at the nested-bridge call site, where this runs inside the outer jail;
+      # at the interactive launch it runs in the host shell before `exec bwrap`
+      # against an ordinary host file, where in-place writing isn't required but
+      # is still correct. The guard makes this a no-op after the first launch
+      # per dir — a running claude's live state is never rewritten. flock is
+      # taken ONCE up front and held across both the `{}` init and every path's
+      # read-modify-write, so concurrent seeds from sibling jails serialize on
+      # the bound inode and can't lose each other's writes, including the init
+      # itself. flock does not coordinate with claude's own unlocked writes — a
+      # seed can still race one of those writes; that residual race is accepted
+      # and bounded to first launch by the guard. This runs in the current
+      # shell, not a subshell, so flock holds a real lock across the RMW.
+      trustPrelude = ''
+        f="$HOME/.claude.json"
+        dir=$(${pkgs.coreutils}/bin/realpath "$PWD")
+        paths=("$dir")
+        gitroot=$(${pkgs.git}/bin/git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || true
+        [ -n "$gitroot" ] && [ "$gitroot" != "$dir" ] && paths+=("$gitroot")
+        exec 9<>"$f"
+        ${pkgs.util-linux}/bin/flock 9
+        [ -s "$f" ] || echo '{}' > "$f"
+        for p in "''${paths[@]}"; do
+          [ "$(${pkgs.jq}/bin/jq -r --arg p "$p" \
+                '(.projects[$p].hasTrustDialogAccepted // false) and (.projects[$p].hasTrustDialogHooksAccepted // false)' "$f")" = "true" ] && continue
+          new=$(${pkgs.jq}/bin/jq --arg p "$p" \
+               '.projects[$p].hasTrustDialogAccepted = true
+              | .projects[$p].hasTrustDialogHooksAccepted = true' "$f") \
+            && printf '%s\n' "$new" > "$f"
+        done
+        exec 9>&-
+      '';
+      # claude resolves trust from ~/.claude.json, not argv → no extra exec args.
+      trustArgs = ":";
     };
     codex = {
       rawBinary = lib.getExe pkgs.codex;
@@ -90,6 +127,19 @@ let
         "--dangerously-bypass-approvals-and-sandbox"
       ];
       markerEnv = "CODEX_SANDBOX";
+      # codex has no writable trust store in the jail (config.toml is a RO store
+      # symlink), so trust is an ephemeral -c override, re-emitted on every spawn.
+      trustPrelude = ":";
+      # Echo one argv token per line: a repeatable -c override for the cwd and
+      # (when different) the git root. Each call site captures these with mapfile.
+      trustArgs = ''
+        dir=$(${pkgs.coreutils}/bin/realpath "$PWD")
+        printf -- '-c\nprojects."%s".trust_level="trusted"\n' "$dir"
+        gitroot=$(${pkgs.git}/bin/git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || true
+        if [ -n "$gitroot" ] && [ "$gitroot" != "$dir" ]; then
+          printf -- '-c\nprojects."%s".trust_level="trusted"\n' "$gitroot"
+        fi
+      '';
     };
   };
 
@@ -314,7 +364,13 @@ let
           pass_env "$var"
         done
 
-        exec ${bwrap} "''${args[@]}" ${policy.rawBinary} ${unleashStr} "$@"
+        # Same hook for both clients: claude's trustPrelude seeds ~/.claude.json
+        # and its trustArgs is a no-op; codex's trustPrelude is a no-op and its
+        # trustArgs emits the ephemeral -c overrides, so raw_trust_args is empty
+        # for claude and non-empty for codex.
+        ${policy.trustPrelude}
+        mapfile -t raw_trust_args < <(${policy.trustArgs})
+        exec ${bwrap} "''${args[@]}" ${policy.rawBinary} ${unleashStr} "''${raw_trust_args[@]}" "$@"
       '';
     in
     {

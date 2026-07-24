@@ -22,6 +22,9 @@ let
 
       realcodex=${codex.rawBinary}
 
+      # Ephemeral codex trust overrides (cwd + git root), re-emitted per spawn.
+      mapfile -t raw_trust_args < <(${codex.trustArgs})
+
       # Walk the ORIGINAL argv to classify the invocation (does not gate flag
       # injection — flags are injected globally below; this only decides whether
       # to apply the stdin-close + logdir treatment).
@@ -53,12 +56,12 @@ let
       if [ "$saw_exec" = "1" ] && [ "$is_resume" = "0" ]; then
         run_dir=''${CODEX_LOGDIR:-/tmp/codex-runs}/$(date +%Y%m%d-%H%M%S)-$$
         mkdir -p "$run_dir"
-        exec "$realcodex" ${unleashStr} "$@" 2> "$run_dir/stderr" < /dev/null
+        exec "$realcodex" ${unleashStr} "''${raw_trust_args[@]}" "$@" 2> "$run_dir/stderr" < /dev/null
       fi
 
       # Everything else (resume, non-exec subcommands): passthrough with stdin
       # left open. Flags are still injected globally.
-      exec "$realcodex" ${unleashStr} "$@"
+      exec "$realcodex" ${unleashStr} "''${raw_trust_args[@]}" "$@"
     '';
   };
 in

@@ -16,6 +16,9 @@ let
       echo "claude bridge: refusing to run unleashed outside Codex's jail (${callerMarker} unset)" >&2
       exit 1
     fi
+    # Seed persistent trust for the cwd + git root before launching claude, so
+    # the nested claude opens the project without a folder-trust prompt.
+    ${claude.trustPrelude}
     exec ${claude.rawBinary} ${unleashStr} "$@"
   '';
 in
