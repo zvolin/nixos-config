@@ -143,11 +143,12 @@
                   bind "Alt 7" { GoToTab 7; }
                   bind "Alt 8" { GoToTab 8; }
                   bind "Alt 9" { GoToTab 9; }
-                  bind "Alt [" { GoToPreviousTab; }
-                  bind "Alt ]" { GoToNextTab; }
+                  bind "Alt h" { GoToPreviousTab; }
+                  bind "Alt l" { GoToNextTab; }
                   // NewTab reads `layout` as a layout name, not an inline block
                   // (zellij kdl parser), so reference the agent layout by name.
-                  bind "Alt a" { NewTab { layout "agent"; }; }
+                  bind "Alt t" { NewTab { layout "agent"; }; }
+                  bind "Alt Shift t" { NewTab; }
                   bind "Alt e" { EditScrollback; }
                   bind "Alt x" { CloseTab; }
               }
