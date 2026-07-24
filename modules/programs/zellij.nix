@@ -5,7 +5,12 @@
   };
 
   flake.modules.homeManager.zellij =
-    { pkgs, lib, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     let
       # Prepended, not replaced, so agent binaries already on PATH still
       # resolve when these scripts exec nvim or an agent. neovim is deliberately
@@ -43,6 +48,10 @@
             [ -n "$f" ] && files+=("$f")
           done <<< "''${NVIM_PROJECT_FILES}"
         fi
+        # Swallow errors so a rename hiccup never blocks the editor.
+        if [ -n "''${NVIM_PROJECT_NAME:-}" ]; then
+          zellij action rename-pane "$NVIM_PROJECT_NAME" >/dev/null 2>&1 || true
+        fi
         exec nvim --listen "$sock" "''${files[@]}"
       '';
 
@@ -74,6 +83,7 @@
         fi
 
         export NVIM_PROJECT_FILES="$(printf '%s\n' "$@")"
+        export NVIM_PROJECT_NAME="$(basename "$root")"
         exec zellij --layout nvim attach -c "$name"
       '';
 
@@ -108,6 +118,14 @@
       '';
     in
     {
+      stylix.targets.zellij.colors.override.withHashtag = {
+        # Swap the mauve accent for blue in zellij only (focused-pane border +
+        # selected tab + table title). The RHS reads the global palette, so this
+        # is a clean swap with no circular reference.
+        base0E = config.lib.stylix.colors.withHashtag.base0D;
+        base0D = config.lib.stylix.colors.withHashtag.base0E;
+      };
+
       programs.zellij = {
         enable = true;
         # Start zellij through the nvim alias, not in every terminal.
