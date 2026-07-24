@@ -59,7 +59,7 @@
         root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
         name=$(printf '%s-%s' \
           "$(basename "$root")" \
-          "$(printf '%s' "$root" | sha1sum | cut -c1-8)" \
+          "$(printf '%s' "$root" | sha1sum | cut -c1-3)" \
           | tr -c 'a-zA-Z0-9_-' '-')
         sock="''${XDG_RUNTIME_DIR:-/tmp}/nvim-$name.sock"
 
