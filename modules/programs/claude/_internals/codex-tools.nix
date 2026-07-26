@@ -22,8 +22,12 @@ let
 
       realcodex=${codex.rawBinary}
 
-      # Ephemeral codex trust overrides (cwd + git root), re-emitted per spawn.
-      mapfile -t raw_trust_args < <(${codex.trustArgs})
+      # Open the project already trusted: a per-launch CODEX_HOME overlay whose
+      # config.toml carries `trust_level = "trusted"` for the cwd + git root.
+      # `-c projects.<dir>.trust_level` parses but never reaches codex's trust
+      # gate, so a real on-disk config layer is the only mechanism that works.
+      CODEX_HOME="$(${codex.mkOverlayHome})"
+      export CODEX_HOME
 
       # Walk the ORIGINAL argv to classify the invocation (does not gate flag
       # injection — flags are injected globally below; this only decides whether
@@ -56,12 +60,12 @@ let
       if [ "$saw_exec" = "1" ] && [ "$is_resume" = "0" ]; then
         run_dir=''${CODEX_LOGDIR:-/tmp/codex-runs}/$(date +%Y%m%d-%H%M%S)-$$
         mkdir -p "$run_dir"
-        exec "$realcodex" ${unleashStr} "''${raw_trust_args[@]}" "$@" 2> "$run_dir/stderr" < /dev/null
+        exec "$realcodex" ${unleashStr} "$@" 2> "$run_dir/stderr" < /dev/null
       fi
 
       # Everything else (resume, non-exec subcommands): passthrough with stdin
       # left open. Flags are still injected globally.
-      exec "$realcodex" ${unleashStr} "''${raw_trust_args[@]}" "$@"
+      exec "$realcodex" ${unleashStr} "$@"
     '';
   };
 in

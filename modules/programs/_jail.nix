@@ -5,6 +5,34 @@
 let
   bwrap = lib.getExe pkgs.bubblewrap;
 
+  # Build a per-launch CODEX_HOME overlay, echo its path. codex reads folder
+  # trust only from an on-disk config layer (not `-c`), and real
+  # ~/.codex/config.toml is a RO store symlink, so trust can't be seeded in
+  # place. The overlay symlinks every ~/.codex entry back to the original
+  # (auth/history persist) except config.toml, regenerated as the Nix config
+  # plus trust tables for cwd + git root. Runs on the host and in the nested
+  # Claude jail, where XDG_RUNTIME_DIR is unwritable → /tmp fallback.
+  codexOverlayHome = ''
+    src="$HOME/.codex"
+    dir=$(${pkgs.coreutils}/bin/realpath "$PWD")
+    base="''${XDG_RUNTIME_DIR:-/tmp}"
+    [ -w "$base" ] || base=/tmp
+    tmp=$(${pkgs.coreutils}/bin/mktemp -d "$base/codex-home.XXXXXX")
+    for e in "$src"/* "$src"/.*; do
+      b=''${e##*/}
+      case "$b" in .|..|config.toml) continue ;; esac
+      [ -e "$e" ] && ${pkgs.coreutils}/bin/ln -sfn "$e" "$tmp/$b"
+    done
+    {
+      ${pkgs.coreutils}/bin/cat -- "$src/config.toml" 2>/dev/null || true
+      printf '\n[projects."%s"]\ntrust_level = "trusted"\n' "$dir"
+      gitroot=$(${pkgs.git}/bin/git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || true
+      [ -n "$gitroot" ] && [ "$gitroot" != "$dir" ] \
+        && printf '[projects."%s"]\ntrust_level = "trusted"\n' "$gitroot"
+    } > "$tmp/config.toml"
+    printf '%s' "$tmp"
+  '';
+
   # --- env passthrough allowlist (after --clearenv we re-inject via --setenv) ---
   coreEnv = [
     "HOME"
@@ -83,22 +111,13 @@ let
       rawBinary = lib.getExe pkgs.claude-code;
       unleashFlags = [ "--dangerously-skip-permissions" ];
       markerEnv = "CLAUDE_SANDBOX";
-      # Persistent trust seed: a guarded in-place read-modify-write of the
-      # RW-bound ~/.claude.json, for the cwd and (when different) the git root.
-      # ~/.claude.json is a bind MOUNTPOINT inside the jail, so a rename over it
-      # (mktemp+mv) fails EBUSY, so the write happens in place. That's required
-      # at the nested-bridge call site, where this runs inside the outer jail;
-      # at the interactive launch it runs in the host shell before `exec bwrap`
-      # against an ordinary host file, where in-place writing isn't required but
-      # is still correct. The guard makes this a no-op after the first launch
-      # per dir — a running claude's live state is never rewritten. flock is
-      # taken ONCE up front and held across both the `{}` init and every path's
-      # read-modify-write, so concurrent seeds from sibling jails serialize on
-      # the bound inode and can't lose each other's writes, including the init
-      # itself. flock does not coordinate with claude's own unlocked writes — a
-      # seed can still race one of those writes; that residual race is accepted
-      # and bounded to first launch by the guard. This runs in the current
-      # shell, not a subshell, so flock holds a real lock across the RMW.
+      # Seed persistent trust for cwd + git root by RMW of the RW-bound
+      # ~/.claude.json (the only source claude reads trust from). In place, not
+      # mktemp+rename: the file is a bind mountpoint so rename fails EBUSY, and
+      # in-place is required at the nested bridge anyway. The guard makes it
+      # idempotent after first launch. flock (held across init + RMW) serializes
+      # concurrent sibling-jail seeds; it can't coordinate with claude's own
+      # unlocked writes, so a bounded first-launch race remains, accepted.
       trustPrelude = ''
         f="$HOME/.claude.json"
         dir=$(${pkgs.coreutils}/bin/realpath "$PWD")
@@ -118,8 +137,6 @@ let
         done
         exec 9>&-
       '';
-      # claude resolves trust from ~/.claude.json, not argv → no extra exec args.
-      trustArgs = ":";
     };
     codex = {
       rawBinary = lib.getExe pkgs.codex;
@@ -127,19 +144,16 @@ let
         "--dangerously-bypass-approvals-and-sandbox"
       ];
       markerEnv = "CODEX_SANDBOX";
-      # codex has no writable trust store in the jail (config.toml is a RO store
-      # symlink), so trust is an ephemeral -c override, re-emitted on every spawn.
-      trustPrelude = ":";
-      # Echo one argv token per line: a repeatable -c override for the cwd and
-      # (when different) the git root. Each call site captures these with mapfile.
-      trustArgs = ''
-        dir=$(${pkgs.coreutils}/bin/realpath "$PWD")
-        printf -- '-c\nprojects."%s".trust_level="trusted"\n' "$dir"
-        gitroot=$(${pkgs.git}/bin/git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || true
-        if [ -n "$gitroot" ] && [ "$gitroot" != "$dir" ]; then
-          printf -- '-c\nprojects."%s".trust_level="trusted"\n' "$gitroot"
-        fi
+      # Interactive jail: build the trust overlay on the host and mount it in,
+      # pointing the jailed codex at it via CODEX_HOME. Runs in the current
+      # shell right before `exec bwrap`, so `args` is still in scope to extend.
+      trustPrelude = ''
+        codex_home=$(${codexOverlayHome})
+        args+=(--bind "$codex_home" "$codex_home" --setenv CODEX_HOME "$codex_home")
       '';
+      # Reused by the Claude→Codex bridge, which has no bwrap of its own and
+      # just exports CODEX_HOME instead of binding it.
+      mkOverlayHome = codexOverlayHome;
     };
   };
 
@@ -364,13 +378,10 @@ let
           pass_env "$var"
         done
 
-        # Same hook for both clients: claude's trustPrelude seeds ~/.claude.json
-        # and its trustArgs is a no-op; codex's trustPrelude is a no-op and its
-        # trustArgs emits the ephemeral -c overrides, so raw_trust_args is empty
-        # for claude and non-empty for codex.
+        # Per-client trust seeding: claude RMWs the bound-RW ~/.claude.json;
+        # codex builds a CODEX_HOME overlay and appends its bind+setenv to args.
         ${policy.trustPrelude}
-        mapfile -t raw_trust_args < <(${policy.trustArgs})
-        exec ${bwrap} "''${args[@]}" ${policy.rawBinary} ${unleashStr} "''${raw_trust_args[@]}" "$@"
+        exec ${bwrap} "''${args[@]}" ${policy.rawBinary} ${unleashStr} "$@"
       '';
     in
     {
