@@ -9,6 +9,7 @@
         isNormalUser = true;
         hashedPasswordFile = "/persist/users/zwolin/password";
         extraGroups = [
+          "dialout"
           "wheel"
           "wireshark"
           "video"
