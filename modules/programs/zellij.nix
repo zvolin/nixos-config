@@ -130,6 +130,12 @@
         enable = true;
         # Start zellij through the nvim alias, not in every terminal.
         settings.default_mode = "locked";
+        # Resurrection replays each pane's live argv; a jailed agent tab's
+        # space-containing `--setenv NIX_CFLAGS_COMPILE "…"` bwrap args get split
+        # on whitespace, so a resurrected pane dies with `bwrap: Unknown option
+        # -isystem`. Disabling serialization removes the dump entirely. See
+        # ticket 53/54.
+        settings.session_serialization = false;
         # Keep nvim keys available; only Alt bindings and Ctrl-g are intercepted.
         extraConfig = ''
           keybinds {
