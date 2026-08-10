@@ -1,5 +1,5 @@
 diff --git a/skills/engineering/wayfinder/SKILL.md b/skills/engineering/wayfinder/SKILL.md
-index 42e3644..ed80710 100644
+index 42e3644..5305884 100644
 --- a/skills/engineering/wayfinder/SKILL.md
 +++ b/skills/engineering/wayfinder/SKILL.md
 @@ -22,7 +22,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
@@ -39,7 +39,25 @@ index 42e3644..ed80710 100644
 
  ## Fog of war
 
-@@ -108,21 +109,83 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
+@@ -104,25 +105,108 @@ Ruling something out of scope is a scoping act, not a step on the route. When a
+
+ Two modes. Either way, **never resolve more than one ticket per session** — with the exception of research tickets.
+
++### Resolve the invocation
++
++A resolution step runs **first** on every invocation and decides which map — or that a new
++one is being charted — then dispatches to Chart or Work-through.
++
++- **No argument** → run the active-map scan (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md) — Active-map scan).
++  - **0 active** → "no active maps — describe what to chart, or name one", then [Chart the map](#chart-the-map).
++  - **1 active** → auto-select it, announce it by name, then [Work through the map](#work-through-the-map).
++  - **≥2 active** → list them (`name · open=N`) and ask the user to pick one or chart a new map.
++- **Explicit map path or number** → use it directly, then [Work through the map](#work-through-the-map). This is what the [closing handoff](#closing-handoff) trailer passes.
++- **Natural-language scope** ("add a ticket for X", "work on the notification thing") → load the active maps' **bodies only** (Destination + Decisions so far — the cheap low-res view, never tickets) and semantically match the described scope against them. Exactly one *confident* match → use it (announce by name; the user can override). Zero, multiple, **or a single weak/low-confidence** match → list the plausible candidates and ask; never auto-route on a marginal match.
++
++"Add a ticket to an existing map" is a resolved invocation followed by the existing create-then-wire step ([Work through the map](#work-through-the-map), step 5) against the resolved map.
++
+ ### Chart the map
 
  User invokes with a loose idea.
 
@@ -61,7 +79,7 @@ index 42e3644..ed80710 100644
 -2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
 -3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`.
 -4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
-+2. Choose the ticket. If the user named one, use it. Otherwise apply the selector in [WAYFINDING-OPS.md](WAYFINDING-OPS.md). **Claim it** before any work.
++2. Choose the ticket. If the user named one, use it. Otherwise apply the selector in [WAYFINDING-OPS.md](WAYFINDING-OPS.md). **Claim it** before any work — win its liveness `flock`, then CAS-set `claimed-by:` to this session (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md) — Claiming). A ticket whose `claimed-by:` is set but whose lock probes free is a **stale** claim, and is reclaimable.
 +3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `brainstorming` and `/domain-modeling`.
 +4. Record the resolution: write the answer into the ticket body, set `status: closed`, and **append a context pointer** to the map's Decisions-so-far (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md)).
  5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
@@ -73,10 +91,17 @@ index 42e3644..ed80710 100644
 +## Implementation handoff
 +
 +After an actionable native decision closes, create or reuse its implementation
-+ticket, then claim it before handoff. The claim is an ownership token the working
-+phase session holds while it is active and releases on clean exit, so the next
-+Wayfinder run resumes an unclaimed in-flight ticket automatically; a crash leaves
-+an orphaned claim that only a lease-repair reclaim clears. The selected chunk
++ticket, then claim it before handoff — win the liveness `flock`, then CAS-set
++`claimed-by:` to this session (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md) — Claiming).
++Implementation tickets stay `open` across phases (brainstorming → writing-plans →
++executing-plans), each a separate phase-session; durable progress is the `phase:`
++field. The owning phase-session **explicitly releases before `/clear`** — kill the
++holder by the durable PID in the lock file (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md) — Release),
++CAS-advance `phase:`, and clear
++`claimed-by:` — so the next phase-session claims cleanly and release survives
++compaction (the PID is read from the lock, not from context). If a phase-session
++ends without releasing, its flock frees and the claim goes stale, so the next
++Wayfinder run auto-reclaims it without a manual lease-repair step. The selected chunk
 +determines the Codex handoff after `/clear`:
 +
 +| Selected chunk | Codex handoff after /clear |
@@ -130,10 +155,10 @@ index 42e3644..ed80710 100644
 +Skip the trailer when there is no map to return to: the no-fog dead-end in [Chart the map](#chart-the-map) step 2 (no map was created) and the map-complete exit in [Work through the map](#work-through-the-map) step 7 (frontier and **Not yet specified** both empty).
 diff --git a/skills/engineering/wayfinder/WAYFINDING-OPS.md b/skills/engineering/wayfinder/WAYFINDING-OPS.md
 new file mode 100644
-index 0000000..7f6409a
+index 0000000..096af83
 --- /dev/null
 +++ b/skills/engineering/wayfinder/WAYFINDING-OPS.md
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,305 @@
 +# Wayfinding operations (local-markdown tracker)
 +
 +Where the map, its child tickets, blocking, and the frontier query physically
@@ -149,11 +174,43 @@ index 0000000..7f6409a
 +- The map is `map.md`.
 +- Each ticket is `tickets/NN-slug.md`, where `NN` is a zero-padded two-digit id
 +  (`01`, `02`, …), assigned in creation order.
++- Per-ticket claim locks live in `.locks/`: `.locks/NN.lock` for ticket `NN`. The
++  `.locks/` dir is under the already-gitignored effort tree, so it needs no new gitignore entry.
++
++## Active-map scan
++
++A map is **active** iff it has at least one `open` ticket **or** a non-empty "Not yet
++specified" section; **finished** otherwise. The scan skips any effort dir without a `map.md`
++and surfaces only a per-map summary line — never ticket bodies:
++
++```sh
++for d in docs/superpowers/wayfinder/*/; do
++  [ -f "$d/map.md" ] || continue
++  open=$(grep -rl '^status: open' "$d/tickets" 2>/dev/null | wc -l | tr -d ' ')
++  nys=0
++  awk '/^## Not yet specified/{f=1;next} /^## /{f=0} f' "$d/map.md" \
++    | sed 's/<!--.*-->//g' | grep -q '[^[:space:]]' && nys=1
++  if [ "$open" -gt 0 ] || [ "$nys" = 1 ]; then
++    name=$(sed -n 's/^# //p' "$d/map.md" | head -1)
++    echo "$name · open=$open"
++  fi
++done
++```
++
++`sed 's/<!--.*-->//g'` strips single-line HTML comments anywhere on a line, so a
++"Not yet specified" section holding only the template comment reads as empty (finished),
++while a real fog line survives even if it contains a `-->`. The summary line is
++`<map-name> · open=N`. Read no ticket bodies here — the scan is a
++routing aid, not the map load.
 +
 +## Child issue → file
 +
 +A ticket *is* a file in `tickets/`. Its filename `NN` is its id. Creating a
 +ticket means writing the file; there is no separate tracker record.
++
++Creating a ticket also creates its empty lock so a probe never precedes it:
++`mkdir -p .locks && : > .locks/NN.lock` (relative to the effort dir; `NN` matches the
++ticket). The lock stays empty until a session claims the ticket (see [Claiming](#claiming)).
 +
 +## Type / claim / blocking → frontmatter
 +
@@ -163,7 +220,7 @@ index 0000000..7f6409a
 +---
 +type: research        # one of: research | prototype | grilling | task (implementation tickets use the richer contract under "Implementation ticket validation")
 +status: open          # one of: open | closed
-+claimed-by:           # a name, or empty = unclaimed
++claimed-by:           # the owning session's id ($AI_SESSION_TAB), or empty = unclaimed
 +blocked-by: []        # a list of ticket ids this one waits on, e.g. [01, 03]
 +---
 +```
@@ -173,16 +230,70 @@ index 0000000..7f6409a
 +
 +## Claiming
 +
-+To claim a ticket, set `claimed-by:` to the dev driving the map, **before** any
-+work, so concurrent sessions skip it. An `open` ticket with empty `claimed-by:`
-+is unclaimed.
++`claimed-by:` is the ticket's **durable owner** — the claiming session's id, set and
++cleared only through the compare-and-swap primitive (see [Atomic release](#atomic-release)).
++A per-ticket `flock` layered over it is the **liveness** signal: whether the owning
++session is still alive. The two are distinct — see [Two locks — do not merge](#two-locks--do-not-merge).
++
++The lock file is created empty when the ticket is (see
++[Child issue → file](#child-issue--file)), so it always exists before any probe.
++
++**To claim**, win the flock **first** — it is the mutual-exclusion gate — then CAS-set
++`claimed-by`. A detached `setsid` holder keeps the lock for the session's lifetime and
++writes its durable identity (`pid`/`sess`) only *after* acquiring the lock, so a
++losing racer never wipes the winner's content:
++
++```sh
++export LOCK=docs/superpowers/wayfinder/<effort-slug>/.locks/NN.lock
++setsid sh -c 'exec 9<>"$LOCK"; flock -n 9 || exit 7;
++              printf "pid=%s sess=%s\n" "$$" "$AI_SESSION_TAB" > "$LOCK";
++              exec sleep infinity' &
++```
++
++`$AI_SESSION_TAB` is the session identity — the one stable per-session id that crosses into
++the bwrap jail for both Claude and Codex (`CLAUDE_CODE_SESSION_ID` does not). `9<>` opens
++read-write **without truncating**. Give the holder a moment, then confirm *you* hold it by
++reading the durable identity line — if it names your session you won and may CAS-set
++`claimed-by` to `$AI_SESSION_TAB`; otherwise another live session holds it, so pick a
++different ticket:
++
++```sh
++sleep 0.2
++if grep -q "sess=$AI_SESSION_TAB$" "$LOCK"; then
++  : # you hold the flock — CAS-set claimed-by to $AI_SESSION_TAB
++else
++  : # another live session owns it — do not claim; choose another ticket
++fi
++```
 +
 +## Frontier → scan
 +
-+The frontier is the set of tickets that are `status: open`, unclaimed
-+(`claimed-by:` empty), and have every id in `blocked-by:` pointing at a ticket
-+whose `status:` is `closed`. Compute it by reading the ticket frontmatter — there
-+is no tracker UI to query.
++The frontier is the set of **claimable** tickets: `status: open`, every id in
++`blocked-by:` pointing at a `closed` ticket, **and** claimable by the claim rule — either
++`claimed-by:` is empty, or it is set but the claim is **stale** (the owning session ended,
++so its flock is free). Compute it by reading frontmatter and probing each lock; there is no
++tracker UI to query.
++
++Probe a lock **read-only** — it never steals or truncates, and a missing file is free
++(belt-and-suspenders with empty-at-creation, so a freshly charted map whose tickets have no
++lock files yet never reads as held):
++
++```sh
++if [ ! -e "$LOCK" ]; then
++  echo free
++elif ( flock -n 9 || exit 1 ) 9<"$LOCK"; then
++  echo free
++else
++  echo held
++fi
++```
++
++Combine the probe with `claimed-by:`:
++
++- `claimed-by:` empty → **unclaimed**, eligible.
++- `claimed-by:` set, lock **held** → a live session owns it, **skip**.
++- `claimed-by:` set, lock **free** → **stale** (owner ended), eligible; reclaiming
++  overwrites `claimed-by:` through the CAS. Read the lock content for *who* only when held.
 +
 +## Resolution
 +
@@ -192,6 +303,46 @@ index 0000000..7f6409a
 +2. Write the answer into the ticket body (below the `## Question` block).
 +3. Append one gist line to the map's `## Decisions so far`, linking the ticket by
 +   a relative path: `- [<ticket title>](tickets/NN-slug.md) — <one-line gist>`.
++
++## Release
++
++At ticket close or phase handoff, free the holder by the **durable PID in the lock file** —
++this survives `/clear` and context compaction because the PID is read from the file, not
++from conversation memory, and is only ever applied to your own claim (same session = same
++PID namespace) — then CAS-clear or CAS-advance `claimed-by:` / `phase:`. Run this **before**
++any `/clear` the skill emits:
++
++```sh
++pid=$(sed -n 's/^pid=\([0-9][0-9]*\).*/\1/p' "$LOCK"); [ -n "$pid" ] && kill "$pid" 2>/dev/null
++```
++
++**Safety net.** `--die-with-parent` frees every holder at session end; a hard crash or
++reboot drops the kernel lock. Either way the claim becomes stale (`claimed-by:` set, lock
++free) and is auto-reclaimable (see [Repair](#repair)).
++
++## Two locks — do not merge
++
++Two distinct locks operate on a ticket; do not conflate them.
++
++- **Claim liveness lock:** the long-lived per-ticket `flock` in
++  [Claiming](#claiming). Signals whether a claimed ticket's owner session is alive; backs
++  `claimed-by:` so a claim can never strand.
++- **Edit lock:** the short `mkdir`/`O_EXCL` compare-and-swap in
++  [Atomic release](#atomic-release), held only for one file mutation, serializing
++  concurrent appends to `map.md` and every ticket write.
++
++The liveness lock does not replace the edit-lock CAS or its `claimed-by:` ownership field;
++both stay in effect for different purposes. Staleness is detected flock-free: a freed
++liveness lock marks an orphaned claim reclaimable, and no manual lease-repair is required.
++The artifact/phase repair table is unchanged.
++
++**Accepted limitation.** If the user hits `/clear` *mid-ticket* — before the ticket closes
++and with no explicit release having run — the holder survives (flock still held) and
++`claimed-by:` stays set, so the claim reads as *live*, not stale. A concurrent session
++wanting that exact ticket sees it busy and picks another (frees on teardown); the same
++session resumes its own ticket when it still recognizes the claim as its own (`claimed-by:`
++equals its session id). A mid-ticket manual `/clear` is a rare interruption, so this is
++accepted, not mitigated.
 +
 +## Implementation ticket validation
 +
@@ -243,14 +394,15 @@ index 0000000..7f6409a
 +
 +## Selection and claims
 +
-+The selector validates a ticket, accepts an empty `claimed-by`, and rejects any
-+non-empty `claimed-by` and any active blocker, surfacing a rejected in-flight
-+claim as a possible stale claim to reclaim. It first chooses eligible
++The selector validates a ticket, accepts an empty `claimed-by` **or a stale claim**
++(`claimed-by` set but its liveness lock probes free per [Frontier → scan](#frontier--scan)),
++and rejects a **live** claim (`claimed-by` set, lock held) and any active blocker. It first chooses eligible
 +`superpowers:executing-plans`, then eligible `superpowers:writing-plans`, sorting
 +each phase by ascending numeric ticket id, then records a reasoned choice between
 +eligible native decision work and eligible implementation
 +`superpowers:brainstorming`. Wayfinder claims the selected ticket through the
-+mutation primitive below before handoff. Native tickets remain eligible under the
++mutation primitive below before handoff; reclaiming a stale claim overwrites its
++non-empty `claimed-by` through that same primitive. Native tickets remain eligible under the
 +existing frontier rules.
 +
 +## Atomic release
@@ -264,17 +416,20 @@ index 0000000..7f6409a
 +on every pre-rename failure; then unlock. Cleanup failure is a protocol failure.
 +Each lifecycle mutation and repair increments revision exactly once. A successful
 +normal transition compares expected status, phase, revision, and owner, writes its
-+authorized fields, clears `claimed-by`, and increments revision once. An initial
-+guarded claim may change an empty `claimed-by:` to its expected owner; no normal
-+transition combines with repair.
++authorized fields, clears `claimed-by`, and increments revision once.
++An initial guarded claim may change an empty `claimed-by:`, **or a stale non-empty
++`claimed-by:` whose liveness lock probes free** (see [Frontier → scan](#frontier--scan)),
++to its expected owner; no normal transition combines with repair.
 +
 +The downstream owner releases the same ticket only after it has persisted its
-+artifact and phase. A declined approval writes nothing, retaining the ticket,
-+claim, and current phase so the live session keeps iterating; a failed or
-+interrupted stage writes nothing and leaves the claim for lease-repair recovery. A
-+normal release clears the caller's own `claimed-by` back to empty while preserving
-+`origin-ticket-id`; lease-repair remains the only operation that reassigns a
-+non-empty `claimed-by` to a different owner.
++artifact and phase.
++A declined approval writes nothing, retaining the ticket, claim, and current phase so the
++live session keeps iterating; a failed or interrupted stage writes nothing and leaves the
++claim — when that session ends its liveness lock frees, making the claim stale and
++auto-reclaimable (see [Repair](#repair)).
++
++A normal release clears the caller's own `claimed-by` back to empty while preserving
++`origin-ticket-id`. A **stale** claim is reclaimed by the guarded claim above (see [Repair](#repair)).
 +
 +## Repair
 +
@@ -287,10 +442,10 @@ index 0000000..7f6409a
 +
 +Use the mutation primitive for same-ticket block/resume, artifact rollback,
 +contradiction repair, corrupt closed-state repair, and the final terminal
-+closed/implemented transition. A stale owner may be reclaimed only by a recorded
-+lease-repair reclaim: require expected current owner, replacement owner, non-empty
-+reason, and prior revision; record a dated body note and replace it under the ticket
-+lock. It is the only operation that reassigns a non-empty `claimed-by` to a different owner.
++closed/implemented transition. A **stale** owner (its liveness lock probes free) is reclaimed directly by the guarded claim
++in [Claiming](#claiming) / [Atomic release](#atomic-release), which overwrites the non-empty
++`claimed-by` under the lock — the freed flock proves the owning session ended, so orphaned
++claims need no manual lease-repair.
 +Never create a successor ticket while repairing or resuming.
 +
 +The repair table is deterministic and is not combined with a normal transition:
