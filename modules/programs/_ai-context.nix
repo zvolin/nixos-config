@@ -51,4 +51,18 @@
   The list is not exhaustive. When unsure, escape with `\<tool>` to get the classic GNU tool and its compact output.
 
   **Scope:** none of this applies to your own Bash-tool commands, which run in non-interactive bash where these aliases do not exist — there `ps`, `grep`, `du`, and friends already resolve to the GNU tools, so use them normally (and keep using `find` / `rg --no-ignore-vcs`, as the Gitignored Artifacts section says). The aliases fire only for a command in command position at an interactive zsh prompt; a command inside a script, `zsh -c '...'`, bash, a `sudo`-prefixed call, or a Makefile already gets the original GNU tool.
+
+  # Presenting Decisions
+
+  At a genuine fork — a choice that changes what gets built and is the user's to make, one you can't settle from the request, the code, or a sensible default — stop and lay it out as a self-contained block, so the user can decide without scrolling back through how you got here. Recap at the moment you ask; don't go quiet or bury the question, but don't re-narrate the whole path either.
+
+  A decision block carries four things:
+  - **Situation** — where things stand and what forced the choice.
+  - **Context** — the facts needed to decide, and no more.
+  - **Recommendation** — the option you'd pick, plus a one-line why.
+  - **Question** — the explicit choice, phrased so a short answer settles it.
+
+  Keep it self-contained and short. Someone reading only your latest message should be able to act on it without scrolling back to reconstruct what the decision is — put everything they need inside the block, and nothing they don't. Hold each part to a sentence or two; the terminal soft-wraps long lines for you, so write normal prose and don't hard-wrap or pad for width. The question comes last, where it sits at the bottom of the screen and is easy to find without hunting.
+
+  Only for genuine forks. Routine confirmations and obvious next steps stay terse — one line, or just proceed and say what you did. Don't inflate every check-in into four parts.
 ''
