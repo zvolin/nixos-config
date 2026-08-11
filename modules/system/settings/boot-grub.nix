@@ -4,6 +4,10 @@
     { pkgs, ... }:
     {
       boot.loader.grub.enable = true;
+      # Bound how many generations keep a kernel+initrd in the (small FAT) ESP.
+      # Without this, /boot fills over time and bootloader install fails with
+      # ENOSPC. Each distinct kernel version costs ~90M in /boot/kernels.
+      boot.loader.grub.configurationLimit = 10;
 
       environment.systemPackages = [ pkgs.plymouth ];
       boot.extraModprobeConfig = ''

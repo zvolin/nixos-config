@@ -10,11 +10,8 @@
         boot-grub
         impermanence
         networking
-        overlay-freecad
         overlay-nettle
-        overlay-pdal
         overlay-tiny-dfr
-        overlay-vtk
         stylix
         nixvim
         docker

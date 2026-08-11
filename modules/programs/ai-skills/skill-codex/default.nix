@@ -10,6 +10,6 @@
       };
     in
     {
-      programs.claude-code.plugins = [ "${patched}/plugins/skill-codex" ];
+      programs.claude-code.plugins.skill-codex = "${patched}/plugins/skill-codex";
     };
 }

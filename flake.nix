@@ -2,11 +2,10 @@
   description = "Nixos config flake";
 
   inputs = {
-    # # keep the same version as apple-silicon for smooth integration and binary cache
-    # nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
-    # nixpkgs.follows = "nixos-apple-silicon/nixpkgs";
-
-    # use latest nixpkgs; asahi kernel will rebuild but everything else is fresh
+    # Track latest nixpkgs directly. The nixos-apple-silicon binary cache was
+    # dropped upstream on 2026-07-19 (migrating to Hydra, see nixos-hardware#854),
+    # so following asahi's nixpkgs no longer yields kernel cache hits; the asahi
+    # kernel builds locally regardless.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-apple-silicon = {
       url = "github:nix-community/nixos-apple-silicon";
