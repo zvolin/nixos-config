@@ -1,5 +1,5 @@
 diff --git a/skills/engineering/wayfinder/SKILL.md b/skills/engineering/wayfinder/SKILL.md
-index 42e3644..5305884 100644
+index 42e3644..18df14d 100644
 --- a/skills/engineering/wayfinder/SKILL.md
 +++ b/skills/engineering/wayfinder/SKILL.md
 @@ -22,7 +22,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
@@ -26,12 +26,14 @@ index 42e3644..5305884 100644
 
  The answer isn't part of the body — it's recorded on resolution (see [Work through the map](#work-through-the-map)). Assets created while resolving a ticket are linked from the issue, not pasted in.
 
-@@ -75,9 +75,10 @@ The answer isn't part of the body — it's recorded on resolution (see [Work thr
+@@ -74,10 +74,11 @@ The answer isn't part of the body — it's recorded on resolution (see [Work thr
+
  Every ticket is either **HITL** — human in the loop, worked *with* a human who speaks for themselves — or **AFK**, driven by the agent alone. A HITL ticket only resolves through that live exchange; the agent never stands in for the human's side of it (a grilling agent that answers its own questions has broken this).
 
- - **Research** (AFK): Reading documentation, third-party APIs, or local resources like knowledge bases to surface a fact a decision waits on. Resolved by a `/research` **subagent**. Use when knowledge outside the current working directory is required.
+-- **Research** (AFK): Reading documentation, third-party APIs, or local resources like knowledge bases to surface a fact a decision waits on. Resolved by a `/research` **subagent**. Use when knowledge outside the current working directory is required.
 -- **Prototype** (HITL): Raise the fidelity of the discussion by making a cheap, rough, concrete artifact to react to — an outline, a rough take, a stub, or UI/logic code via the /prototype skill. Links the prototype as an asset. Use when "how should it look" or "how should it behave" is the key question.
 -- **Grilling** (HITL): Conversation via the /grilling and /domain-modeling skills, one question at a time. The default case.
++- **Research** (HITL or AFK): Reading documentation, third-party APIs, local resources, and practitioner evidence to answer a question the route depends on. It runs across two claimed phase sessions. In `phase: research`, hand off to `/research`; that pipeline may need the section 5 approved-plan exchange ("facet selection is where drift starts"), dispatches its coverage and validation reviewers, and saves `docs/research/YYYY-MM-DD-<slug>.md`. The research session records that report and advances to `phase: wayfinder:resolve`. A fresh Wayfinder session then claims the ticket, writes the answer, closes it, updates Decisions so far, and graduates any fog. Simple lookups may remain AFK; research that reaches the plan gate is HITL.
 +- **Prototype** (HITL): Raise the fidelity of the discussion by making a cheap, rough, concrete artifact to react to — an outline, a rough take, a stub, or rough UI/logic code made by hand. Links the prototype as an asset. Use when "how should it look" or "how should it behave" is the key question.
 +- **Grilling** (HITL): Conversation via the brainstorming and /domain-modeling skills, one question at a time. The default case.
  - **Task** (HITL or AFK): Manual work that must happen before a *decision* can be made — nothing to decide, prototype, or research, but the discussion is blocked until it's done. Signing up for a service so its API can be judged, provisioning access, moving data so its shape can be seen. This is the one type that *does* rather than decides — and it earns its place by unblocking a decision, not by delivering the destination. The agent drives it alone where it can (AFK); otherwise it hands the human a precise checklist (HITL). Resolved when the work is done; the answer records what was done and any resulting facts (credentials location, new URLs, row counts) later tickets depend on.
@@ -39,10 +41,13 @@ index 42e3644..5305884 100644
 
  ## Fog of war
 
-@@ -104,25 +105,108 @@ Ruling something out of scope is a scoping act, not a step on the route. When a
+@@ -102,27 +103,113 @@ Ruling something out of scope is a scoping act, not a step on the route. When a
 
- Two modes. Either way, **never resolve more than one ticket per session** — with the exception of research tickets.
+ ## Invocation
 
+-Two modes. Either way, **never resolve more than one ticket per session** — with the exception of research tickets.
++Two modes. Either way, **never resolve more than one ticket per session**.
++
 +### Resolve the invocation
 +
 +A resolution step runs **first** on every invocation and decides which map — or that a new
@@ -56,7 +61,7 @@ index 42e3644..5305884 100644
 +- **Natural-language scope** ("add a ticket for X", "work on the notification thing") → load the active maps' **bodies only** (Destination + Decisions so far — the cheap low-res view, never tickets) and semantically match the described scope against them. Exactly one *confident* match → use it (announce by name; the user can override). Zero, multiple, **or a single weak/low-confidence** match → list the plausible candidates and ask; never auto-route on a marginal match.
 +
 +"Add a ticket to an existing map" is a resolved invocation followed by the existing create-then-wire step ([Work through the map](#work-through-the-map), step 5) against the resolved map.
-+
+
  ### Chart the map
 
  User invokes with a loose idea.
@@ -65,11 +70,12 @@ index 42e3644..5305884 100644
 +1. **Name the destination.** Run a `brainstorming` and `/domain-modeling` session to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first.
  2. **Map the frontier.** Grill again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** — the way to the destination is already clear, the whole journey small enough for one session — you don't need a map. Stop and ask the user how they'd like to proceed.
  3. **Create the map** (label `wayfinder:map`): Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
- 4. **Create the tickets you can specify now** as child issues of the map — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
- 5. **Fire the research subagents.** For each `research` ticket you just created, spin up a `/research` subagent to resolve it in parallel, capturing its findings on a throwaway `research/<name>` branch with a context pointer from the ticket.
+-4. **Create the tickets you can specify now** as child issues of the map — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
+-5. **Fire the research subagents.** For each `research` ticket you just created, spin up a `/research` subagent to resolve it in parallel, capturing its findings on a throwaway `research/<name>` branch with a context pointer from the ticket.
 -6. Stop — charting is one session's work; it hand-resolves nothing.
-+6. **Dissent the map** — run [Dissent the map](#dissent-the-map) with `scope = whole map + all new tickets`. The map is already stable: charting fires its research subagents onto throwaway branches and resolves nothing into the map, so the dissent does not wait on those branches.
-+7. Stop — charting is one session's work; it hand-resolves nothing. End with the [closing handoff](#closing-handoff): the map was just created, so the trailer points the first work session at it.
++4. **Create the tickets you can specify now** as child issues of the map — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section. Create every `type: research` ticket with the specialized research schema: `status: open`, `phase: research`, canonical `map-path`, empty `findings`, empty `claimed-by`, native-ID `blocked-by`, and `revision: 1`. Research tickets remain on the frontier for later phase sessions.
++5. **Dissent the map** — run [Dissent the map](#dissent-the-map) with `scope = whole map + all new tickets`. It reviews the map and tickets as charted; unresolved research remains frontier work.
++6. Stop — charting is one session's work; it hand-resolves nothing. End with the [closing handoff](#closing-handoff): the map was just created, so the trailer points the first work session at it.
 
  ### Work through the map
 
@@ -81,14 +87,16 @@ index 42e3644..5305884 100644
 -4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
 +2. Choose the ticket. If the user named one, use it. Otherwise apply the selector in [WAYFINDING-OPS.md](WAYFINDING-OPS.md). **Claim it** before any work — win its liveness `flock`, then CAS-set `claimed-by:` to this session (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md) — Claiming). A ticket whose `claimed-by:` is set but whose lock probes free is a **stale** claim, and is reclaimable.
 +3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `brainstorming` and `/domain-modeling`.
-+4. Record the resolution: write the answer into the ticket body, set `status: closed`, and **append a context pointer** to the map's Decisions-so-far (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md)).
++4. Record the resolution: write the answer into the ticket body and **append a context pointer** to the map's Decisions-so-far (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md)). For an ordinary native ticket, set `status: closed` as before. For a research ticket owned in `phase: wayfinder:resolve`, use the guarded terminal transition: atomically set `status: closed` and `phase: resolved`, preserve the canonical `findings`, clear `claimed-by`, preserve every other required field and body content, and increment `revision` once.
  5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
-+6. **Dissent the changed region** — if the just-closed ticket is `grilling` or `prototype`, run [Dissent the map](#dissent-the-map) with `scope = changed region: <just-closed ticket id> plus any tickets this resolution added or altered`. Skip `research` and `task`: those are type-driven, with no agent discretion to review.
++6. **Dissent the changed region** — if the just-closed ticket is `research` closed through `phase: wayfinder:resolve`, `grilling`, or `prototype`, run [Dissent the map](#dissent-the-map) with `scope = changed region: <just-closed ticket id> plus any tickets this resolution added or altered`. Skip this decision-ticket map dissent only for `task`. Direct `/research` is tracker-free, and implementation phase handoffs stay outside this decision-ticket branch. Research's coverage and validation reviewers assess the report; map dissent assesses route integrity and the resulting ticket and map changes.
 +7. If this resolution leaves both the frontier and **Not yet specified** empty, the map is complete — say so and stop, no trailer. Otherwise end with the [closing handoff](#closing-handoff).
 
  The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.
 +
-+## Implementation handoff
++## Phased ticket handoff
++
++Research tickets use the same phase-specific claim lifecycle. Wayfinder claims a ticket in `phase: research` and hands it to `/research`. After the report has been produced from the user-approved facet plan and completed reviewer pipeline, that research session kills its holder, CAS-sets `phase: wayfinder:resolve` plus the canonical `findings:` path, and clears `claimed-by:`. A later Wayfinder session creates a fresh claim for resolution. At most one owner is live at a time; the ticket does not keep one claim for its whole lifetime.
 +
 +After an actionable native decision closes, create or reuse its implementation
 +ticket, then claim it before handoff — win the liveness `flock`, then CAS-set
@@ -107,14 +115,16 @@ index 42e3644..5305884 100644
 +| Selected chunk | Codex handoff after /clear |
 +|---|---|
 +| map/decision work | $wayfinder <map-path> |
++| research (`phase: research`) | $research <research-ticket-path> |
 +| implementation brainstorming | $superpowers:brainstorming <implementation-ticket-path> |
 +| plan writing | $superpowers:writing-plans <implementation-ticket-path> |
 +| plan execution | $superpowers:executing-plans <implementation-ticket-path> |
 +
 +Each downstream invocation receives the original ticket path and ID, mutates
-+only that ticket, and never creates or selects a successor. Direct phase skills
-+do not mutate tickets; downstream skills invoke the ticket mutation primitive
-+only after their ordinary approval gate. Each generated spec or plan contains
++only that ticket, and never creates or selects a successor. Direct invocations
++of phase skills are tracker-free. Ticket-scoped downstream invocations use the
++ticket mutation primitive only after their ordinary approval gate.
++Each generated spec or plan contains
 +exactly one `## Wayfinder ticket handoff` YAML block with the canonical ticket
 +path, origin ID, and legal `next-phase`; malformed or duplicate blocks are
 +no-write failures. A newly discovered decision creates a linked native ticket,
@@ -128,7 +138,7 @@ index 42e3644..5305884 100644
 +Invoke `dissent-review` with `artifact=map`, the map path (see [WAYFINDING-OPS.md](WAYFINDING-OPS.md) — `docs/superpowers/wayfinder/<effort-slug>/map.md` for the local-markdown tracker), and these raw values, which wayfinder already holds:
 +
 +- **destination** — the map's `## Destination` block, verbatim.
-+- **chart state** — `charted` for a fresh map (from Chart step 6) or `re-chartered`.
++- **chart state** — `charted` for a fresh map (from Chart step 5) or `re-chartered`.
 +- **closed ticket ids** — the ids whose `status:` is `closed`.
 +- **tracker bindings** — the location, claim, blocking, and frontier conventions from [WAYFINDING-OPS.md](WAYFINDING-OPS.md).
 +- **review scope** — what the reviewer should read. Chart passes `whole map + all new tickets`; a Work-through resolution passes `changed region: <just-closed ticket id> plus any tickets it added or altered`. The reviewer confines its findings to this region.
@@ -155,10 +165,10 @@ index 42e3644..5305884 100644
 +Skip the trailer when there is no map to return to: the no-fog dead-end in [Chart the map](#chart-the-map) step 2 (no map was created) and the map-complete exit in [Work through the map](#work-through-the-map) step 7 (frontier and **Not yet specified** both empty).
 diff --git a/skills/engineering/wayfinder/WAYFINDING-OPS.md b/skills/engineering/wayfinder/WAYFINDING-OPS.md
 new file mode 100644
-index 0000000..096af83
+index 0000000..f762717
 --- /dev/null
 +++ b/skills/engineering/wayfinder/WAYFINDING-OPS.md
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,337 @@
 +# Wayfinding operations (local-markdown tracker)
 +
 +Where the map, its child tickets, blocking, and the frontier query physically
@@ -382,6 +392,37 @@ index 0000000..096af83
 +Reject every other implementation-state/path combination. A closed or
 +implemented ticket is terminal and is never selected.
 +
++## Research ticket validation
++
++A research ticket has its own phase and artifact contract. Create every new `type: research` ticket with this complete schema from birth; do not start it with the generic native-ticket frontmatter:
++
++```yaml
++---
++type: research
++status: open
++phase: research
++map-path: docs/superpowers/wayfinder/example/map.md
++findings:
++claimed-by:
++blocked-by: []
++revision: 1
++---
++```
++
++Resolve the physical repository root with `git rev-parse --show-toplevel`, then `realpath -e`. Resolve the ticket, `map-path`, and every non-empty `findings:` value with `realpath -e`; each must be an in-root regular file, and each stored value must equal its canonical root-relative path. Reject absolute, lexically escaping, symlink-escaping, missing, directory, and noncanonical values. `blocked-by` keeps the native-ticket contract: it is a YAML list of bare ticket IDs whose referenced native tickets exist and satisfy the ordinary blocker rules. Do not interpret those IDs as paths.
++
++Validation-only mode is the read-only form of the ticket-level mutation primitive. Acquire the ticket edit lock, reread and validate the expected revision, status, phase, owner, blockers, artifacts, and canonical paths, then unlock. Do not create a temporary file, rename anything, change a field, or increment `revision`.
++
++The only valid research states are:
++
++| Status | Phase | findings |
++| --- | --- | --- |
++| open | research | empty |
++| open | wayfinder:resolve | valid file |
++| closed | resolved | valid file |
++
++Reject every other research-state/path combination. A closed or resolved research ticket is terminal and is never selected. Research reuses the existing selection, claim, staleness, revision, blocker, and atomic-release rules without changing them. The research session owns the `research` claim until its guarded phase advance; the resolving Wayfinder session establishes a new claim. When that resolving session owns an open ticket in `phase: wayfinder:resolve`, its guarded close atomically sets `status: closed` and `phase: resolved`, preserves canonical `findings`, clears `claimed-by`, preserves the other fields and body, and increments `revision` exactly once.
++
 +## Creation lock
 +
 +Create an implementation ticket under a `mkdir` (or `O_EXCL`) creation lock keyed
@@ -454,6 +495,7 @@ index 0000000..096af83
 +| --- | --- |
 +| `spec` is invalid in `superpowers:writing-plans` | Clear only `spec`; return to `superpowers:brainstorming`. |
 +| `plan` is invalid in `superpowers:executing-plans` | Clear only `plan`; return to `superpowers:writing-plans`. |
++| `findings` is invalid in `wayfinder:resolve` | Clear only `findings`; return to `research`. |
 +| Phase/artifact contradiction | Clear the newest invalid artifact; return to the immediately preceding valid phase. |
 +| Invalid `closed`/`implemented` | Clear only invalid artifacts; return to the latest valid open phase. |
 +

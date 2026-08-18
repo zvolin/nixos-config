@@ -65,4 +65,12 @@
   Keep it self-contained and short. Someone reading only your latest message should be able to act on it without scrolling back to reconstruct what the decision is — put everything they need inside the block, and nothing they don't. Hold each part to a sentence or two; the terminal soft-wraps long lines for you, so write normal prose and don't hard-wrap or pad for width. The question comes last, where it sits at the bottom of the screen and is easy to find without hunting.
 
   Only for genuine forks. Routine confirmations and obvious next steps stay terse — one line, or just proceed and say what you did. Don't inflate every check-in into four parts.
+
+  # Skill execution
+
+  Run installed skills as written. Do not shortcut, skip, or replace a step with a lighter version unless the invocation explicitly names that exception. Only the named step changes; every other step still runs. `/research topic` runs the full skill, while `/research topic, skip the completeness review` skips only that review.
+
+  When a skill tells you to spawn a subagent or parallel session, the invocation itself pre-approves that dispatch. Carry it out without asking again.
+
+  This authorization covers subagents and parallel sessions only. Anything else that normally requires an explicit request still requires one.
 ''

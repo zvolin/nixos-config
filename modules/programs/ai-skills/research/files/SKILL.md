@@ -28,6 +28,51 @@ The build chain: approved plan (§5) → bullet draft (§7) → reviewed bullet 
 
 Before the first tool call, confirm the deliverable is the saved markdown file at the §15 path and the completion test is whether that file exists with humanized, reviewer-approved prose. At every step, "am I done?" has the same answer: only when the file at §15 exists on disk. If the answer is "no" when you are about to hand back, identify which artifact you are missing and build it — you are not done until the §15 file exists.
 
+## Wayfinder research-ticket mode
+
+Branch first on whether the invocation supplies a research-ticket path. Direct `/research` without a ticket stays tracker-free: do not read, claim, create, select, or mutate a ticket.
+
+With a ticket path, retain its canonical repository-root-relative path for the whole run. Before any write, call Wayfinder's ticket-level mutation primitive in validation-only mode. That mode acquires the edit lock, rereads and validates the expected state, then unlocks without a temporary file, rename, field change, or `revision` increment. Under its lock/CAS contract, require a canonical repository-root-relative regular file with `type: research`, `status: open`, `phase: research`, the current `revision`, a caller-owned active `claimed-by`, no active `blocked-by`, and empty `findings`. Resolve with `realpath -e`; reject absolute, escaping, symlinked, missing, directory, noncanonical, stale, blocked, or mismatched inputs without writing.
+
+The validated ticket body must contain exactly one non-empty `## Question` block. Its text is the original research question supplied to intake and both reviewer pipelines. A report is reusable only when its verbatim `Question` field exactly equals that validated `## Question` text. A missing, duplicate, or empty Question block is a no-write rejection.
+
+After validation and before §1, reconcile reports under `docs/research/`. A reusable report contains exactly one `## Wayfinder ticket handoff` heading followed by one YAML block with the canonical ticket path, the ticket's numeric id as `origin-ticket-id`, and `next-phase: wayfinder:resolve`:
+
+## Wayfinder ticket handoff
+
+```yaml
+ticket: docs/superpowers/wayfinder/example/tickets/01-question.md
+origin-ticket-id: 1
+next-phase: wayfinder:resolve
+```
+
+Count only reports with fully valid handoff blocks and a verbatim `Question` field that exactly equals the validated ticket's `## Question` text. A missing key, extra handoff heading or block, wrong ticket, wrong id, wrong phase, absolute or noncanonical path, partial block, malformed YAML, or Question mismatch is not reusable.
+
+- Zero reusable reports: run the ordinary research pipeline.
+- One reusable report: the handoff metadata proves ticket association but not that the saved file came from the user-approved facet plan and completed reviewer pipeline. Ask the user to confirm that provenance. On confirmation, canonicalize the report path, confirm its Question still exactly equals the validated ticket Question, and retry the guarded ticket update without repeating research.
+- Multiple reusable reports: stop without writing and ask which report is canonical. After the user selects one, confirm its Question still exactly equals the validated ticket Question before the provenance gate or any ticket mutation.
+- Malformed or partial reports: ignore them for reuse. If no valid report remains, run the ordinary pipeline.
+
+For a new report, run §1 through §14 unchanged, including the §5 facet-plan approval gate and both §8 reviewers. Section 15 saves the report produced from that user-approved facet plan and completed reviewer pipeline, with a verbatim `Question` field that exactly equals the validated ticket Question, then appends exactly one valid handoff block using the original canonical ticket path, its numeric id, and `next-phase: wayfinder:resolve`. The saved report is the artifact; a missing, malformed, mismatched, or duplicate handoff block, or a Question mismatch, prevents any ticket write. There is no new final-report approval gate.
+
+Only after a completed, validated report exists, release and hand off in this order: terminate the ticket's claim-liveness holder using the durable PID stored in Wayfinder's lock file, as required by Wayfinder's Release contract; acquire the ticket mutation primitive's edit lock and revalidate the report and ticket; then CAS-advance the phase, write `findings`, and clear the owner. While locked, require the report's verbatim `Question` field to still exactly equal the validated ticket's `## Question` text before any ticket mutation. Call the mutation primitive against the same original ticket path with the expected revision, status, phase, and owner, then CAS-update:
+
+```yaml
+status: open
+phase: wayfinder:resolve
+findings: <canonical root-relative docs/research report path>
+claimed-by:
+```
+
+CAS-advance `phase` to `wayfinder:resolve`, write `findings`, and clear `claimed-by`; retain `map-path`, `blocked-by`, `revision` semantics, unknown frontmatter, and the ticket body. Do not write the ticket directly. A declined facet-plan approval or interrupted run leaves the ticket unchanged and claimed in `phase: research`; after the session ends, the stale claim follows Wayfinder recovery. If CAS fails after saving the completed report, keep the report and leave the ticket unchanged. The next claimant reconciles and retries against that intact report instead of repeating research. Report production still has no partial-success state, while report creation and ticket mutation remain separate, idempotent operations.
+
+Only after that successful CAS release, announce the saved report and return path, then emit the `/clear` trailer. Use the current runtime's handoff syntax:
+
+- Claude Code: `/clear`, then `/wayfinder <map-path>`.
+- Codex: `/clear`, then `$wayfinder <map-path>`.
+
+Without a successful ticket update, emit no Wayfinder trailer.
+
 ## When to use
 
 - Topic has multiple plausible angles or options worth comparing.
@@ -171,7 +216,7 @@ This is the input to §8.
 
 **Input:** bullet draft (from §7). **Output:** coverage + validation reports for §9.
 
-Spawn two subagents in parallel to review the bullet draft: `research-coverage-reviewer` and `research-validation-reviewer`. Send both spawn requests in one response. Wait for both threads to finish before continuing to §9. Do not ask the user for permission — the skill invocation is the permission for this dispatch.
+Spawn two subagents in parallel to review the bullet draft: `research-coverage-reviewer` and `research-validation-reviewer`. Send both spawn requests in one response. Wait for both threads to finish before continuing to §9.
 
 **`research-coverage-reviewer`.** Finds niche alternatives the main investigation missed. Send it: original question, plan, bullet draft, list of URLs already consulted. Definition at `agents/coverage-reviewer.md` (next to this file).
 
@@ -282,7 +327,7 @@ The common-mistakes table above is the single home for the rationalizations. The
 ```markdown
 # <Title>
 
-**Question:** <verbatim user request>
+**Question:** <verbatim user request; in research-ticket mode, the validated ticket Question>
 **Assumptions made during intake:** <bullets, or "none">
 **Date:** YYYY-MM-DD
 
