@@ -99,6 +99,31 @@ Only subagent dispatch is genuinely runtime-specific:
 | Dispatch §8 reviewers | `Agent` tool → `research-coverage-reviewer`, `research-validation-reviewer` | `spawn` in parallel → `research-coverage-reviewer`, `research-validation-reviewer` |
 | Dispatch §12 draft reviewer | `Agent` tool (general-purpose) | subagent (general-purpose) |
 
+## Asking the user
+
+Before asking for anything — a choice, an approval, an answer — assume the
+reader has not followed this session and can see only the last screenful. Have
+the topic as understood, and what the answer feeds (in wayfinder ticket mode,
+the ticket's Question and the map it serves) in hand first; if you don't,
+load them before asking rather than asking a thin question.
+
+Open with one line naming what is being decided and why it comes up now. Then
+only the facts needed to decide. Where there are discrete options, name each by
+what it does and what it costs, and keep it to two or three. Then the one you'd
+pick and a one-line why. The question goes last, phrased so a short answer
+settles it.
+
+Refer to facets by the question each answers, and to reports by topic and date
+rather than by path — never by id or path alone. Once a block is on screen and
+answered, follow-ups carry a one-line re-anchor and the next question; go back
+to the full form after a topic change or a screenful of tool output. A run of
+single questions on one topic owes the full form once, at the start of the run —
+each later question in the run is a one-line re-anchor and the question alone.
+
+At the §5 gate, state each facet as the question it will answer rather than as a
+label. The §1 intake questions hold nothing but the raw request, so there the
+obligation is to say why the question is being asked and what the answer changes.
+
 ## Phases
 
 The 16 phases group into three stages: **Plan** (§1–§5), **Investigate** (§6–§10), **Write** (§11–§15).

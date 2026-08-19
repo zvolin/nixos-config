@@ -1,8 +1,39 @@
 diff --git a/skills/engineering/wayfinder/SKILL.md b/skills/engineering/wayfinder/SKILL.md
-index 42e3644..18df14d 100644
+index 42e3644..92107a1 100644
 --- a/skills/engineering/wayfinder/SKILL.md
 +++ b/skills/engineering/wayfinder/SKILL.md
-@@ -22,7 +22,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
+@@ -16,13 +16,38 @@ Wayfinder is **planning** by default: each ticket resolves a decision, and the m
+
+ Every map and ticket is an issue, so it has a **name** — its title. In everything the human reads — narration, the map's Decisions-so-far — refer to it by that name, never by a bare id, number, or slug. A wall of `#42, #43, #44` is illegible; names read at a glance. The id and URL don't vanish — a name wraps its link — but they ride *inside* the name, never stand in for it.
+
++## Asking the user
++
++Before asking for anything — a choice, an approval, an answer — assume the
++reader has not followed this session and can see only the last screenful. Have
++the map's name and destination, the claimed ticket's title and its `## Question`,
++and the Decisions-so-far entries bearing on it in hand first; if you don't, load
++them before asking rather than asking a thin question.
++
++Open with one line naming what is being decided and why it comes up now. Then
++only the facts needed to decide. Where there are discrete options, name each by
++what it does and what it costs, and keep it to two or three. Then the one you'd
++pick and a one-line why. The question goes last, phrased so a short answer
++settles it.
++
++Refer to maps, tickets, and decisions by name, never by id alone — see
++`## Refer by name` above. Once a block is on screen and answered, follow-ups
++carry a one-line re-anchor and the next question; go back to the full form after
++a topic change or a screenful of tool output. A run of single questions on one
++topic owes the full form once, at the start of the run — each later question in
++the run is a one-line re-anchor and the question alone.
++
++When two or more active maps are in play and you ask which one to work, list
++them with each candidate's destination line. When folding back a dissent
++`ask`, quote the map or ticket text under dispute.
++
+ ## The Map
+
+ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map` — the canonical artifact. Its tickets are child issues of the map.
 
  The map is an **index**, not a store. It lists the decisions made and points at the tickets that hold their detail; a decision lives in exactly one place — its ticket — so the map never restates it, only gists it and links.
 
@@ -11,7 +42,7 @@ index 42e3644..18df14d 100644
 
  ### The map body
 
-@@ -62,11 +62,11 @@ Each ticket is a **child issue** of the map; the tracker's issue id is its ident
+@@ -62,11 +87,11 @@ Each ticket is a **child issue** of the map; the tracker's issue id is its ident
  <the decision or investigation this ticket resolves>
  ```
 
@@ -26,7 +57,7 @@ index 42e3644..18df14d 100644
 
  The answer isn't part of the body — it's recorded on resolution (see [Work through the map](#work-through-the-map)). Assets created while resolving a ticket are linked from the issue, not pasted in.
 
-@@ -74,10 +74,11 @@ The answer isn't part of the body — it's recorded on resolution (see [Work thr
+@@ -74,10 +99,11 @@ The answer isn't part of the body — it's recorded on resolution (see [Work thr
 
  Every ticket is either **HITL** — human in the loop, worked *with* a human who speaks for themselves — or **AFK**, driven by the agent alone. A HITL ticket only resolves through that live exchange; the agent never stands in for the human's side of it (a grilling agent that answers its own questions has broken this).
 
@@ -41,7 +72,7 @@ index 42e3644..18df14d 100644
 
  ## Fog of war
 
-@@ -102,27 +103,113 @@ Ruling something out of scope is a scoping act, not a step on the route. When a
+@@ -102,27 +128,113 @@ Ruling something out of scope is a scoping act, not a step on the route. When a
 
  ## Invocation
 

@@ -1,8 +1,8 @@
 diff --git a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven-development/SKILL.md
-index 7666ddf..f21bb57 100644
+index 045f239..e9f9aa7 100644
 --- a/skills/subagent-driven-development/SKILL.md
 +++ b/skills/subagent-driven-development/SKILL.md
-@@ -128,7 +128,7 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
+@@ -153,7 +153,7 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
 
  Implementer subagents report one of four statuses. Handle each appropriately:
 
@@ -11,7 +11,7 @@ index 7666ddf..f21bb57 100644
 
  **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
-@@ -161,7 +161,7 @@ review — send it back to the implementer and re-review.
+@@ -186,7 +186,7 @@ review — send it back to the implementer and re-review.
 
  ## Batch Dispatch from Dependency Graph
 
@@ -20,7 +20,7 @@ index 7666ddf..f21bb57 100644
 
  The dependency graph determines task ordering. The controller never starts a task before its dependencies are complete. Within a batch, the controller dispatches tasks sequentially by default. Parallel dispatch within a batch is permitted only when the tasks' `**Files:**` lists are fully disjoint — no shared files between any two tasks in the batch. The controller checks file lists before deciding; if any overlap exists, dispatch those tasks sequentially. The controller waits for the entire batch to complete (all reviews passed) before dispatching the next batch.
 
-@@ -201,7 +201,7 @@ final whole-branch review. When you fill a reviewer template:
+@@ -226,7 +226,7 @@ final whole-branch review. When you fill a reviewer template:
    test hygiene, review method) — the constraints block is for what THIS
    project's spec demands.
  - Hand the reviewer its diff as a file: run this skill's
@@ -29,7 +29,7 @@ index 7666ddf..f21bb57 100644
    it prints (or, without bash: `git log --oneline`, `git diff --stat`,
    and `git diff -U10` for the range, redirected to one uniquely named
    file). The output never enters your own context, and the reviewer sees
-@@ -223,7 +223,7 @@ final whole-branch review. When you fill a reviewer template:
+@@ -248,7 +248,7 @@ final whole-branch review. When you fill a reviewer template:
    Do not dismiss the finding because the plan mandates it, and do not
    dispatch a fix that contradicts the plan without asking.
  - The final whole-branch review gets a package too: run
@@ -38,7 +38,7 @@ index 7666ddf..f21bb57 100644
    branch started from, e.g. `git merge-base main HEAD`) and include the
    printed path in the final review dispatch, so the final reviewer reads
    one file instead of re-deriving the branch diff with git commands.
-@@ -290,7 +290,7 @@ sequences — the single most expensive failure observed. Track progress in
+@@ -315,7 +315,7 @@ sequences — the single most expensive failure observed. Track progress in
  a ledger file, not only in todos.
 
  - At skill start, check for a ledger:
@@ -47,7 +47,7 @@ index 7666ddf..f21bb57 100644
    as complete are DONE — do not re-dispatch them; resume at the first task
    not marked complete.
  - When a task's review comes back clean, append one line to the ledger in
-@@ -423,7 +423,7 @@ Done!
+@@ -448,7 +448,7 @@ Done!
    dispatch prompt ("treat it as Minor at most") — the plan's example code is
    a starting point, not evidence that its weaknesses were chosen
  - Dispatch a task reviewer without a diff file — generate it first

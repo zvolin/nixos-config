@@ -1,7 +1,9 @@
 diff --git a/skills/subagent-driven-development/scripts/task-brief b/skills/subagent-driven-development/scripts/task-brief
+index 198c828..36a48fc 100755
 --- a/skills/subagent-driven-development/scripts/task-brief
 +++ b/skills/subagent-driven-development/scripts/task-brief
-@@ -27,7 +27,11 @@
+@@ -27,8 +27,12 @@ fi
+
  awk -v n="$n" '
    /^```/ { infence = !infence }
 -  !infence && /^#+[ \t]+Task[ \t]+[0-9]+/ {

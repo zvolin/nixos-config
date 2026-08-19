@@ -1,8 +1,36 @@
 diff --git a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
-index b0d52b2..2378ffc 100644
+index b0d52b2..adb180c 100644
 --- a/skills/brainstorming/SKILL.md
 +++ b/skills/brainstorming/SKILL.md
-@@ -23,13 +23,17 @@ You MUST create a task for each of these items and complete them in order:
+@@ -17,19 +17,45 @@ Do NOT invoke any implementation skill, write any code, scaffold any project, or
+
+ Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
+
++## Asking the user
++
++Before asking for anything — a choice, an approval, an answer — assume the
++reader has not followed this session and can see only the last screenful. Have
++one line on what is being built, plus the specific part of the design or plan in
++question, in hand first; for any review gate, have the finding beside the
++verbatim text it disputes. If you don't, load them before asking rather than
++asking a thin question.
++
++Open with one line naming what is being decided and why it comes up now. Then
++only the facts needed to decide. Where there are discrete options, name each by
++what it does and what it costs, and keep it to two or three. Then the one you'd
++pick and a one-line why. The question goes last, phrased so a short answer
++settles it.
++
++Refer to tasks and plans by title, never `T3` alone. Once a block is on screen
++and answered, follow-ups carry a one-line re-anchor and the next question; go
++back to the full form after a topic change or a screenful of tool output. A run
++of single questions on one topic owes the full form once, at the start of the
++run — each later question in the run is a one-line re-anchor and the question
++alone.
++
+ ## Checklist
+
+ You MUST create a task for each of these items and complete them in order:
 
  1. **Explore project context** — check files, docs, recent commits
  2. **Offer the visual companion just-in-time** — NOT upfront. The first time a question would genuinely be clearer shown than described, offer it then (its own message); on approval its browser tab opens for you. If no visual question ever arises, never offer it. See the Visual Companion section below.
@@ -26,7 +54,7 @@ index b0d52b2..2378ffc 100644
 
  ## Process Flow
 
-@@ -37,28 +41,79 @@ You MUST create a task for each of these items and complete them in order:
+@@ -37,28 +63,79 @@ You MUST create a task for each of these items and complete them in order:
  digraph brainstorming {
      "Explore project context" [shape=box];
      "Ask clarifying questions" [shape=box];
@@ -118,7 +146,7 @@ index b0d52b2..2378ffc 100644
 
  ## The Process
 
-@@ -77,6 +132,25 @@ digraph brainstorming {
+@@ -77,6 +154,25 @@ digraph brainstorming {
  - Propose 2-3 different approaches with trade-offs
  - Present options conversationally with your recommendation and reasoning
  - Lead with your recommended option and explain why
@@ -144,29 +172,29 @@ index b0d52b2..2378ffc 100644
 
  **Presenting the design:**
 
-@@ -106,29 +180,43 @@ digraph brainstorming {
+@@ -106,29 +202,43 @@ digraph brainstorming {
  - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
    - (User preferences for spec location override this default)
  - Use elements-of-style:writing-clearly-and-concisely skill if available
 -- Commit the design document to git
 +- If the path is not gitignored (check with `git check-ignore -q <path>`), commit the design document to git. If it is gitignored, skip the commit — the file is saved locally and usable. Never use `git add -f`.
-+
-+**Spec review:**
-+After writing the spec document, run three passes on the file, in order. Dissent runs first because it can force a restructuring change — the cheap checks should run on the doc you keep. Humanize runs last, on the doc both reviews have finished rewriting.
 
 -**Spec Self-Review:**
 -After writing the spec document, look at it with fresh eyes:
-+**(7a) Dissent — first, on the doc you keep.**
-+Invoke the `dissent-review` skill with `artifact=spec` and the spec path. It dispatches a cold dissent reviewer, collects your honest per-finding responses, dispatches a neutral adjudicator, and folds back the outcomes (apply / skip / ask). A finding big enough to restructure the spec comes back as `ask` — decide it with the user before continuing. If dissent could not run, it surfaces a loud "dissent did NOT run on `<path>`" notice; carry that to the user at the review gate.
++**Spec review:**
++After writing the spec document, run three passes on the file, in order. Dissent runs first because it can force a restructuring change — the cheap checks should run on the doc you keep. Humanize runs last, on the doc both reviews have finished rewriting.
 
 -1. **Placeholder scan:** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
 -2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
 -3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
 -4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
-+**(7b) Structural lint — next, on the surviving doc.**
-+Dispatch the `spec-document-reviewer` subagent using the template at `skills/brainstorming/spec-document-reviewer-prompt.md`. Provide the spec file path and precise review context — never session history. If issues are found, fix them and re-dispatch. Loop until 0 critical/medium issues remain. **Max 3 iterations; if critical or medium issues still remain at 3, escalate to the user** rather than looping further.
++**(7a) Dissent — first, on the doc you keep.**
++Invoke the `dissent-review` skill with `artifact=spec` and the spec path. It dispatches a cold dissent reviewer, collects your honest per-finding responses, dispatches a neutral adjudicator, and folds back the outcomes (apply / skip / ask). A finding big enough to restructure the spec comes back as `ask` — decide it with the user before continuing. If dissent could not run, it surfaces a loud "dissent did NOT run on `<path>`" notice; carry that to the user at the review gate.
 
 -Fix any issues inline. No need to re-review — just fix and move on.
++**(7b) Structural lint — next, on the surviving doc.**
++Dispatch the `spec-document-reviewer` subagent using the template at `skills/brainstorming/spec-document-reviewer-prompt.md`. Provide the spec file path and precise review context — never session history. If issues are found, fix them and re-dispatch. Loop until 0 critical/medium issues remain. **Max 3 iterations; if critical or medium issues still remain at 3, escalate to the user** rather than looping further.
++
 +**(7c) Humanize — last, on the doc that survives both.**
 +Invoke the `humanizer` skill on the spec's non-code prose. It does not touch code blocks, file paths, commands, config snippets, or structured data. If the prose is already clean this is a no-op.
 
@@ -181,16 +209,16 @@ index b0d52b2..2378ffc 100644
 -**Implementation:**
 +**Select execution strategy:**
 +Apply the Strategy Selection Heuristics (below). Announce the choice with a one-line reason. Do NOT ask the user to confirm.
-
--- Invoke the writing-plans skill to create a detailed implementation plan
--- Do NOT invoke any other skill. writing-plans is the next step.
++
 +> "Selected execution strategy: **<strategy>**. Reason: <one line grounded in the heuristics>."
 +
 +**Transition to planning:**
 +Do NOT invoke writing-plans directly. Announce the narration, then a blank line, then a **fenced code block** holding exactly two commands, one per line: a context-clear, then the writing-plans invocation on the spec:
 +
 +> "Spec saved to `<path>`. Strategy: **<strategy>**. To continue, clear context and invoke writing-plans with this spec."
-+
+
+-- Invoke the writing-plans skill to create a detailed implementation plan
+-- Do NOT invoke any other skill. writing-plans is the next step.
 +Emit the two commands in the **current harness's** syntax:
 +
 +- **Claude Code** — `/clear`, then `/writing-plans <spec-path>`.
@@ -200,7 +228,7 @@ index b0d52b2..2378ffc 100644
 
  ## Key Principles
 
-@@ -139,6 +227,45 @@ Wait for the user's response. If they request changes, make them and re-run the
+@@ -139,6 +249,45 @@ Wait for the user's response. If they request changes, make them and re-run the
  - **Incremental validation** - Present design, get approval before moving on
  - **Be flexible** - Go back and clarify when something doesn't make sense
 

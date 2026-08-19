@@ -1,5 +1,5 @@
 diff --git a/skills/subagent-driven-development/SKILL.md b/skills/subagent-driven-development/SKILL.md
-index d8ca081..7666ddf 100644
+index d8ca081..045f239 100644
 --- a/skills/subagent-driven-development/SKILL.md
 +++ b/skills/subagent-driven-development/SKILL.md
 @@ -18,29 +18,7 @@ ledger and the tool results carry the record.
@@ -57,7 +57,7 @@ index d8ca081..7666ddf 100644
      "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
      "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
      "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-@@ -73,15 +58,25 @@ digraph process {
+@@ -73,15 +58,50 @@ digraph process {
      "Implementer subagent implements, tests, commits, self-reviews" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)";
      "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" -> "Task reviewer reports spec ✅ and quality approved?";
      "Task reviewer reports spec ✅ and quality approved?" -> "Dispatch fix subagent for Critical/Important findings" [label="no"];
@@ -83,10 +83,35 @@ index d8ca081..7666ddf 100644
 +in the main tree (that is where the plan file and the Durable Progress ledger live).
 +</HARD-GATE>
 +
++## Asking the user
++
++Before asking for anything — a choice, an approval, an answer — assume the
++reader has not followed this session and can see only the last screenful. Have
++one line on what is being built, plus the specific part of the design or plan in
++question, in hand first; for any review gate, have the finding beside the
++verbatim text it disputes. If you don't, load them before asking rather than
++asking a thin question.
++
++Open with one line naming what is being decided and why it comes up now. Then
++only the facts needed to decide. Where there are discrete options, name each by
++what it does and what it costs, and keep it to two or three. Then the one you'd
++pick and a one-line why. The question goes last, phrased so a short answer
++settles it.
++
++Refer to tasks and plans by title, never `T3` alone. Once a block is on screen
++and answered, follow-ups carry a one-line re-anchor and the next question; go
++back to the full form after a topic change or a screenful of tool output. A run
++of single questions on one topic owes the full form once, at the start of the
++run — each later question in the run is a one-line re-anchor and the question
++alone.
++
++Iteration-cap escalations summarize what the loop kept disagreeing about rather
++than reporting that a cap was hit.
++
  ## Pre-Flight Plan Review
 
  Before dispatching Task 1, scan the plan once for conflicts:
-@@ -156,6 +151,33 @@ complete: you hold the plan and cross-task context the reviewer
+@@ -156,6 +176,33 @@ complete: you hold the plan and cross-task context the reviewer
  lacks. If you confirm an item is a real gap, treat it as a failed spec
  review — send it back to the implementer and re-review.
 
@@ -120,7 +145,7 @@ index d8ca081..7666ddf 100644
  ## Constructing Reviewer Prompts
 
  Per-task reviews are task-scoped gates. The broad review happens once, at the
-@@ -216,6 +238,23 @@ final whole-branch review. When you fill a reviewer template:
+@@ -216,6 +263,23 @@ final whole-branch review. When you fill a reviewer template:
    Per-finding fixers each rebuild context and re-run suites; a real
    session's final-review fix wave cost more than all its tasks combined.
 
@@ -144,7 +169,7 @@ index d8ca081..7666ddf 100644
  ## File Handoffs
 
  Everything you paste into a dispatch prompt — and everything a subagent
-@@ -271,6 +310,8 @@ a ledger file, not only in todos.
+@@ -271,6 +335,8 @@ a ledger file, not only in todos.
 
  ## Example Workflow
 
@@ -153,7 +178,7 @@ index d8ca081..7666ddf 100644
  ```
  You: I'm using Subagent-Driven Development to execute this plan.
 
-@@ -370,7 +411,7 @@ Done!
+@@ -370,7 +436,7 @@ Done!
  - Start implementation on main/master branch without explicit user consent
  - Skip task review, or accept a report missing either verdict (spec compliance AND task quality are both required)
  - Proceed with unfixed issues

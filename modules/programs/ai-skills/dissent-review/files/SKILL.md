@@ -43,13 +43,36 @@ Back in the main context, write a brief honest response to each finding: concede
 
 Fill the adjudicator template from `adjudicator-prompt.md`. Dispatch with the `Agent` tool, `subagent_type: general-purpose`, blind to the authoring conversation. Pass the artifact contents, the dissent findings, and your honest responses. It may read cited source material and the codebase. It rules on the whole list in one pass — one outcome per finding: `apply`, `skip`, or `ask`.
 
+## Asking the user
+
+Before asking for anything — a choice, an approval, an answer — assume the
+reader has not followed this session and can see only the last screenful. Have
+the finding, the verbatim artifact text it disputes, your own honest response,
+and the adjudicator's note in hand first; if you don't, load them before asking
+rather than asking a thin question.
+
+Open with one line naming what is being decided and why it comes up now. Then
+only the facts needed to decide. Where there are discrete options, name each by
+what it does and what it costs, and keep it to two or three. Then the one you'd
+pick and a one-line why. The question goes last, phrased so a short answer
+settles it.
+
+Refer to findings by their claim, never by index or number alone. Once a block
+is on screen and answered, follow-ups carry a one-line re-anchor and the next
+question; go back to the full form after a topic change or a screenful of tool
+output. A run of single questions on one topic owes the full form once, at the
+start of the run — each later question in the run is a one-line re-anchor and
+the question alone.
+
+An `ask` outcome carries both the dissent finding's position and your own, not just the adjudicator's ruling.
+
 ## Phase 4: Fold back
 
 Carry out the adjudicator's outcomes:
 
 - **apply** → make the edit directly in `path`. (For a map, see Advisory maps below — recommend, don't edit tracker state.)
 - **skip** → log one line in a rejections appendix shown to the human: "dissent raised X, no change because Y."
-- **ask** → escalate to the human with the finding, your honest response, and the adjudicator's note; wait. The user has not seen the artifact's shape yet, so carry all the context — the background and both views — so they can decide. There is no autonomous shape-rewrite loop: a change big enough to restructure the artifact goes to the human, never applied and re-reviewed by the machine.
+- **ask** → escalate to the human with the finding, your honest response, and the adjudicator's note; wait. There is no autonomous shape-rewrite loop: a change big enough to restructure the artifact goes to the human, never applied and re-reviewed by the machine.
 
 Present to the human the `ask` findings and the skimmable rejections appendix. Applied changes show up in the artifact at the surface's own review gate. If the adjudicator marks every finding `ask`, that is fine — it degrades to "present all findings to the human," which is never worse than a manual deep review.
 
