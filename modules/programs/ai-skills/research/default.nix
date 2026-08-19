@@ -10,8 +10,10 @@
       # accepts a path directly and parses the frontmatter at build time.
       programs.claude-code.agents.research-coverage-reviewer = builtins.readFile ./files/agents/coverage-reviewer.md;
       programs.claude-code.agents.research-validation-reviewer = builtins.readFile ./files/agents/validation-reviewer.md;
+      programs.claude-code.agents.research-landscape-scout = builtins.readFile ./files/agents/landscape-scout.md;
 
       programs.codex.agents.research-coverage-reviewer = ./files/agents/coverage-reviewer.md;
       programs.codex.agents.research-validation-reviewer = ./files/agents/validation-reviewer.md;
+      programs.codex.agents.research-landscape-scout = ./files/agents/landscape-scout.md;
     };
 }

@@ -64,7 +64,7 @@ findings: <canonical root-relative docs/research report path>
 claimed-by:
 ```
 
-CAS-advance `phase` to `wayfinder:resolve`, write `findings`, and clear `claimed-by`; retain `map-path`, `blocked-by`, `revision` semantics, unknown frontmatter, and the ticket body. Do not write the ticket directly. A declined facet-plan approval or interrupted run leaves the ticket unchanged and claimed in `phase: research`; after the session ends, the stale claim follows Wayfinder recovery. If CAS fails after saving the completed report, keep the report and leave the ticket unchanged. The next claimant reconciles and retries against that intact report instead of repeating research. Report production still has no partial-success state, while report creation and ticket mutation remain separate, idempotent operations.
+CAS-advance `phase` to `wayfinder:resolve`, write `findings`, and clear `claimed-by`; retain `map-path`, `blocked-by`, `revision` semantics, unknown frontmatter, and the ticket body. Do not write the ticket directly. A declined facet-plan approval — the user ending the run at §5, not a "none of these framings" steer, which is a re-draft — or an interrupted run leaves the ticket unchanged and claimed in `phase: research`; after the session ends, the stale claim follows Wayfinder recovery. If CAS fails after saving the completed report, keep the report and leave the ticket unchanged. The next claimant reconciles and retries against that intact report instead of repeating research. Report production still has no partial-success state, while report creation and ticket mutation remain separate, idempotent operations.
 
 Only after that successful CAS release, announce the saved report and return path, then emit the `/clear` trailer. Use the current runtime's handoff syntax:
 
@@ -95,19 +95,20 @@ Only subagent dispatch is genuinely runtime-specific:
 
 | Action | Claude Code | Codex |
 |---|---|---|
+| Dispatch §2.5 landscape scout | `Agent` tool → `research-landscape-scout` | `spawn` → `research-landscape-scout` |
 | Dispatch §8 reviewers | `Agent` tool → `research-coverage-reviewer`, `research-validation-reviewer` | `spawn` in parallel → `research-coverage-reviewer`, `research-validation-reviewer` |
 | Dispatch §12 draft reviewer | `Agent` tool (general-purpose) | subagent (general-purpose) |
 
 ## Phases
 
-The 15 phases group into three stages: **Plan** (§1–§5), **Investigate** (§6–§10), **Write** (§11–§15).
+The 16 phases group into three stages: **Plan** (§1–§5), **Investigate** (§6–§10), **Write** (§11–§15).
 
 ### Plan
 
 #### §1 — Intake (produces: intake assumptions)
 
 **Input:** user request.
-**Output:** intake assumptions that §3 will use to draft facets.
+**Output:** intake assumptions that §2.5 and §3 use to draft facets.
 
 Ask clarifying questions one at a time. Cap at 3-4. Skip when the topic is already specific. Accept "just go" or similar as an immediate exit from intake (this exits intake only, not the plan checkpoint in §5).
 
@@ -116,16 +117,56 @@ Typical questions: scope (academic vs practitioner), audience (background level)
 #### §2 — Project relevance (produces: facet-scope hint)
 
 **Input:** intake assumptions.
-**Output:** a flag on whether facets need local file inspection, passed into §3.
+**Output:** a flag on whether facets need local file inspection, passed into §2.5 and §3.
 
 Test: does the topic name a tech, library, concept, or pattern the current repo uses? If yes, mark which facets benefit from local file inspection. If no, web-only.
 
-#### §3 — Plan: 3-7 facets (produces: draft facet list)
+#### §2.5 — Landscape spike (produces: landscape sketch)
 
-**Input:** intake assumptions + project-relevance flag.
-**Output:** the draft facet list §4 critiques.
+**Input:** the original user question, the intake assumptions from §1, the project-relevance flag from §2.
+**Output:** the landscape sketch — what §3 drafts against, and what §6 takes its seed URLs from.
 
-Pick distinct angles. Per-option weak points and dissent are covered by the validation reviewer in §8, so a dedicated dissent facet is unnecessary.
+Dispatch `research-landscape-scout` (see the tool-mapping table) with those three inputs and nothing else. One dispatch, not a fan-out. Run it on every topic: "do I already know this landscape?" is the self-assessment that fails confidently.
+
+The scout returns:
+
+```markdown
+## Landscape sketch
+- **Named options / tools / camps:** up to 8, bare names
+- **Where practitioners disagree:** 2-4 bullets, one line each
+- **Distinct sub-topics:** 3-6 bullets, one line each
+- **Anchor URLs:** 3-5, each `<URL> — [type · signal · date]`
+- **Blank spots:** what it looked for and could not find
+```
+
+**Usability bar.** The sketch is usable only when all five labelled fields are present under the `## Landscape sketch` heading and at least one anchor URL fetches successfully. Check both here, before drafting, and check them mechanically — the realistic bad case is a half-formed sketch with two fields filled in, judged by the same agent that benefits from calling it good enough. That fetch is also §3's precondition, so it costs one request rather than two.
+
+**Below the bar** — the scout failed, timed out, returned fewer than five fields, or no anchor URL fetched — §3 drafts from priors instead (the angle hints), and §5 states plainly that the spike failed and the plan came from priors. The run continues; the spike improves plan quality, it does not gate the run. The fallback is fine; silent substitution is the violation.
+
+**Above the bar but sparse** is the other case. Proceed with broader amendments and show the blank-spots field at §5, so the user can see the amendments are thin because the landscape is. Sparse is not a licence to skip the amendment structure.
+
+#### §3 — Plan: core facets plus amendments (produces: core, amendments, recommendation)
+
+**Input:** landscape sketch (§2.5) + intake assumptions (§1) + project-relevance flag (§2).
+**Output:** the core, 2-3 amendments — one only under the hard rule below — and one recommendation. That is what §4 critiques.
+
+The plan splits into a settled part and a contested part. The **core** holds the facets any defensible framing includes; it is stated, not debated. The **amendments** are competing bundles of the contested facets. The user decides only the contested part.
+
+**Core — 2-4 facets, one gloss line each.** A facet belongs in the core only if a report omitting it would not answer the question as asked. That test is about the question, not about the amendment set: "every amendment would include it" is satisfiable by construction, since this one pass writes both.
+
+**Amendments — 2-3 competing bundles of 1-3 facets each.** Each carries a name, a one-line thesis, its facets with a gloss apiece, then explicit **Pros** and **Cons**. At least one is authored as a deliberate opposite framing of the question, not a variant of the recommended one, or the set drifts into three flavors of the same investigation.
+
+Every disagreement axis carried out of the sketch, and every amendment thesis, cites an anchor URL you fetched successfully — §2.5's one fetch is a floor, not a cap, so fetch the anchors the axes you carry forward actually rest on. An axis with no citable anchor cannot become an amendment thesis: a hallucinated URL dies at the first failed fetch, but a hallucinated *disagreement axis* would pass straight into Amendment B and send §6 off to investigate something nobody disagrees about.
+
+Core plus any single amendment must land inside the 3-7 facet range that §6, §8, and §12 expect. That is what bounds the core at 4 and each amendment at 3.
+
+**Recommendation.** Name one amendment and argue for it in 2-4 sentences grounded in the intake assumptions and the sketch. "Amendment B, because you said you are evaluating this for production and the sketch shows the disagreement clustering on operational cost" qualifies. "Amendment B offers a good balance" does not — it would read identically for any topic, which is the tell.
+
+**Hard rule: minimum two amendments.** Collapsing to a single framing and presenting it as inevitable is the failure this phase exists to prevent. If the sketch genuinely supports only one, present the core plus that one amendment and state in one line what you looked for and why no second framing survived.
+
+**Priors fallback.** Below §2.5's usability bar, draft from the intake assumptions, the relevance flag, and the angle hints below. Same structure — a core, two or more amendments, a recommendation — but nothing is anchored, so no thesis cites a URL and §5 says the spike failed.
+
+Per-option weak points and dissent are covered by the validation reviewer in §8, so a dedicated dissent facet is unnecessary.
 
 Angle hints, pick what fits:
 - Programming / CS: how-it-works, practitioner experience, criticisms, alternatives, history.
@@ -134,32 +175,45 @@ Angle hints, pick what fits:
 - Decisions / comparisons: pros, cons, hidden tradeoffs, what experienced people pick.
 - "What should I learn next" type: case for, case against, prerequisites, what comes after.
 
-#### §4 — Plan self-review (produces: revised facet list)
+#### §4 — Plan self-review (produces: revised core, amendments, recommendation)
 
-**Input:** draft facet list.
-**Output:** revised facet list ready to show the user in §5.
+**Input:** the core, amendments, and recommendation from §3.
+**Output:** the revised versions of all three, ready to show the user in §5.
 
 Single critique pass. Checklist:
-- Are angles genuinely distinct, or are two of them basically the same?
-- Are there obvious gaps for the topic type?
+- Is each core facet one whose omission would leave the question unanswered? Anything weaker belongs in an amendment.
+- Are the amendments genuinely different research, or the same facets reworded? Two that would send the investigation to the same sources are one amendment, and at least one has to be a genuine opposite framing rather than a variant. With a justified single amendment: is its justification line present?
+- Does core plus each amendment individually land in 3-7 facets?
+- Is the recommendation specific to this question, or would it survive a find-and-replace of the topic?
+- Do the amendments cover the sketch's disagreement axes, and does every axis and thesis cite an anchor that was actually fetched?
 
 If any check fails, revise once and re-check. Cap at one revision. If the second draft still fails, ship it with the unresolved gaps noted in a one-line self-review summary. Show the user only the post-revision version.
 
-#### §5 — User confirms plan (produces: approved plan)
+#### §5 — User picks an amendment (produces: approved plan)
 
-**Input:** revised facet list.
-**Output:** approved plan — the first named artifact in the build chain.
+**Input:** the revised core, amendments, and recommendation.
+**Output:** approved plan — the first named artifact in the build chain, and a flat 3-7 facet list.
 
-**Mandatory checkpoint.** The user can edit, drop, or add facets. Wait for OK before investigating.
+**Mandatory checkpoint.** Present, in this order: the compressed landscape sketch when one exists, including its blank-spots field; the core; each amendment with its thesis, the anchor URL that thesis cites when the plan is anchored, and its pros and cons; and the recommendation. When the sketch fell below §2.5's usability bar, say so here in plain words.
 
-**Why mandatory:** facet selection is where most drift originates. A misframed plan produces a misframed report; later phases polish prose but cannot reframe the question.
+The user picks one amendment, and can also edit, drop, or add facets in the core and the amendments alike, so grafting a facet out of a rejected amendment needs no separate mechanism. Wait for OK before investigating.
+
+After any edit or graft, re-check that the resulting facet list is within 3-7. A core of 4 plus a 3-facet amendment already sits at the ceiling, so one graft pushes it to 8: over the ceiling, ask which facet to drop; under the floor, ask which to add back. Both bounds are the flat list's contract with §6, §8, and §12, not a style preference.
+
+**"None of these framings" is a supported answer, not a decline.** Naming two or three framings invites a fourth-option response, and "your axes are wrong" is not an edit to any single bundle. The steer re-enters §3 for one re-draft, §4 reviews the result, and that re-draft does not consume a second §4 revision. **Decline** means the user ends the run — nothing weaker.
+
+**The approved plan is flat.** Emit the flattened union of the core and the chosen amendment: a plain 3-7 facet list, the shape §6, §8, and §12 already consume. The two-level object never leaves the gate — the §8 reviewers and §6 both specify their input as the flat facet list.
+
+**Why mandatory:** facet selection is where most drift originates, and this is the last point at which the framing can change at all. A misframed plan produces a misframed report; later phases polish prose but cannot reframe the question.
 
 ### Investigate
 
 #### §6 — Investigate (produces: raw evidence for the bullet draft)
 
-**Input:** approved plan.
+**Input:** approved plan + the sketch's anchor URLs from §2.5, when a usable sketch exists.
 **Output:** per-facet quotes, URLs, and preliminary cons — the raw material §7 consumes. Not an answer for the user; not the end of the chain.
+
+Start from the sketch's anchor URLs when a usable sketch exists: fetch the ones that bear on a facet before searching for new sources, since re-discovering what §2.5 already found costs a search each. They are seeds, never citations — Sources contains only URLs you actually fetched during investigation. Entering §6 without a sketch (a resumed run, a Wayfinder handoff, a below-bar spike) means searching from scratch as before.
 
 For each facet:
 - Web search (your web-search tool) to discover blogs and forums, then fetch the most promising sources with your web-fetch tool.
@@ -314,13 +368,17 @@ Write to `docs/research/YYYY-MM-DD-<slug>.md` if in a git repo. Otherwise ask. D
 | "5 rounds is the target." | 5 is the cap, not the target. Stop as soon as critical findings hit zero. |
 | "User said 'just go', so I will skip plan confirmation too." | "Just go" exits intake (§1). §5 is a separate gate. |
 | "Web search alone is enough, skip the bullet draft." | The bullet draft is the input the reviewers operate on. Without one there is nothing for them to review. |
+| "Sketch was below the usability bar, so I drafted from priors and did not say so." | The fallback is fine; the silence is the violation. §5 states that the spike failed. |
+| "Only one framing really makes sense here." | That collapse is what §3 exists to prevent. Present core plus one amendment and state what you looked for. |
+| "Topic is familiar, skip the spike." | The spike is unconditional. "I already know this landscape" is the self-assessment that fails confidently. |
 
 ## Red flags — STOP
 
-The common-mistakes table above is the single home for the rationalizations. These two fire on an in-the-moment action the table cannot capture:
+The common-mistakes table above is the single home for the rationalizations. These fire on an in-the-moment action the table cannot capture:
 
 - About to dispatch the two expansion reviewers sequentially. STOP. Send them in one parallel call.
-- About to ask the user for permission to spawn the §8 reviewers. STOP. The user's invocation of this skill is the permission. Spawn them directly.
+- About to ask the user for permission to spawn the §2.5 scout or the §8 reviewers. STOP. The user's invocation of this skill is the permission. Spawn them directly.
+- About to present a single facet list for the user to approve at §5. STOP. That is the pre-amendment behavior. The flat list is what you emit after the pick, not what you offer for it.
 
 ## Output template
 
