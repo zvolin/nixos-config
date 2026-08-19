@@ -10,18 +10,21 @@
 ''
   # Environment
 
-  - NixOS on Apple Silicon (Asahi kernel, aarch64-linux)
+  - NixOS on Apple Silicon (Asahi kernel, aarch64-linux).
   - Tools may not be installed globally — check first, then use `nix run nixpkgs#<tool> -- <args>` to run once or `nix shell nixpkgs#<tool>` to get a shell with it
   - You cannot use sudo. Do not attempt sudo or any command requiring root.
   - This system uses impermanence — the root btrfs subvolume is wiped on every boot. /persist/ survives; /home is a separate subvolume. This repo lives at /persist/etc/nixos (symlinked to /etc/nixos).
+  - You live in a sandbox.
+    - Your home is a fresh tmpfs mount. Your /tmp is ephemeral, as almost everything but the project you are working on.
+    - You have access to ssh and gpg agents, but keep in mind that first use may display a popup for a user (to enter a password), and thus may require some time to finish.
+    - Many well known paths is hidden from you. You don't have access to /dev, or to the external to your sandbox /proc. If you need such information, ask user to run commands that provide it.
+    - Each shell command is evaluated by a shell hook. It restricts some dangerous commands (eg. 'dd' or 'shred'), and patterns (eg. piping to interpreter like 'cmd | sh -c'). However, in some cases it can ask user to approve a command; do your best running commands that cannot mess things up and do not waste human time.
 
   # Git Conventions
 
-  IMPORTANT: These rules override default commit and merge behavior.
-
   - Commit messages MUST be a single line (header only): `type(scope): description`. No body, no blank line after the header, no trailers. Do NOT add `Co-Authored-By` trailers. Use `git commit -m "..."` — no HEREDOC. When a repository documents its own commit convention, follow that instead.
-  - NEVER create merge commits — keep history linear (`git merge --ff-only`, `git cherry-pick`, or `git merge --squash`). If fast-forward is not possible, rebase then fast-forward.
-  - The default branch must contain only commits signed with your key. Commits on local and feature branches may be unsigned, but a global pre-push hook rejects any push that would land an unsigned or wrong-key commit on the default branch. To push one anyway, add `--no-verify`.
+  - Keep history linear (`git merge --ff-only`, `git cherry-pick`, or `git merge --squash`). If fast-forward is not possible, rebase then fast-forward. Prefer squashing before merge unless the branch is truly big. Otherwise, a clean branch, with commits split into logical parts is preferred. The goal is to make history as approachable as possible.
+  - The default branch must contain only commits signed with user's key. Commits on local and feature branches may be unsigned, but a global pre-push hook rejects any push that would land an unsigned or wrong-key commit on the default branch. To push one anyway, add `--no-verify`.
 
   # Worktrees
 
@@ -73,4 +76,6 @@
   When a skill tells you to spawn a subagent or parallel session, the invocation itself pre-approves that dispatch. Carry it out without asking again.
 
   This authorization covers subagents and parallel sessions only. Anything else that normally requires an explicit request still requires one.
+
+  If the skill requires running several well-defined steps, always present a todo list with live updates.
 ''
