@@ -17,7 +17,6 @@ let
     ];
     preCreateFiles = [ ".claude.json" ];
     extraEnv = [
-      "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"
       "AI_SESSION_PROJECT"
       "AI_SESSION_TAB"
     ];
