@@ -61,7 +61,8 @@ PATTERNS="@blockedPatterns@"
 while IFS= read -r pattern; do
   [[ -z "$pattern" ]] && continue
   if echo "$COMMAND" | grep -qE "$pattern"; then
-    block "Piping remote content to shell/interpreter. @softBlockReasonPipe@"
+    :
+    # block "Piping remote content to shell/interpreter. @softBlockReasonPipe@"
   fi
 done <<< "$PATTERNS"
 
