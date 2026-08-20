@@ -8,6 +8,8 @@
       ...
     }:
     let
+      inherit (lib.generators) mkLuaInline;
+      toLua = lib.generators.toLua { };
       terminal = lib.getExe config.terminal;
       wiremix = lib.getExe pkgs.wiremix;
       audioToggle = pkgs.writeShellApplication {
@@ -24,12 +26,13 @@
           if [ -z "$wiremix_addr" ]; then
             exec uwsm app -- ${terminal} --class wiremix -e ${wiremix}
           elif [ "$wiremix_addr" = "$active_addr" ]; then
-            hyprctl dispatch killactive
+            hyprctl dispatch 'hl.dsp.window.close()'
           else
-            hyprctl dispatch focuswindow "address:$wiremix_addr"
+            hyprctl dispatch "hl.dsp.focus({ window = 'address:$wiremix_addr' })"
           fi
         '';
       };
+      audioToggleExe = lib.getExe audioToggle;
     in
     {
       # wiremix - TUI audio mixer for PipeWire
@@ -38,15 +41,27 @@
         audioToggle
       ];
 
-      # Float wiremix window and bind SUPER+A to the three-state toggle
+      # SUPER+A cycles wiremix: launch, focus, kill
       wayland.windowManager.hyprland.settings = {
-        windowrule = [
-          "float on, match:class wiremix"
-          "center on, match:class wiremix"
-          "size 800 500, match:class wiremix"
+        window_rule = [
+          {
+            name = "audio-wiremix-float";
+            match.class = "wiremix";
+            float = true;
+            center = true;
+            size = "800 500";
+          }
         ];
         bind = [
-          "SUPER, A, exec, ${lib.getExe audioToggle}"
+          {
+            # A literal, not a reference to the `mod` local the hyprland module
+            # declares: a Lua-side reference is invisible to Nix, so a broken
+            # one fails at Hyprland's config load instead of at eval.
+            _args = [
+              "SUPER + A"
+              (mkLuaInline "hl.dsp.exec_cmd(${toLua audioToggleExe})")
+            ];
+          }
         ];
       };
     };

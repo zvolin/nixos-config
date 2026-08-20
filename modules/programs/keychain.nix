@@ -9,7 +9,7 @@
     }:
     let
       terminal = lib.getExe config.terminal;
-      gaps_out = toString config.wayland.windowManager.hyprland.settings.general.gaps_out;
+      gaps_out = toString config.wayland.windowManager.hyprland.settings.config.general.gaps_out;
       inset = "15";
       wclass = "pinentry-floating";
       jq = lib.getExe pkgs.jq;
@@ -53,28 +53,32 @@
           exec 3<&0
 
           # Remember cursor position to restore after pinentry closes
-          cursor=$(hyprctl cursorpos -j | ${jq} -r '"\(.x) \(.y)"')
-          trap 'hyprctl dispatch movecursor $cursor > /dev/null; rm -rf "$tmpdir"' EXIT
+          cursor=$(hyprctl cursorpos -j | ${jq} -r '"x = \(.x), y = \(.y)"')
+          trap 'hyprctl dispatch "hl.dsp.cursor.move({ $cursor })" > /dev/null; rm -rf "$tmpdir"' EXIT
 
-          # Spawn floating terminal with pinentry-curses
-          hyprctl dispatch exec "[float; pin]" \
-            "${terminal} --class ${wclass} --title GPG -o window_margin_width=3 \
-            ${pinentry-term} $tmpdir/in $tmpdir/out" > /dev/null
+          # Spawn floating terminal with pinentry-curses. Under the lua config
+          # generator the bracketed rule prefix is gone; rules are a table now.
+          pinentry_cmd="${terminal} --class ${wclass} --title GPG -o window_margin_width=3 ${pinentry-term} $tmpdir/in $tmpdir/out"
+          hyprctl dispatch "hl.dsp.exec_cmd('$pinentry_cmd', { float = true, pin = true })" > /dev/null
 
           # Poll until the window exists (hyprland v0.54: size/move broken in inline rules)
           while ! hyprctl clients -j | ${jq} -e '.[] | select(.class == "${wclass}")' > /dev/null 2>&1; do
             sleep 0.05
           done
 
-          # Resize, then position top-right aligned with tiled window edges
-          hyprctl dispatch resizewindowpixel exact 35% 21%,class:${wclass} > /dev/null
-          win_w=$(hyprctl clients -j  | ${jq} -r '.[] | select(.class == "${wclass}") | .size[0]')
-          mon_w=$(hyprctl monitors -j | ${jq} -r '.[0] | (.width / .scale | floor)')
-          bar_h=$(hyprctl layers -j   | ${jq} '[.. | objects | select(.namespace == "waybar") | .h] | max')
-          hyprctl dispatch movewindowpixel exact \
-            "$(( mon_w - win_w - ${gaps_out} - ${inset} ))" \
-            "$(( bar_h + ${gaps_out} + ${inset} ))",class:${wclass} > /dev/null
-          hyprctl dispatch focuswindow class:${wclass} > /dev/null
+          # Resize, then position top-right aligned with tiled window edges.
+          # hl.dsp.window.resize takes pixels, so the old 35%/21% is worked out here.
+          mon_w=$(hyprctl monitors -j | ${jq} -r '.[0] | (.width  / .scale | floor)')
+          mon_h=$(hyprctl monitors -j | ${jq} -r '.[0] | (.height / .scale | floor)')
+          hyprctl dispatch \
+            "hl.dsp.window.resize({ x = $(( mon_w * 35 / 100 )), y = $(( mon_h * 21 / 100 )), window = 'class:${wclass}' })" \
+            > /dev/null
+          win_w=$(hyprctl clients -j | ${jq} -r '.[] | select(.class == "${wclass}") | .size[0]')
+          bar_h=$(hyprctl layers -j  | ${jq} '[.. | objects | select(.namespace == "waybar") | .h] | max')
+          hyprctl dispatch \
+            "hl.dsp.window.move({ x = $(( mon_w - win_w - ${gaps_out} - ${inset} )), y = $(( bar_h + ${gaps_out} + ${inset} )), window = 'class:${wclass}' })" \
+            > /dev/null
+          hyprctl dispatch "hl.dsp.focus({ window = 'class:${wclass}' })" > /dev/null
 
           # Bridge assuan protocol: rewrite ttyname so pinentry-curses uses
           # kitty's PTY (/dev/tty) instead of the caller's terminal

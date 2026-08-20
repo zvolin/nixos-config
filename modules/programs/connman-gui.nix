@@ -13,10 +13,13 @@
         }
       ];
 
-      # Float and center CMST window
-      wayland.windowManager.hyprland.settings.windowrule = [
-        "float on, match:class cmst"
-        "center on, match:class cmst"
+      wayland.windowManager.hyprland.settings.window_rule = [
+        {
+          name = "connman-gui-cmst-float";
+          match.class = "cmst";
+          float = true;
+          center = true;
+        }
       ];
     };
 }

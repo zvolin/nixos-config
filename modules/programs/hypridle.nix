@@ -7,6 +7,10 @@
       systemctl = "${pkgs.systemd}/bin/systemctl";
       loginctl = "${pkgs.systemd}/bin/loginctl";
       hyprctl = "${pkgs.hyprland}/bin/hyprctl";
+      # Under the lua config generator `hyprctl dispatch` evaluates its argument
+      # as lua, so the hyprlang form (`dispatch dpms off`) is a syntax error.
+      # Omitting `action` would default to toggle, not off.
+      dpms = action: "${hyprctl} dispatch 'hl.dsp.dpms({ action = \"${action}\" })'";
       hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
       pgrep = "${pkgs.procps}/bin/pgrep";
       pkill = "${pkgs.procps}/bin/pkill";
@@ -74,7 +78,7 @@
           general = {
             lock_cmd = "hyprlock-once";
             before_sleep_cmd = "${loginctl} lock-session";
-            after_sleep_cmd = "${hyprctl} dispatch dpms on";
+            after_sleep_cmd = dpms "on";
             # respect inhibit requests from media players (firefox, mpv, etc.)
             ignore_dbus_inhibit = false;
             ignore_systemd_inhibit = false;
@@ -107,8 +111,8 @@
             # 5. screen off (15 min)
             {
               timeout = 900;
-              on-timeout = "amphetamine-guard screen -- ${hyprctl} dispatch dpms off";
-              on-resume = "${hyprctl} dispatch dpms on";
+              on-timeout = "amphetamine-guard screen -- ${dpms "off"}";
+              on-resume = dpms "on";
             }
             # 6. suspend (30 min)
             {
