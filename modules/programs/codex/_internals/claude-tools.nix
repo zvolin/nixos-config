@@ -17,8 +17,10 @@ let
       exit 1
     fi
     # Seed persistent trust for the cwd + git root before launching claude, so
-    # the nested claude opens the project without a folder-trust prompt.
-    ${claude.trustPrelude}
+    # the nested claude opens the project without a folder-trust prompt. Account
+    # 1's real file is the right target here: inside Codex's jail the nested
+    # claude is account 1, and $HOME/.claude.json is bound RW.
+    ${claude.trustPrelude "$HOME/.claude.json"}
     exec ${claude.rawBinary} ${unleashStr} "$@"
   '';
 in

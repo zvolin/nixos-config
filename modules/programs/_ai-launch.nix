@@ -16,11 +16,11 @@ pkgs.writeShellScriptBin "ai-launch" ''
   project=$(basename "$root")
 
   id=$(zellij action query-tab-names 2>/dev/null \
-    | sed -n 's/^\(claude\|codex\)-\([0-9]\+\)$/\2/p' \
+    | sed -n 's/^\(claude[0-9]*\|codex\)-\([0-9]\+\)$/\2/p' \
     | sort -n | tail -1)
   id=$(( ''${id:-0} + 1 ))
 
-  agent=$(printf '%s\n' claude codex \
+  agent=$(printf '%s\n' claude claude2 codex \
     | fzf \
         --layout=reverse --border=rounded --padding=1 \
         --margin=1,20% --info=hidden --no-scrollbar \

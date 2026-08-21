@@ -118,8 +118,11 @@ let
       # idempotent after first launch. flock (held across init + RMW) serializes
       # concurrent sibling-jail seeds; it can't coordinate with claude's own
       # unlocked writes, so a bounded first-launch race remains, accepted.
-      trustPrelude = ''
-        f="$HOME/.claude.json"
+      # The path is a parameter because this prelude runs on the HOST before
+      # `exec bwrap`, so it cannot see the in-jail bind: a secondary profile has
+      # to be pointed at its own config file explicitly.
+      trustPrelude = trustFile: ''
+        f="${trustFile}"
         dir=$(${pkgs.coreutils}/bin/realpath "$PWD")
         paths=("$dir")
         gitroot=$(${pkgs.git}/bin/git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || true
@@ -147,7 +150,9 @@ let
       # Interactive jail: build the trust overlay on the host and mount it in,
       # pointing the jailed codex at it via CODEX_HOME. Runs in the current
       # shell right before `exec bwrap`, so `args` is still in scope to extend.
-      trustPrelude = ''
+      # Takes the trust-file path for signature parity with the claude arm and
+      # ignores it; codex trust lives in the CODEX_HOME overlay, not a JSON file.
+      trustPrelude = _trustFile: ''
         codex_home=$(${codexOverlayHome})
         args+=(--bind "$codex_home" "$codex_home" --setenv CODEX_HOME "$codex_home")
       '';
@@ -157,6 +162,43 @@ let
     };
   };
 
+  extraBindDefaults = {
+    required = false;
+    preCreate = false;
+  };
+
+  mkExtraPreCreate =
+    e:
+    if e.kind == "dir" then
+      ''mkdir -p "$HOME/${e.source}"''
+    else
+      ''
+        mkdir -p "$(dirname "$HOME/${e.source}")"
+        # On creation only: an existing shared source keeps its own mode.
+        [[ -e "$HOME/${e.source}" ]] || {
+          touch "$HOME/${e.source}" 2>/dev/null && chmod 600 "$HOME/${e.source}"
+        } || true'';
+
+  # The emitted script carries no `set -e`, so a required entry needs the
+  # explicit hard-fail: otherwise a missing source falls through and its
+  # layered binds land on the tmpfs $HOME, where a first write is discarded on
+  # exit. For a credentials file that looks like a fresh login every launch,
+  # with nothing logged.
+  mkExtraBind =
+    name: e:
+    let
+      bind = ''args+=(--bind "$HOME/${e.source}" "$HOME/${e.target}")'';
+    in
+    if e.required then
+      ''
+        if [[ ! -e "$HOME/${e.source}" ]]; then
+          echo "${name}: required bind source missing: $HOME/${e.source}" >&2
+          exit 1
+        fi
+        ${bind}''
+    else
+      ''[[ -e "$HOME/${e.source}" ]] && ${bind}'';
+
   mkJail =
     {
       name,
@@ -165,6 +207,16 @@ let
       pathPrefix ? [ ], # list of packages; their /bin dirs are prepended to PATH
       preCreateDirs ? [ ],
       preCreateFiles ? [ ], # files touched (create-if-absent) before their binds
+      # [ { source, target, kind, required ? false, preCreate ? false } ], paths
+      # $HOME-relative, emitted in LIST ORDER so a base mount can precede what
+      # binds on top of it. `preCreate` stays off by default because several
+      # ~/.claude entries are Home Manager store symlinks, and planting a plain
+      # file at one makes the next `nixos-rebuild switch` fail on the clobber.
+      extraBinds ? [ ],
+      # This profile's claude config file, $HOME-relative; null means
+      # $HOME/.claude.json. The trust prelude runs before `exec bwrap`, so it
+      # resolves on the host and cannot see the in-jail bind.
+      configFile ? null,
     }:
     let
       envAllowlist = baseEnv ++ [ policy.markerEnv ] ++ extraEnv;
@@ -184,6 +236,16 @@ let
       bindsRW = lib.concatMapStringsSep "\n    " (d: ''bind_rw "$HOME/${d}"'') (
         preCreateDirs ++ preCreateFiles
       );
+      binds = map (e: extraBindDefaults // e) extraBinds;
+      # Both carry their own leading newline and are interpolated flush against
+      # the line above, so an empty list emits nothing rather than a blank line.
+      extraPreCreateStr = lib.concatMapStrings (
+        e: lib.optionalString e.preCreate "\n${mkExtraPreCreate e}"
+      ) binds;
+      # The pwd bind must stay above this splice point, or launching from inside
+      # a base dir binds pwd over the base last and exposes the real ~/.claude.
+      extraBindsStr = lib.concatMapStrings (e: "\n${mkExtraBind name e}") binds;
+      trustFile = if configFile == null then "$HOME/.claude.json" else "$HOME/${configFile}";
       wrapper = pkgs.writeShellScriptBin name ''
         bind_ro() { [[ -e "$1" ]] && args+=(--ro-bind "$1" "$1"); }
         bind_rw() { [[ -e "$1" ]] && args+=(--bind    "$1" "$1"); }
@@ -200,7 +262,7 @@ let
         # pre-created before their binds, or a first-time write lands in
         # the tmpfs $HOME and dies on exit.
         mkdir -p ${preCreate}
-        ${preCreateTouch}
+        ${preCreateTouch}${extraPreCreateStr}
 
         export ${policy.markerEnv}=1
 
@@ -244,7 +306,7 @@ let
 
         bind_rw "$HOME/.cargo"
         bind_rw "$HOME/.cache/gh"
-        ${bindsRW}
+        ${bindsRW}${extraBindsStr}
         bind_ro "$HOME/.config/direnv"
         bind_ro "$HOME/.config/gh"
         bind_ro "$HOME/.config/git"
@@ -378,9 +440,10 @@ let
           pass_env "$var"
         done
 
-        # Per-client trust seeding: claude RMWs the bound-RW ~/.claude.json;
-        # codex builds a CODEX_HOME overlay and appends its bind+setenv to args.
-        ${policy.trustPrelude}
+        # Per-client trust seeding: claude RMWs this profile's .claude.json on
+        # the HOST (see `configFile`); codex builds a CODEX_HOME overlay and
+        # appends its bind+setenv to args.
+        ${policy.trustPrelude trustFile}
         exec ${bwrap} "''${args[@]}" ${policy.rawBinary} ${unleashStr} "$@"
       '';
     in
