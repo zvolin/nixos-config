@@ -401,32 +401,56 @@ let
           args+=(--setenv DBUS_SESSION_BUS_ADDRESS "unix:path=$dbus_sock")
         fi
 
-        # `use flake ../sibling` in .envrc needs the sibling dir bound (RW).
-        if [[ -r .envrc ]]; then
-          envrc_flake_paths=()
-
-          # `|| [[ -n "$line" ]]` keeps the last line if .envrc lacks a
-          # trailing newline, otherwise it's silently dropped.
-          while IFS= read -r line || [[ -n "$line" ]]; do
-            if [[ "$line" =~ ^[[:space:]]*use[[:space:]_]flake[[:space:]]+([^[:space:]]+) ]]; then
-              envrc_flake_paths+=("''${BASH_REMATCH[1]}")
+        # Extra host paths bound into the jail: colon-separated ABSOLUTE paths,
+        # typically exported from a project's .envrc:
+        #   export JAIL_BINDS_RW="$PWD/../sibling"
+        #
+        # Extras bind after every built-in except codex's CODEX_HOME overlay,
+        # which trustPrelude appends later, so an extra can shadow a built-in:
+        # JAIL_BINDS_RW="$HOME/.gnupg" passes the $HOME guard below and
+        # overmounts the throwaway keybox copies, exposing the real
+        # private-keys-v1.d read-write.
+        #
+        # Past that guard both variables are user-trusted. An earlier denylist
+        # refused /proc while accepting /nix, which overmounts the read-only
+        # store bind: it advertised more protection than it gave.
+        warn() {
+          printf '${name}: %s\n' "$1" >&2
+        }
+        bind_extra() {
+          local flag="$1" varname="$2" spec path abs paths=()
+          spec="''${!varname:-}"
+          if [[ "$spec" == *$'\n'* ]]; then
+            warn "bind spec for $varname has a newline, only the first line is used"
+          fi
+          IFS=: read -r -a paths <<< "$spec"
+          for path in "''${paths[@]}"; do
+            path="''${path#"''${path%%[![:space:]]*}"}"
+            path="''${path%"''${path##*[![:space:]]}"}"
+            [[ -n "$path" ]] || continue
+            if [[ "$path" != /* ]]; then
+              warn "$varname: skipping non-absolute bind: $path"
+              continue
             fi
-          done < .envrc
-          for raw_path in "''${envrc_flake_paths[@]}"; do
-            unquoted="$raw_path"
-            unquoted="''${unquoted#\"}"; unquoted="''${unquoted%\"}"
-            unquoted="''${unquoted#\'}"; unquoted="''${unquoted%\'}"
-            flake_path="''${unquoted%%#*}"
-
-            # Non-local refs (github:owner/repo, git+file://, ...) don't
-            # map to a host directory.
-            case "$flake_path" in
-              .*|/*) ;;
-              *) continue ;;
-            esac
-            flake_abs=$(realpath -e "$flake_path" 2>/dev/null) || continue
-            args+=(--bind "$flake_abs" "$flake_abs")
+            if ! abs=$(realpath -e "$path" 2>/dev/null); then
+              warn "$varname: skipping missing bind: $path"
+              continue
+            fi
+            if [[ "$abs" == / || "$abs" == "$home_abs" || "$home_abs" == "$abs"/* ]]; then
+              warn "$varname: refusing bind over the jail home: $path"
+              continue
+            fi
+            args+=("$flag" "$abs" "$abs")
           done
+        }
+        home_abs=$(realpath -m "$HOME" 2>/dev/null) || home_abs=""
+        if [[ -z "$home_abs" ]]; then
+          warn "HOME is unset, refusing to bind extra paths"
+        else
+          # RO first: bwrap applies binds in order, so a path named in both
+          # variables ends up read-write.
+          bind_extra --ro-bind JAIL_BINDS_RO
+          bind_extra --bind    JAIL_BINDS_RW
         fi
 
         args+=(
