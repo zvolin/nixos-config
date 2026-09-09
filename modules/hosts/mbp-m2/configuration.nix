@@ -11,6 +11,7 @@
         impermanence
         networking
         overlay-nettle
+        overlay-render-markdown
         overlay-tiny-dfr
         stylix
         nixvim
