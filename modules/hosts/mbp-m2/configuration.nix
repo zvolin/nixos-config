@@ -16,6 +16,7 @@
         stylix
         nixvim
         docker
+        flatpak
         xremap
         tiny-dfr
         ntfy
