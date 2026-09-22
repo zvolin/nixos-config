@@ -118,6 +118,11 @@
             };
 
             config = {
+              # Draw XWayland apps at native DPI instead of upscaling their
+              # scale-1 buffer to 1.6x (blurry). Nested under `config` to emit
+              # hl.config({ xwayland = ... }): there is no hl.xwayland().
+              xwayland.force_zero_scaling = true;
+
               input = {
                 kb_layout = xkb.layout;
                 kb_variant = xkb.variant;

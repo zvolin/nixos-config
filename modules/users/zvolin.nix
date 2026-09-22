@@ -25,6 +25,7 @@
       home-manager.users.zwolin = {
         imports = with inputs.self.modules.homeManager; [
           audio
+          bambu-studio
           brightness
           browser
           claude
@@ -46,6 +47,7 @@
           mattpocock-handoff
           mattpocock-wayfinder
           mcp
+          orca-slicer
           post-implementation-polish
           research
           review

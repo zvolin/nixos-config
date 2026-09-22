@@ -15,6 +15,7 @@
         overlay-tiny-dfr
         stylix
         nixvim
+        open-bambu-networking
         docker
         flatpak
         xremap
