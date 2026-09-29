@@ -51,6 +51,7 @@ let
 
   tokenEnv = [
     "GH_TOKEN"
+    "BRIGHTDATA_API_TOKEN"
   ];
 
   nixDevshellEnv = [
@@ -257,6 +258,16 @@ let
           GH_TOKEN=$(${lib.getExe pkgs.gh} auth token 2>/dev/null) || true
         fi
         export GH_TOKEN
+
+        # Preload the Bright Data Web Unlocker token for the sandboxed MCP
+        # server — read on the host (as the user) before the jail starts, then
+        # passed in via --setenv. Optional: an absent file just means the
+        # brightdata MCP server has no credentials.
+        bd_token_file="$HOME/.config/brightdata/api-token"
+        if [ -z "''${BRIGHTDATA_API_TOKEN:-}" ] && [ -r "$bd_token_file" ]; then
+          BRIGHTDATA_API_TOKEN=$(${pkgs.coreutils}/bin/cat "$bd_token_file") || true
+        fi
+        export BRIGHTDATA_API_TOKEN
 
         # bind_rw/bind_ro skip missing sources, so dirs/files must be
         # pre-created before their binds, or a first-time write lands in

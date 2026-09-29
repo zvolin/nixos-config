@@ -10,6 +10,7 @@
         boot-grub
         impermanence
         networking
+        overlay-brightdata-mcp
         overlay-nettle
         overlay-render-markdown
         overlay-tiny-dfr
