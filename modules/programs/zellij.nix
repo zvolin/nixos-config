@@ -1,5 +1,23 @@
 { inputs, ... }:
 {
+  perSystem =
+    { system, lib, ... }:
+    let
+      pkgs = import inputs.nixpkgs { inherit system; };
+    in
+    {
+      # aarch64-linux only. systems.nix also lists x86_64-linux, where the
+      # real-config check's nixvim package does not exist and `nix flake check`
+      # would fail on the only host this repo has.
+      checks = lib.optionalAttrs (system == "aarch64-linux") (
+        import ./_zellij/copy-mode-tests.nix {
+          inherit pkgs;
+          inherit (pkgs) lib;
+          realNvim = inputs.self.nixosConfigurations.mbp-m2.config.programs.nixvim.build.package;
+        }
+      );
+    };
+
   flake.modules.nixos.zellij = {
     home-manager.sharedModules = [ inputs.self.modules.homeManager.zellij ];
   };
@@ -9,6 +27,7 @@
       pkgs,
       lib,
       config,
+      osConfig,
       ...
     }:
     let
@@ -59,8 +78,10 @@
         set -u
         export PATH=${binPath}:$PATH
 
-        # Already inside a zellij session (edit-scrollback opening $EDITOR, or an
-        # nvim typed in an agent/float shell): run the real editor, never nest.
+        # Already inside a zellij session (an nvim typed in an agent or float
+        # shell, or $EDITOR from git commit): run the real editor, never nest.
+        # Scrollback no longer arrives here -- it goes through
+        # settings.scrollback_editor, which bypasses $EDITOR.
         if [ -n "''${ZELLIJ:-}" ]; then
           exec nvim "$@"
         fi
@@ -97,6 +118,20 @@
       '';
 
       ai-launch = import ./_ai-launch.nix { inherit pkgs lib; };
+
+      # Zellij's scrollback editor. NOT in home.packages: its binary is named
+      # `nvim` (zellij requires that basename to pass the +N cursor line), so
+      # putting it on PATH would shadow the real editor. Referenced by absolute
+      # store path only. The same trap is already documented at the top of this
+      # file for neovim itself.
+      #
+      # nixvim is configured at the NixOS level, so the real editor is on
+      # osConfig, not config -- the home-manager attribute of the same name is
+      # an unconfigured neovim.
+      copy-mode = import ./_zellij/copy-mode.nix {
+        inherit pkgs lib;
+        nvim = osConfig.programs.nixvim.build.package;
+      };
 
       agentLayout = ''
         layout {
@@ -136,6 +171,30 @@
         # -isystem`. Disabling serialization removes the dump entirely. See
         # ticket 53/54.
         settings.session_serialization = false;
+        # Copy mode: a real nvim buffer over the pane's scrollback. The wrapper
+        # dispatches, because this option is global -- it also captures `zellij
+        # edit`, `zellij action edit`, and plugin file-opens, which must reach a
+        # normal editable editor. See _zellij/copy-mode.nix.
+        #
+        # zellij tracks nixpkgs-unstable, and three mechanisms this depends on
+        # degrade SILENTLY if upstream moves: the +N editor-basename gate, the
+        # $TMPDIR/<uuid>.dump path shape the wrapper's dispatch and rm key off,
+        # and OSC-52 interception. warnIf rather than assert: a bump is usually
+        # still fine, and a hard failure would hold `nix flake update` hostage
+        # to a manual source review.
+        settings.scrollback_editor =
+          lib.warnIf (!lib.hasPrefix "0.44." config.programs.zellij.finalPackage.version)
+            ''
+              zellij is now ${config.programs.zellij.finalPackage.version}; copy mode's
+              mechanism assumptions were read from 0.44.3 source. Re-check them against the
+              new source -- see the comments in modules/programs/_zellij/copy-mode.nix.
+            ''
+            "${copy-mode}/bin/nvim";
+        # copy_command MUST STAY UNSET. Setting it makes zellij run a copy
+        # command server-side on the laptop, which breaks the phone -- the exact
+        # case the OSC-52 path in _zellij/copy-mode-overlay.lua exists to serve.
+        # Zellij intercepts nvim's OSC 52 and re-emits it through its own
+        # clipboard_provider, which reaches whichever client is attached.
         # Keep nvim keys available; only Alt bindings and Ctrl-g are intercepted.
         extraConfig = ''
           keybinds {
@@ -161,6 +220,17 @@
               }
               scroll {
                   bind "Esc" "Enter" { SwitchToMode "Locked"; }
+                  // SwitchToMode "Locked" is not cosmetic. Without it, Alt-e ->
+                  // find it -> Alt-s leaves zellij in Scroll mode on top of the
+                  // nvim pane, where zellij eats j and k before nvim sees them.
+                  bind "Alt s"       { EditScrollback; SwitchToMode "Locked"; }
+                  // zellij's own default scroll-mode `e` already opens the
+                  // scrollback editor and lands in Normal mode. This config
+                  // never sets clear-defaults, so that binding is still live;
+                  // rebinding it here is cheaper than clearing the defaults and
+                  // keeps both entry points (Alt-s and `e`) landing in the same
+                  // zellij mode.
+                  bind "e"           { EditScrollback; SwitchToMode "Locked"; }
               }
           }
         '';
