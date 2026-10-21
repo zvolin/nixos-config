@@ -1,6 +1,13 @@
 { ... }:
 {
   flake.modules.nixos.impermanence = {
+    # The root subvolume is wiped on boot, so the SSH host keys must live on the
+    # surviving /persist subvolume. This sets the sshHostKeyDir seam DECLARED in
+    # the `openssh` aspect and SET here. The seam works because every impermanent
+    # host also imports `openssh` (true for mbp-m2). If a future impermanent host
+    # does not import openssh, move the option to a shared base.
+    sshHostKeyDir = "/persist/etc/ssh";
+
     boot.initrd.systemd.services.root-wipe = {
       description = "Wipe root btrfs subvolume and restore blank snapshot";
       wantedBy = [ "initrd.target" ];

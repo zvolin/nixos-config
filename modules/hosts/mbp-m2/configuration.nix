@@ -14,20 +14,23 @@
         overlay-nettle
         overlay-render-markdown
         overlay-tiny-dfr
-        stylix
-        nixvim
         open-bambu-networking
         docker
         flatpak
         xremap
         tiny-dfr
         ntfy
-        zellij
         codex
-        zvolin
+        tailscale
+        user-headless
+        user-desktop
       ];
 
       networking.hostName = "mbp-m2";
+
+      # dialout: access to serial/USB devices.
+      users.users.zwolin.extraGroups = [ "dialout" ];
+
       hardware.asahi.peripheralFirmwareDirectory =
         pkgs.runCommand "asahi-firmware-cpio"
           {

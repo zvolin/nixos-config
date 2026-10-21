@@ -1,8 +1,10 @@
 { inputs, ... }:
 {
   flake.modules.homeManager.mattpocock-architecture =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     let
+      # Vendored skill (applyPatches); routed through home.file to avoid eval-time IFD. See ../_ifd-safe-skill.nix.
+      ifd = import ../_ifd-safe-skill.nix;
       patched = pkgs.applyPatches {
         name = "mattpocock-architecture-patched";
         src = inputs.mattpocock-skills;
@@ -11,10 +13,10 @@
       codebaseDesign = patched + "/skills/engineering/codebase-design";
       improveArchitecture = patched + "/skills/engineering/improve-codebase-architecture";
     in
-    {
-      programs.claude-code.skills.codebase-design = codebaseDesign;
-      programs.claude-code.skills.improve-codebase-architecture = improveArchitecture;
-      programs.codex.skills.codebase-design = codebaseDesign;
-      programs.codex.skills.improve-codebase-architecture = improveArchitecture;
-    };
+    lib.mkMerge [
+      (ifd.claudeSkill "codebase-design" codebaseDesign)
+      (ifd.claudeSkill "improve-codebase-architecture" improveArchitecture)
+      (ifd.codexSkill "codebase-design" codebaseDesign)
+      (ifd.codexSkill "improve-codebase-architecture" improveArchitecture)
+    ];
 }

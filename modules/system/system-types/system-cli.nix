@@ -7,15 +7,17 @@
       mosh
       openssh
       shell
-      tailscale
+      zellij
+      nixvim
+      stylix
     ];
 
-    programs.gnupg.agent = {
-      enable = true;
-      enableSSHSupport = true;
-    };
-
-    programs.wireshark.enable = true;
     programs.ssh.askPassword = "";
+
+    # SSH clients advertise their own TERM (xterm-kitty, xterm-ghostty, …). A
+    # headless host that lacks the matching terminfo breaks ncurses/readline on
+    # login — "can't find terminal definition", dead C-l, broken arrows. Ship
+    # every terminal emulator's terminfo so any client resolves cleanly.
+    environment.enableAllTerminfo = true;
   };
 }

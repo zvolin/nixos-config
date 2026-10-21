@@ -1,11 +1,7 @@
 { ... }:
 {
   flake.modules.nixos.cli-tools =
-    {
-      pkgs,
-      lib,
-      ...
-    }:
+    { pkgs, ... }:
     {
       environment.systemPackages = with pkgs; [
         bat
@@ -21,6 +17,7 @@
         fd
         fzf
         git
+        gnupg
         gping
         htop
         jq
@@ -35,10 +32,6 @@
         wget
         xh
         zoxide
-        (pkgs.writeShellScriptBin "reboot-macos" ''
-          sudo ${lib.getExe pkgs.asahi-bless} --set-boot-macos --yes
-          reboot
-        '')
       ];
     };
 }

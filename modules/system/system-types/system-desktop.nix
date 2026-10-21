@@ -13,5 +13,12 @@
       services.xserver.enable = true;
 
       services.dbus.packages = [ pkgs.mako ];
+
+      programs.wireshark.enable = true;
+
+      programs.gnupg.agent = {
+        enable = true;
+        enableSSHSupport = true;
+      };
     };
 }

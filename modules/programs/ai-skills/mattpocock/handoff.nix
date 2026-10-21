@@ -1,8 +1,10 @@
 { inputs, ... }:
 {
   flake.modules.homeManager.mattpocock-handoff =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     let
+      # Vendored skill (applyPatches); routed through home.file to avoid eval-time IFD. See ../_ifd-safe-skill.nix.
+      ifd = import ../_ifd-safe-skill.nix;
       patched = pkgs.applyPatches {
         name = "mattpocock-handoff-patched";
         src = inputs.mattpocock-skills;
@@ -10,8 +12,8 @@
       };
       skill = patched + "/skills/productivity/handoff";
     in
-    {
-      programs.claude-code.skills.handoff = skill;
-      programs.codex.skills.handoff = skill;
-    };
+    lib.mkMerge [
+      (ifd.claudeSkill "handoff" skill)
+      (ifd.codexSkill "handoff" skill)
+    ];
 }

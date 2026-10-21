@@ -31,6 +31,8 @@
       ...
     }:
     let
+      cfg = config.zellijLlm;
+
       # Prepended, not replaced, so agent binaries already on PATH still
       # resolve when these scripts exec nvim or an agent. neovim is deliberately
       # absent: `nvim` must resolve to the user's configured editor (nixvim's
@@ -74,14 +76,12 @@
         exec nvim --listen "$sock" "''${files[@]}"
       '';
 
-      nvim-project = pkgs.writeShellScriptBin "nvim-project" ''
+      lvim = pkgs.writeShellScriptBin "lvim" ''
         set -u
         export PATH=${binPath}:$PATH
 
-        # Already inside a zellij session (an nvim typed in an agent or float
-        # shell, or $EDITOR from git commit): run the real editor, never nest.
-        # Scrollback no longer arrives here -- it goes through
-        # settings.scrollback_editor, which bypasses $EDITOR.
+        # Already inside a zellij session (lvim run from an agent or float
+        # shell): run the real editor directly, never nest a session.
         if [ -n "''${ZELLIJ:-}" ]; then
           exec nvim "$@"
         fi
@@ -151,97 +151,118 @@
         [ -n "$session" ] || exit 0
         exec zellij attach -f "$session"
       '';
+
+      # Three parts so the agent keybind drops when the llm layer is off. The
+      # middle part uses double-quoted strings, not an indented block, so its
+      # 8-space indent survives dedent.
+      agentBind = lib.optionalString cfg.enable (
+        "        // NewTab reads `layout` as a layout name, not an inline block\n"
+        + "        // (zellij kdl parser), so reference the agent layout by name.\n"
+        + "        bind \"Alt t\" { NewTab { layout \"agent\"; }; }\n"
+      );
+
+      keybindsHead = ''
+        keybinds {
+            locked {
+                bind "Alt 1" { GoToTab 1; }
+                bind "Alt 2" { GoToTab 2; }
+                bind "Alt 3" { GoToTab 3; }
+                bind "Alt 4" { GoToTab 4; }
+                bind "Alt 5" { GoToTab 5; }
+                bind "Alt 6" { GoToTab 6; }
+                bind "Alt 7" { GoToTab 7; }
+                bind "Alt 8" { GoToTab 8; }
+                bind "Alt 9" { GoToTab 9; }
+                bind "Alt h" { GoToPreviousTab; }
+                bind "Alt l" { GoToNextTab; }
+      '';
+
+      keybindsTail = ''
+                bind "Alt Shift t" { NewTab; }
+                bind "Alt e" { SwitchToMode "Scroll"; }
+                bind "Alt s" { EditScrollback; }
+                bind "Alt x" { CloseTab; }
+            }
+            scroll {
+                bind "Esc" "Enter" { SwitchToMode "Locked"; }
+                // SwitchToMode "Locked" is not cosmetic. Without it, Alt-e ->
+                // find it -> Alt-s leaves zellij in Scroll mode on top of the
+                // nvim pane, where zellij eats j and k before nvim sees them.
+                bind "Alt s"       { EditScrollback; SwitchToMode "Locked"; }
+                // zellij's own default scroll-mode `e` already opens the
+                // scrollback editor and lands in Normal mode. This config
+                // never sets clear-defaults, so that binding is still live;
+                // rebinding it here is cheaper than clearing the defaults and
+                // keeps both entry points (Alt-s and `e`) landing in the same
+                // zellij mode.
+                bind "e"           { EditScrollback; SwitchToMode "Locked"; }
+            }
+        }
+      '';
     in
     {
-      stylix.targets.zellij.colors.override.withHashtag = {
-        # Swap the mauve accent for blue in zellij only (focused-pane border +
-        # selected tab + table title). The RHS reads the global palette, so this
-        # is a clean swap with no circular reference.
-        base0E = config.lib.stylix.colors.withHashtag.base0D;
-        base0D = config.lib.stylix.colors.withHashtag.base0E;
-      };
+      options.zellijLlm.enable = lib.mkEnableOption ''
+        the zellij LLM/editor layer (nvim wrappers, nvim/agent layouts, Alt-t
+        agent tab, the `lvim` project launcher). Off by default for headless hosts'';
 
-      programs.zellij = {
-        enable = true;
-        # Start zellij through the nvim alias, not in every terminal.
-        settings.default_mode = "locked";
-        # Resurrection replays each pane's live argv; a jailed agent tab's
-        # space-containing `--setenv NIX_CFLAGS_COMPILE "…"` bwrap args get split
-        # on whitespace, so a resurrected pane dies with `bwrap: Unknown option
-        # -isystem`. Disabling serialization removes the dump entirely. See
-        # ticket 53/54.
-        settings.session_serialization = false;
-        # Copy mode: a real nvim buffer over the pane's scrollback. The wrapper
-        # dispatches, because this option is global -- it also captures `zellij
-        # edit`, `zellij action edit`, and plugin file-opens, which must reach a
-        # normal editable editor. See _zellij/copy-mode.nix.
-        #
-        # zellij tracks nixpkgs-unstable, and three mechanisms this depends on
-        # degrade SILENTLY if upstream moves: the +N editor-basename gate, the
-        # $TMPDIR/<uuid>.dump path shape the wrapper's dispatch and rm key off,
-        # and OSC-52 interception. warnIf rather than assert: a bump is usually
-        # still fine, and a hard failure would hold `nix flake update` hostage
-        # to a manual source review.
-        settings.scrollback_editor =
-          lib.warnIf (!lib.hasPrefix "0.44." config.programs.zellij.finalPackage.version)
-            ''
-              zellij is now ${config.programs.zellij.finalPackage.version}; copy mode's
-              mechanism assumptions were read from 0.44.3 source. Re-check them against the
-              new source -- see the comments in modules/programs/_zellij/copy-mode.nix.
-            ''
-            "${copy-mode}/bin/nvim";
-        # copy_command MUST STAY UNSET. Setting it makes zellij run a copy
-        # command server-side on the laptop, which breaks the phone -- the exact
-        # case the OSC-52 path in _zellij/copy-mode-overlay.lua exists to serve.
-        # Zellij intercepts nvim's OSC 52 and re-emits it through its own
-        # clipboard_provider, which reaches whichever client is attached.
-        # Keep nvim keys available; only Alt bindings and Ctrl-g are intercepted.
-        extraConfig = ''
-          keybinds {
-              locked {
-                  bind "Alt 1" { GoToTab 1; }
-                  bind "Alt 2" { GoToTab 2; }
-                  bind "Alt 3" { GoToTab 3; }
-                  bind "Alt 4" { GoToTab 4; }
-                  bind "Alt 5" { GoToTab 5; }
-                  bind "Alt 6" { GoToTab 6; }
-                  bind "Alt 7" { GoToTab 7; }
-                  bind "Alt 8" { GoToTab 8; }
-                  bind "Alt 9" { GoToTab 9; }
-                  bind "Alt h" { GoToPreviousTab; }
-                  bind "Alt l" { GoToNextTab; }
-                  // NewTab reads `layout` as a layout name, not an inline block
-                  // (zellij kdl parser), so reference the agent layout by name.
-                  bind "Alt t" { NewTab { layout "agent"; }; }
-                  bind "Alt Shift t" { NewTab; }
-                  bind "Alt e" { SwitchToMode "Scroll"; }
-                  bind "Alt s" { EditScrollback; }
-                  bind "Alt x" { CloseTab; }
-              }
-              scroll {
-                  bind "Esc" "Enter" { SwitchToMode "Locked"; }
-                  // SwitchToMode "Locked" is not cosmetic. Without it, Alt-e ->
-                  // find it -> Alt-s leaves zellij in Scroll mode on top of the
-                  // nvim pane, where zellij eats j and k before nvim sees them.
-                  bind "Alt s"       { EditScrollback; SwitchToMode "Locked"; }
-                  // zellij's own default scroll-mode `e` already opens the
-                  // scrollback editor and lands in Normal mode. This config
-                  // never sets clear-defaults, so that binding is still live;
-                  // rebinding it here is cheaper than clearing the defaults and
-                  // keeps both entry points (Alt-s and `e`) landing in the same
-                  // zellij mode.
-                  bind "e"           { EditScrollback; SwitchToMode "Locked"; }
-              }
-          }
-        '';
-        layouts.nvim = nvimLayout;
-        layouts.agent = agentLayout;
-      };
+      config = {
+        stylix.targets.zellij.colors.override.withHashtag = {
+          # Swap the mauve accent for blue in zellij only (focused-pane border +
+          # selected tab + table title). The RHS reads the global palette, so this
+          # is a clean swap with no circular reference.
+          base0E = config.lib.stylix.colors.withHashtag.base0D;
+          base0D = config.lib.stylix.colors.withHashtag.base0E;
+        };
 
-      home.packages = [
-        nvim-project
-        nvim-tab
-        zj
-      ];
+        programs.zellij = {
+          enable = true;
+          # Start zellij through `lvim`, not in every terminal.
+          settings.default_mode = "locked";
+          # Resurrection replays each pane's live argv; a jailed agent tab's
+          # space-containing `--setenv NIX_CFLAGS_COMPILE "…"` bwrap args get split
+          # on whitespace, so a resurrected pane dies with `bwrap: Unknown option
+          # -isystem`. Disabling serialization removes the dump entirely.
+          settings.session_serialization = false;
+          # Copy mode: a real nvim buffer over the pane's scrollback. The wrapper
+          # dispatches, because this option is global -- it also captures `zellij
+          # edit`, `zellij action edit`, and plugin file-opens, which must reach a
+          # normal editable editor. See _zellij/copy-mode.nix.
+          #
+          # zellij tracks nixpkgs-unstable, and three mechanisms this depends on
+          # degrade SILENTLY if upstream moves: the +N editor-basename gate, the
+          # $TMPDIR/<uuid>.dump path shape the wrapper's dispatch and rm key off,
+          # and OSC-52 interception. warnIf rather than assert: a bump is usually
+          # still fine, and a hard failure would hold `nix flake update` hostage
+          # to a manual source review.
+          settings.scrollback_editor =
+            lib.warnIf (!lib.hasPrefix "0.44." config.programs.zellij.finalPackage.version)
+              ''
+                zellij is now ${config.programs.zellij.finalPackage.version}; copy mode's
+                mechanism assumptions were read from 0.44.3 source. Re-check them against the
+                new source -- see the comments in modules/programs/_zellij/copy-mode.nix.
+              ''
+              "${copy-mode}/bin/nvim";
+          # copy_command MUST STAY UNSET. Setting it makes zellij run a copy
+          # command server-side on the laptop, which breaks the phone -- the exact
+          # case the OSC-52 path in _zellij/copy-mode-overlay.lua exists to serve.
+          # Zellij intercepts nvim's OSC 52 and re-emits it through its own
+          # clipboard_provider, which reaches whichever client is attached.
+          # Keep nvim keys available; only Alt bindings and Ctrl-g are intercepted.
+          extraConfig = keybindsHead + agentBind + keybindsTail;
+          layouts = lib.mkIf cfg.enable {
+            nvim = nvimLayout;
+            agent = agentLayout;
+          };
+        };
+
+        # zj (session picker) is always available; the project/agent wrappers
+        # only when the llm layer is on.
+        home.packages =
+          lib.optionals cfg.enable [
+            lvim
+            nvim-tab
+          ]
+          ++ [ zj ];
+      };
     };
 }

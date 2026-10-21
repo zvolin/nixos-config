@@ -21,7 +21,6 @@
         enable = true;
         dotDir = "${config.xdg.configHome}/zsh";
         enableCompletion = true;
-        # let terminal track current dir
         enableVteIntegration = true;
 
         history = {
@@ -50,10 +49,8 @@
           fi
         '';
       };
-      # prompt
       programs.starship.enable = true;
 
-      # env
       home.sessionVariables = {
         EDITOR = "nvim";
         SUDO_EDITOR = "nvim";
@@ -66,7 +63,6 @@
       programs.bash = {
         enable = true;
         enableCompletion = true;
-        # let terminal track current dir
         enableVteIntegration = true;
 
         historyControl = [ "erasedups" ];
@@ -159,8 +155,6 @@
         htop = "btop";
         tree = "eza --tree";
         ping = "gping";
-        nvim = "nvim-project";
-        vim = "nvim-project";
       };
     };
 }

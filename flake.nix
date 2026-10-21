@@ -44,6 +44,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     tiny-dfr = {
       url = "github:zvolin/tiny-dfr/dev";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -74,8 +79,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Declarative Flatpak (--user) installs. nix-flatpak declares no inputs of its
-    # own, so there is nothing to `follows` — add it plainly.
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
     # TEMPORARY: no follows — our nixpkgs has broken lupa on aarch64,

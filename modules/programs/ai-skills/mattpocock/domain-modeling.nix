@@ -1,8 +1,10 @@
 { inputs, ... }:
 {
   flake.modules.homeManager.mattpocock-domain-modeling =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     let
+      # Vendored skill (applyPatches); routed through home.file to avoid eval-time IFD. See ../_ifd-safe-skill.nix.
+      ifd = import ../_ifd-safe-skill.nix;
       patched = pkgs.applyPatches {
         name = "mattpocock-domain-modeling-patched";
         src = inputs.mattpocock-skills;
@@ -10,8 +12,8 @@
       };
       skill = patched + "/skills/engineering/domain-modeling";
     in
-    {
-      programs.claude-code.skills.domain-modeling = skill;
-      programs.codex.skills.domain-modeling = skill;
-    };
+    lib.mkMerge [
+      (ifd.claudeSkill "domain-modeling" skill)
+      (ifd.codexSkill "domain-modeling" skill)
+    ];
 }

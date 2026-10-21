@@ -15,8 +15,9 @@ let
 in
 {
   flake.modules.homeManager.threat-modeling-expert =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     let
+      ifd = import ../_ifd-safe-skill.nix;
       # Codex consumes skills, not subagents. Wrap the agent .md as SKILL.md
       # so Codex can load the same methodology body as a skill. Copy (not
       # symlink) because Codex 0.94+ doesn't follow symlinked SKILL.md.
@@ -25,12 +26,16 @@ in
         cp ${base}/agents/threat-modeling-expert.md $out/SKILL.md
       '';
     in
-    {
-      programs.claude-code.agents.threat-modeling-expert = builtins.readFile "${base}/agents/threat-modeling-expert.md";
+    lib.mkMerge [
+      {
+        programs.claude-code.agents.threat-modeling-expert = builtins.readFile "${base}/agents/threat-modeling-expert.md";
 
-      programs.claude-code.skills = skills;
-      programs.codex.skills = skills // {
-        threat-modeling-expert = "${agentAsCodexSkill}";
-      };
-    };
+        # The wshobson skills resolve to an already-fetched flake input, so the
+        # skills option's eval-time probe is pure — no IFD. They stay put.
+        programs.claude-code.skills = skills;
+        programs.codex.skills = skills;
+      }
+      # runCommand-backed skill; routed through home.file to avoid eval-time IFD. See ../_ifd-safe-skill.nix.
+      (ifd.codexSkill "threat-modeling-expert" "${agentAsCodexSkill}")
+    ];
 }

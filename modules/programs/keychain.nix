@@ -1,6 +1,57 @@
 { ... }:
 {
+  # ssh config, gpg, and the gpg-agent daemon with a terminal pinentry. Kept free
+  # of desktop (Hyprland) deps so it works on headless hosts.
   flake.modules.homeManager.keychain =
+    {
+      pkgs,
+      lib,
+      ...
+    }:
+    let
+      cacheTtl = 84000;
+    in
+    {
+      programs.ssh = {
+        enable = true;
+        enableDefaultConfig = false;
+        settings."*".addKeysToAgent = "yes";
+      };
+
+      programs.gpg.enable = true;
+
+      # Headless default: a plain ssh-agent carries the passphraseless per-host
+      # key. It holds keys in RAM without re-encrypting them, so loading one needs
+      # no passphrase. The laptop (keychain-desktop) turns this off and routes ssh
+      # through gpg-agent instead.
+      services.ssh-agent.enable = lib.mkDefault true;
+
+      services.gpg-agent = {
+        enable = true;
+        # Only the laptop gates ssh behind gpg-agent (keychain-desktop sets this
+        # true, for one pinentry across GPG + ssh). Servers hold no GPG keys, and
+        # funnelling their passphraseless key through gpg-agent would force a
+        # keystore passphrase on first outbound ssh.
+        enableSshSupport = lib.mkDefault false;
+        defaultCacheTtl = cacheTtl;
+        maxCacheTtl = cacheTtl;
+        defaultCacheTtlSsh = cacheTtl;
+        maxCacheTtlSsh = cacheTtl;
+        # keychain-desktop overrides this with pinentry-floating (plain
+        # assignment beats mkDefault).
+        pinentry.package = lib.mkDefault pkgs.pinentry-curses;
+        extraConfig = ''
+          allow-loopback-pinentry
+        '';
+      };
+    };
+
+  # Desktop override: swaps in pinentry-floating, which spawns a floating kitty
+  # terminal running pinentry-curses and bridges gpg-agent's assuan protocol over
+  # FIFOs. Reads config.terminal + Hyprland geometry, so it is not headless-safe.
+  # Must be imported alongside the keychain base (user-desktop imports both);
+  # self-importing it would duplicate allow-loopback-pinentry in gpg-agent.conf.
+  flake.modules.homeManager.keychain-desktop =
     {
       pkgs,
       lib,
@@ -35,8 +86,6 @@
         exec ${lib.getExe pkgs.pinentry-curses} < "$1" > "$2"
       '';
 
-      # Pinentry wrapper that spawns a floating terminal with pinentry-curses inside,
-      # bridging the gpg-agent assuan protocol over named pipes (FIFOs).
       pinentry-floating = pkgs.writeShellApplication {
         name = "pinentry-floating";
         runtimeInputs = with pkgs; [
@@ -88,29 +137,13 @@
           kill "$SED_PID" 2>/dev/null || true
         '';
       };
-
-      cacheTtl = 84000;
     in
     {
-      programs.ssh = {
-        enable = true;
-        enableDefaultConfig = false;
-        settings."*".addKeysToAgent = "yes";
-      };
-
-      programs.gpg.enable = true;
-
-      services.gpg-agent = {
-        enable = true;
-        enableSshSupport = true;
-        defaultCacheTtl = cacheTtl;
-        maxCacheTtl = cacheTtl;
-        defaultCacheTtlSsh = cacheTtl;
-        maxCacheTtlSsh = cacheTtl;
-        pinentry.package = pinentry-floating;
-        extraConfig = ''
-          allow-loopback-pinentry
-        '';
-      };
+      services.gpg-agent.pinentry.package = pinentry-floating;
+      # The laptop routes ssh through gpg-agent (one pinentry for GPG + ssh), so
+      # the plain headless ssh-agent is off here. Plain assignments beat the base
+      # mkDefaults.
+      services.gpg-agent.enableSshSupport = true;
+      services.ssh-agent.enable = false;
     };
 }

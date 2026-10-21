@@ -151,7 +151,7 @@ in
       #
       # This arm deliberately does NOT wire the HM module via
       # home-manager.sharedModules: the HM codex module is already imported once,
-      # per-user, in modules/users/zvolin.nix. Wiring it a second time would
+      # per-user, in modules/users/zwolin.nix. Wiring it a second time would
       # evaluate it twice and silently duplicate list options (notify, status_line).
       environment.etc."codex/config.toml".text = ''
         [[hooks.PreToolUse]]
