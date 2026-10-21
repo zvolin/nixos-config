@@ -45,7 +45,7 @@
     };
 
     tiny-dfr = {
-      url = "path:/home/zwolin/data/tiny-dfr";
+      url = "github:zvolin/tiny-dfr/dev";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

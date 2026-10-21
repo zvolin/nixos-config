@@ -121,6 +121,26 @@
         "type": "github"
       }
     },
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789770686,
+        "narHash": "sha256-uZkBR7yHdIKUFB5SZdfgh1qkGfI3XmYmI/lTiquxbck=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "725ea35e410ad83be4931d1bff7e090eacaf3563",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
     "firefox-gnome-theme": {
       "flake": false,
       "locked": {
@@ -429,6 +449,26 @@
         "type": "github"
       }
     },
+    "nixos-hardware": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791721963,
+        "narHash": "sha256-BYhx89XJltnRyQeuDKHVL5eSqbbfAcOKuDts7QRsrxQ=",
+        "owner": "NixOS",
+        "repo": "nixos-hardware",
+        "rev": "60a624466c08787ee8303393b7d4752d1826f14f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixos-hardware",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1776548001,
@@ -541,6 +581,7 @@
     "root": {
       "inputs": {
         "claude-rules": "claude-rules",
+        "disko": "disko",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "humanizer": "humanizer",
@@ -550,10 +591,13 @@
         "mcp-servers-nix": "mcp-servers-nix",
         "nix-flatpak": "nix-flatpak",
         "nixos-apple-silicon": "nixos-apple-silicon",
+        "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
         "nixvim": "nixvim",
         "rust-overlay": "rust-overlay",
+        "secrets": "secrets",
         "skill-codex": "skill-codex",
+        "sops-nix": "sops-nix",
         "stylix": "stylix",
         "superpowers": "superpowers",
         "tiny-dfr": "tiny-dfr",
@@ -581,6 +625,22 @@
         "type": "github"
       }
     },
+    "secrets": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792589600,
+        "narHash": "sha256-HQYwDxKFp+MS7nBhWy6xPo09/Hmzqs5rCEQNLtwVIJA=",
+        "ref": "refs/heads/main",
+        "rev": "908fd178cf5c002c28eb885c935f540077f8a7f3",
+        "revCount": 9,
+        "type": "git",
+        "url": "ssh://git@github.com/zvolin/nixos-secrets.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/zvolin/nixos-secrets.git"
+      }
+    },
     "skill-codex": {
       "flake": false,
       "locked": {
@@ -595,6 +655,26 @@
         "owner": "skills-directory",
         "repo": "skill-codex",
         "rev": "0cce7fc7c49b08fd60ae05bdf7934590d7bc34b5",
+        "type": "github"
+      }
+    },
+    "sops-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791710405,
+        "narHash": "sha256-mVD4XIc5JkqMW2K04IkFUzHgHmyJZlzw5ktfgMDCbKU=",
+        "owner": "Mic92",
+        "repo": "sops-nix",
+        "rev": "ee48786c6f9160d2c1a084aac841f68195b8420c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Mic92",
+        "repo": "sops-nix",
         "type": "github"
       }
     },
@@ -751,14 +831,18 @@
         ]
       },
       "locked": {
-        "lastModified": 1774753712,
-        "narHash": "sha256-lK9Ga2O7BwvRwQDzSaB5s3bnTeyOxDJkOFCX3xo7m84=",
-        "path": "/home/zwolin/data/tiny-dfr",
-        "type": "path"
+        "lastModified": 1791893526,
+        "narHash": "sha256-L7TsCJG2TsHnLqdo+bLuKY+s9TzeEAI0LqEJgPRwX4I=",
+        "owner": "zvolin",
+        "repo": "tiny-dfr",
+        "rev": "bb8d9de947a50c6ec1cf59c28bbf7a7e32c44d64",
+        "type": "github"
       },
       "original": {
-        "path": "/home/zwolin/data/tiny-dfr",
-        "type": "path"
+        "owner": "zvolin",
+        "ref": "dev",
+        "repo": "tiny-dfr",
+        "type": "github"
       }
     },
     "wshobson-agents": {
