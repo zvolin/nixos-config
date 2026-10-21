@@ -50,8 +50,9 @@ If a non-empty subset is approved, the controller dispatches an implementer suba
 Across the entire diff:
 
 1. Strip every comment that restates what the code does.
-2. Strip every AI-obvious phrase ("serves as", "leverages", "ensures proper...", "facilitates...", significance inflation, rule-of-three padding).
-3. Rewrite remaining comments, docstrings, and error messages in plain direct prose.
+2. Strip every comment that narrates the change instead of describing the code. The test is whether a fresh reader who never saw the old version would miss context. When change-narration is bundled with a constraint or rationale the reader still needs, remove only the narration and keep the point.
+3. Strip every AI-obvious phrase ("serves as", "leverages", "ensures proper...", "facilitates...", significance inflation, rule-of-three padding).
+4. Rewrite remaining comments, docstrings, and error messages in plain direct prose.
 
 This is the same pass as the per-task Prose Cleanup Pass, applied once more across the full diff to catch anything the per-task passes missed.
 
