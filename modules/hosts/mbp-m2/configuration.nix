@@ -10,6 +10,7 @@
         boot-grub
         impermanence
         networking
+        lan-hosts
         overlay-brightdata-mcp
         overlay-nettle
         overlay-render-markdown
@@ -30,6 +31,12 @@
 
       # dialout: access to serial/USB devices.
       users.users.zwolin.extraGroups = [ "dialout" ];
+
+      # Commit-signing identity: the laptop GPG key.
+      home-manager.users.zwolin.programs.git.signing = {
+        format = "openpgp";
+        key = "9DD9C8FD06750734";
+      };
 
       hardware.asahi.peripheralFirmwareDirectory =
         pkgs.runCommand "asahi-firmware-cpio"

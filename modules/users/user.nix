@@ -24,6 +24,14 @@ in
         extraGroups = [ "wheel" ];
         packages = [ ];
         shell = pkgs.zsh;
+        # Authorized-key mesh, one source of truth in the private pubkey map.
+        # Trust is asymmetric: a server's authorized set never names the laptop,
+        # so a stolen server key gives no foothold back to the daily driver. The
+        # concrete edges stay in the private map. mbp-m2 maps to [] (the NixOS
+        # default), keeping its authorized-keys closure byte-identical.
+        openssh.authorizedKeys.keys = map (
+          id: pubKeys.keys.${id}
+        ) pubKeys.authorized.${config.networking.hostName};
       };
 
       nix.extraOptions = ''
@@ -46,6 +54,24 @@ in
         manual.json.enable = true;
         xdg.enable = true;
       };
+    };
+
+  # Delivers the login password via sops instead of the base aspect's plaintext
+  # default. Pure layer on the separately-imported user-headless base; opt-in
+  # per host, which must also import user-headless and sops.
+  flake.modules.nixos.user-sops =
+    { config, ... }:
+    {
+      imports = with inputs.self.modules.nixos; [ sops ];
+
+      # Key string is a path into encrypted shared.yaml (data), not aspect
+      # identity — do not rename it with the aspect.
+      sops.secrets."zwolin/hashedPasswordFile" = {
+        sopsFile = "${inputs.secrets}/shared.yaml";
+        neededForUsers = true; # decrypted before users are created
+      };
+
+      users.users.${user}.hashedPasswordFile = config.sops.secrets."zwolin/hashedPasswordFile".path;
     };
 
   # Desktop layer on the base: GUI groups and the desktop Home-Manager modules.

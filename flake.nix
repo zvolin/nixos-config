@@ -44,6 +44,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -52,6 +57,15 @@
     tiny-dfr = {
       url = "github:zvolin/tiny-dfr/dev";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Encrypted secrets live in a separate private repo (zvolin/nixos-secrets)
+    # so the public config carries no ciphertext. flake = false: a plain source
+    # tree, referenced as ${inputs.secrets}/<file>. Outsiders cannot evaluate the
+    # flake without access to it — intended; affects outsiders only.
+    secrets = {
+      url = "git+ssh://git@github.com/zvolin/nixos-secrets.git";
+      flake = false;
     };
 
     superpowers = {
