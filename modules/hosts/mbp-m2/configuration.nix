@@ -24,6 +24,7 @@
         codex
         tailscale
         user-headless
+        user-sops
         user-desktop
       ];
 
