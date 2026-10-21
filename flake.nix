@@ -59,6 +59,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Raspberry Pi 4B hardware profile (firmware, kernel bits, console). It declares
+    # a nixpkgs input only for its own checks/devShells; following the repo nixpkgs
+    # avoids a second nixpkgs in the lock.
+    nixos-hardware = {
+      url = "github:NixOS/nixos-hardware";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Encrypted secrets live in a separate private repo (zvolin/nixos-secrets)
     # so the public config carries no ciphertext. flake = false: a plain source
     # tree, referenced as ${inputs.secrets}/<file>. Outsiders cannot evaluate the
