@@ -44,6 +44,13 @@
             # Web Unlocker zone name — not secret. The MCP server auto-creates
             # this zone on first use if absent; change if your zone differs.
             env.WEB_UNLOCKER_ZONE = "mcp_unlocker";
+            # Codex spawns stdio MCP servers with a curated environment (a fixed
+            # default allowlist + the names listed here), so unlike Claude it does
+            # not inherit BRIGHTDATA_API_TOKEN from the jail — the wrapper above
+            # would then export an empty API_TOKEN and the server runs
+            # unauthenticated. Naming it here forwards it from Codex's own env.
+            # Ignored by clients that pass their full env through (e.g. Claude).
+            env_vars = [ "BRIGHTDATA_API_TOKEN" ];
           };
         };
       };
