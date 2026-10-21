@@ -6,7 +6,7 @@
 let
   claude-icon-ico = pkgs.fetchurl {
     url = "https://claude.ai/favicon.ico";
-    sha256 = "1qw5w3c2v6clyv608kizpppyz501v29cnmlmibz51szgif15asl1";
+    hash = "sha256-Ul1cBjNl92VroP6LkWV0LEh05whS2b7XFTtvrKhmOgI=";
   };
   claude-icon = pkgs.runCommand "claude-icon.png" { } ''
     ${pkgs.imagemagick}/bin/convert "${claude-icon-ico}[0]" -resize 128x128 $out
@@ -139,7 +139,6 @@ in
       }
     ];
 
-    # Auto-format files after every edit
     PostToolUse = [
       {
         matcher = "Edit|Write";
