@@ -8,7 +8,7 @@ in
     let
       # Last claude-code version whose model aliases were verified against the
       # ANTHROPIC_DEFAULT_*_MODEL pins below. Bump it after re-checking the IDs.
-      lastVerifiedVersion = "2.1.224";
+      lastVerifiedVersion = "2.1.303";
       claudeVersion = config.programs.claude-code.package.version;
     in
     {

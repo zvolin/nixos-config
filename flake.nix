@@ -103,9 +103,10 @@
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
-    # TEMPORARY: no follows — our nixpkgs has broken lupa on aarch64,
-    # mcp-nixos's pinned nixpkgs builds fine. Remove when upstream fixes lupa.
-    mcp-nixos.url = "github:utensils/mcp-nixos";
+    mcp-nixos = {
+      url = "github:utensils/mcp-nixos";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     skill-codex = {
       url = "github:skills-directory/skill-codex/0cce7fc7c49b08fd60ae05bdf7934590d7bc34b5";

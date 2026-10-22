@@ -235,10 +235,10 @@
           # still fine, and a hard failure would hold `nix flake update` hostage
           # to a manual source review.
           settings.scrollback_editor =
-            lib.warnIf (!lib.hasPrefix "0.44." config.programs.zellij.finalPackage.version)
+            lib.warnIf (!lib.hasPrefix "0.45." config.programs.zellij.finalPackage.version)
               ''
                 zellij is now ${config.programs.zellij.finalPackage.version}; copy mode's
-                mechanism assumptions were read from 0.44.3 source. Re-check them against the
+                mechanism assumptions were read from 0.45.1 source. Re-check them against the
                 new source -- see the comments in modules/programs/_zellij/copy-mode.nix.
               ''
               "${copy-mode}/bin/nvim";
