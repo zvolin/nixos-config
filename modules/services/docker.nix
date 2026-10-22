@@ -1,11 +1,6 @@
 { ... }:
 {
   flake.modules.nixos.docker = {
-    boot.binfmt.preferStaticEmulators = true;
-    boot.binfmt.emulatedSystems = [
-      "i386-linux"
-      "x86_64-linux"
-    ];
     virtualisation = {
       containers.enable = true;
       docker.enable = true;

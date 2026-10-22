@@ -12,7 +12,6 @@
         networking
         lan-hosts
         overlay-brightdata-mcp
-        overlay-nettle
         overlay-render-markdown
         overlay-tiny-dfr
         open-bambu-networking
