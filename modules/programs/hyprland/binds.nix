@@ -81,8 +81,25 @@
               # the bind's behavior.
               (mkBind (withMod "I") (exec "amphetamine-toggle"))
 
-              # scratchpads
-              (mkBind (withMod "X") (mkLuaInline ''hl.dsp.workspace.toggle_special("kitty")''))
+              # scratchpads: spawn a fresh tiled kitty onto special:kitty when it
+              # is empty, otherwise toggle the existing one. The spawn uses
+              # `silent` so the workspace stays hidden, which makes the following
+              # toggle_special always reveal (never hide) it — deterministic
+              # regardless of Hyprland's auto-reveal behaviour.
+              (mkBind (withMod "X") (mkLuaInline ''
+                function()
+                  local has_window = false
+                  for _, w in ipairs(hl.get_windows()) do
+                    if w.workspace and w.workspace.name == "special:kitty" then
+                      has_window = true
+                      break
+                    end
+                  end
+                  if not has_window then
+                    hl.exec_cmd(${toLua terminal}, { workspace = "special:kitty silent" })
+                  end
+                  hl.dispatch(hl.dsp.workspace.toggle_special("kitty"))
+                end''))
 
               # cycle workspaces
               (mkBind (withMod "H") (mkLuaInline ''hl.dsp.focus({ workspace = "-1" })''))

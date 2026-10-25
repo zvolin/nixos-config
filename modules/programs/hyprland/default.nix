@@ -81,7 +81,6 @@
           };
           xkb = osConfig.services.xserver.xkb;
           colors = config.lib.stylix.colors;
-          terminal = lib.getExe config.terminal;
           brightness-init = pkgs.writeShellScript "brightness-init" ''
             if [ "$(cat /sys/class/power_supply/macsmc-ac/online)" = "1" ]; then
               touchbar-kbd-sync set 30%
@@ -277,12 +276,6 @@
                     hl.exec_cmd(${toLua brightness-init})
                     hl.exec_cmd(${toLua waybar})
                     hl.exec_cmd(${toLua "${swaybg} -o '*' -m fill -i ${config.stylix.image}"})
-                    hl.exec_cmd(${toLua terminal}, {
-                      workspace = "special:kitty silent",
-                      float     = true,
-                      move      = "25% 10%",
-                      size      = "70% 70%",
-                    })
                   end'')
               ];
             };
