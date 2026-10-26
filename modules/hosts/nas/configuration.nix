@@ -6,6 +6,7 @@
       imports = with inputs.self.modules.nixos; [
         system-cli
         nas-disko
+        nas-zfs-pool
         ./_host/hardware.nix
         networking-wired
         lan-hosts
