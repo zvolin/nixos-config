@@ -20,7 +20,12 @@ in
       priority=''${2:-default}
       tags=''${3:-}
       message=''${4:-}
-      password=$(cat ${credentialFile})
+      # Inside the AI jail /run/secrets is unbound, so the cred arrives via env
+      # (the jail preloads it on the host); fall back to the file out-of-jail.
+      password=''${NTFY_PUBLISHER_PASSWORD:-}
+      if [ -z "$password" ]; then
+        password=$(cat ${credentialFile} 2>/dev/null || true)
+      fi
       # Fire-and-forget: a push failure must never break the hook or the agent.
       # But a non-2xx (e.g. a 401 during credential bring-up) is logged to the
       # journal rather than silently swallowed.

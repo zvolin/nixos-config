@@ -52,6 +52,7 @@ let
   tokenEnv = [
     "GH_TOKEN"
     "BRIGHTDATA_API_TOKEN"
+    "NTFY_PUBLISHER_PASSWORD"
   ];
 
   nixDevshellEnv = [
@@ -268,6 +269,18 @@ let
           BRIGHTDATA_API_TOKEN=$(${pkgs.coreutils}/bin/cat "$bd_token_file") || true
         fi
         export BRIGHTDATA_API_TOKEN
+
+        # ntfy publisher password for the Notification-hook push helper, which
+        # runs inside this jail — and the jail does not bind /run/secrets, so it
+        # cannot read the sops file. Read it on the host (the user owns the 0400
+        # secret) and pass it in via --setenv, as with GH_TOKEN/BRIGHTDATA above.
+        # Optional: an absent secret leaves agent-events pushes unauthenticated,
+        # which the fire-and-forget helper logs and drops.
+        ntfy_pw_file=/run/secrets/ntfy/publisher-password
+        if [ -z "''${NTFY_PUBLISHER_PASSWORD:-}" ] && [ -r "$ntfy_pw_file" ]; then
+          NTFY_PUBLISHER_PASSWORD=$(${pkgs.coreutils}/bin/cat "$ntfy_pw_file") || true
+        fi
+        export NTFY_PUBLISHER_PASSWORD
 
         # bind_rw/bind_ro skip missing sources, so dirs/files must be
         # pre-created before their binds, or a first-time write lands in
