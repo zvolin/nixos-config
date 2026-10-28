@@ -8,12 +8,15 @@ let
     monUser = "upsmon"; # primary account, nas-local upsmon (holds FSD rights)
     monUserRemote = "upsmonsec"; # secondary account for the rpi netclient (no FSD)
   };
+
+  # upsd's port.
+  nutPort = 3493;
 in
 {
   flake.lib.nut = nut;
 
   flake.modules.nixos.nut-server =
-    { config, ... }:
+    { config, lib, ... }:
     {
       # Re-importing sops is idempotent (nas already pulls it via user-sops), so
       # the aspect carries its own secret dependency.
@@ -81,10 +84,12 @@ in
           type = "primary";
         };
 
-        # Opens :3493 for the netclient; on a single-NIC host this exposes only
-        # the LAN interface.
-        openFirewall = true;
+        openFirewall = false;
       };
+
+      networking.firewall.interfaces = lib.genAttrs config.lanInterface (_: {
+        allowedTCPPorts = [ nutPort ];
+      });
 
       # One shared monitor credential, the same value on both ends of the monitor
       # relationship. host_nas + host_rpi already decrypt shared.yaml today

@@ -8,6 +8,7 @@
         nas-disko
         nas-zfs-pool
         ./_host/hardware.nix
+        igpu-render
         networking-wired
         lan-hosts
         headless-host
@@ -23,6 +24,9 @@
       ];
 
       networking.hostName = "nas";
+
+      # LAN interfaces for the firewall rules.
+      lanInterface = [ "en*" ];
 
       # GUI-free AI/agent set on top of the user-headless base. nas does not use
       # user-desktop.

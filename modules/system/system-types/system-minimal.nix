@@ -7,6 +7,7 @@
       home-manager-integration
       unfree
       security
+      nftables
     ];
 
     time.timeZone = "Europe/Warsaw";

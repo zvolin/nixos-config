@@ -17,9 +17,11 @@
 
       networking.hostName = "rpi";
 
-      # end0 + the eth0 fallback; wlan0 matches neither. The runbook confirms
-      # the NIC name on first console boot (a missed match leaves the box dark).
-      systemd.network.networks."10-lan".matchConfig.Name = "en* eth*";
+      # end0 (en*) or eth0 (eth*), depending on kernel.
+      lanInterface = [
+        "en*"
+        "eth*"
+      ];
 
       system.stateVersion = "26.11";
     };
