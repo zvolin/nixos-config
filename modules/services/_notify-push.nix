@@ -1,31 +1,41 @@
-# Shared ntfy push helper (port, topic, and the notify-push binary).
-# Underscore-prefixed so import-tree skips auto-discovery (this is a plain
-# builder, not a flake module); the ntfy server module and both AI CLI hook
-# wirings `import` this directly.
-{ pkgs }:
-rec {
-  # Single ntfy topic for all agent events; the notification title (client +
-  # session name) disambiguates the source. Port and topic are defined once
-  # here; the ntfy server module and every hook caller import this.
-  port = 2586;
-  topic = "agents";
-
+{
+  pkgs,
+  baseUrl ? null,
+  credentialFile,
+}:
+let
+  ntfy = import ./_ntfy-common.nix;
+  serverUrl = if baseUrl == null then "http://nas:${toString ntfy.port}" else baseUrl;
+in
+{
   package = pkgs.writeShellApplication {
     name = "notify-push";
-    runtimeInputs = [ pkgs.curl ];
+    runtimeInputs = [
+      pkgs.curl
+      pkgs.coreutils
+    ];
     text = ''
       # usage: notify-push <title> <priority> <tags> <message>
       title=''${1:-Notification}
       priority=''${2:-default}
       tags=''${3:-}
       message=''${4:-}
+      password=$(cat ${credentialFile})
       # Fire-and-forget: a push failure must never break the hook or the agent.
-      curl -fsS --connect-timeout 2 --max-time 5 \
+      # But a non-2xx (e.g. a 401 during credential bring-up) is logged to the
+      # journal rather than silently swallowed.
+      code=$(curl -sS --connect-timeout 2 --max-time 5 \
+        -u "${ntfy.publisherUser}:$password" \
         -H "Title: $title" \
         -H "Priority: $priority" \
         -H "Tags: $tags" \
         -d "$message" \
-        "http://127.0.0.1:${toString port}/${topic}" >/dev/null || true
+        -o /dev/null -w '%{http_code}' \
+        "${serverUrl}/${ntfy.agentTopic}") || code=000
+      case "$code" in
+        2??) ;;
+        *) echo "notify-push: ntfy ${serverUrl}/${ntfy.agentTopic} returned $code" >&2 ;;
+      esac
     '';
   };
 }

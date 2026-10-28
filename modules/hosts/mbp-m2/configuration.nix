@@ -19,11 +19,11 @@
         flatpak
         xremap
         tiny-dfr
-        ntfy
         codex
         tailscale
         user-headless
         user-sops
+        ntfy-publisher-secret
         user-desktop
       ];
 

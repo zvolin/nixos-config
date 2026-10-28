@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  osConfig,
   ...
 }:
 let
@@ -31,7 +32,11 @@ let
       *.rs)  format rustfmt ${lib.getExe pkgs.rustfmt} "$file_path" ;;
     esac 2>/dev/null || true
   '';
-  notify = import ../../../services/_notify-push.nix { inherit pkgs; };
+  notify = import ../../../services/_notify-push.nix {
+    inherit pkgs;
+    # HM module: the secret is declared in the host NixOS config (osConfig), not HM config.
+    credentialFile = osConfig.sops.secrets."ntfy/publisher-password".path;
+  };
   notify-push = lib.getExe notify.package;
   claude-title = import ../../_notify-title.nix {
     inherit pkgs lib;

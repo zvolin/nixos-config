@@ -87,14 +87,22 @@ in
     };
 
   flake.modules.nixos.codex =
-    { pkgs, lib, ... }:
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
     let
       guard = import ../_command-guard { inherit pkgs lib; };
       denyGuard = guard.mkGuardScript {
         name = "codex-check-bash-command";
         softDecision = "deny";
       };
-      notify = import ../../services/_notify-push.nix { inherit pkgs; };
+      notify = import ../../services/_notify-push.nix {
+        inherit pkgs;
+        credentialFile = config.sops.secrets."ntfy/publisher-password".path;
+      };
       notifyTitle = import ../_notify-title.nix {
         inherit pkgs lib;
         client = "codex";
