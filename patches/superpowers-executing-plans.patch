@@ -1,8 +1,8 @@
 diff --git a/skills/executing-plans/SKILL.md b/skills/executing-plans/SKILL.md
-index 075a103..02df359 100644
+index 075a103..a60a86f 100644
 --- a/skills/executing-plans/SKILL.md
 +++ b/skills/executing-plans/SKILL.md
-@@ -7,47 +7,98 @@ description: Use when you have a written implementation plan to execute in a sep
+@@ -7,47 +7,115 @@ description: Use when you have a written implementation plan to execute in a sep
 
  ## Overview
 
@@ -20,8 +20,7 @@ index 075a103..02df359 100644
 +primitive** in validation-only mode. Under its lock/CAS contract, require an
 +existing canonical repository-root-relative regular-file ticket with `type:
 +implementation`, `status: open`, `phase: superpowers:executing-plans`, current
-+revision, caller-owned active claim, no active blocker, and canonical existing
-+`spec` and `plan`. The canonical existing `plan` file must contain exactly one
++revision, no active blocker, and canonical existing `spec` and `plan`. The canonical existing `plan` file must contain exactly one
 +`## Wayfinder ticket handoff` YAML block. Its canonical ticket path and
 +`origin-ticket-id` must match the original ticket and its `next-phase` must be
 +`superpowers:executing-plans`. Revalidate the canonical `plan` field while
@@ -29,6 +28,24 @@ index 075a103..02df359 100644
 +Reject absolute, escaping, symlinked, missing, directory, noncanonical, stale,
 +malformed, or mismatched inputs without writing and never create or select a
 +successor ticket.
++
++**Ensure-owned entry.** This phase is reached either by a direct chain from the
++previous phase (which released its claim before `/clear`) or by a cold Wayfinder
++dispatch (which pre-claimed). Establish ownership before that validation
++runs, reusing Wayfinder's claim primitives (WAYFINDING-OPS — Claiming,
++Frontier → scan, Selection and claims):
++
++- `claimed-by:` empty, or set but its liveness lock probes free (**stale**) →
++  guarded-claim it: win the flock, then CAS-set `claimed-by:` to this session,
++  then run the validation.
++- `claimed-by:` live and equal to this session's id → adopt it and proceed.
++- `claimed-by:` live and owned by another session → this session cannot resume
++  the ticket, because another live session already holds its claim. State that
++  plainly, and do not scan for other work here; emit the standard Wayfinder
++  frontier handoff so a fresh session re-enters the frontier scheduler, which
++  skips the now-busy ticket and picks the next eligible item: Claude Code
++  `/clear` then `/wayfinder <map-path>`; Codex `/clear` then
++  `$wayfinder <map-path>`.
 +
 +Dispatch the existing executor with this ticket context, but do not release it
 +at dispatch. Its existing final user-approval gate is the terminal approval
@@ -121,7 +138,7 @@ index 075a103..02df359 100644
  **Return to Review (Step 1) when:**
  - Partner updates the plan based on your feedback
  - Fundamental approach needs rethinking
-@@ -55,16 +106,16 @@ After all tasks complete and verified:
+@@ -55,16 +123,16 @@ After all tasks complete and verified:
  **Don't force through blockers** - stop and ask.
 
  ## Remember

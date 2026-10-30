@@ -1,5 +1,5 @@
 diff --git a/skills/brainstorming/SKILL.md b/skills/brainstorming/SKILL.md
-index b0d52b2..adb180c 100644
+index b0d52b2..5082ffd 100644
 --- a/skills/brainstorming/SKILL.md
 +++ b/skills/brainstorming/SKILL.md
 @@ -17,19 +17,45 @@ Do NOT invoke any implementation skill, write any code, scaffold any project, or
@@ -54,7 +54,7 @@ index b0d52b2..adb180c 100644
 
  ## Process Flow
 
-@@ -37,28 +63,79 @@ You MUST create a task for each of these items and complete them in order:
+@@ -37,28 +63,82 @@ You MUST create a task for each of these items and complete them in order:
  digraph brainstorming {
      "Explore project context" [shape=box];
      "Ask clarifying questions" [shape=box];
@@ -114,7 +114,7 @@ index b0d52b2..adb180c 100644
 +contract, require the original path to resolve with `realpath -e` to an existing
 +canonical repository-root-relative regular file whose frontmatter is `type:
 +implementation`, `status: open`, `phase: superpowers:brainstorming`, current
-+`revision`, caller-owned active `claimed-by`, no active `blocked-by` entry, and
++`revision`, caller-owned active `claimed-by`, no active blocker, and
 +empty `spec` and `plan`. Reject absolute, escaping, symlinked, missing,
 +directory, noncanonical, stale, or mismatched inputs without writing. Never
 +select or create a successor ticket.
@@ -141,12 +141,15 @@ index b0d52b2..adb180c 100644
 +trailer. A failed or interrupted stage leaves the spec as a draft and retains the
 +claimed open brainstorming phase for lease-repair recovery; a guard or CAS failure
 +writes no ticket update. Only Wayfinder's documented lease-repair mutation may
-+change a stale claim. After a successful release, end with `/clear`, then
-+`$wayfinder <map-path>`.
++change a stale claim. After a successful release, hand off directly to
++writing-plans on the same ticket. Use the current runtime's handoff syntax:
++
++- Claude Code: `/clear`, then `/writing-plans <ticket-path>`.
++- Codex: `/clear`, then `$superpowers:writing-plans <ticket-path>`.
 
  ## The Process
 
-@@ -77,6 +154,25 @@ digraph brainstorming {
+@@ -77,6 +157,25 @@ digraph brainstorming {
  - Propose 2-3 different approaches with trade-offs
  - Present options conversationally with your recommendation and reasoning
  - Lead with your recommended option and explain why
@@ -172,7 +175,7 @@ index b0d52b2..adb180c 100644
 
  **Presenting the design:**
 
-@@ -106,29 +202,43 @@ digraph brainstorming {
+@@ -106,29 +205,43 @@ digraph brainstorming {
  - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
    - (User preferences for spec location override this default)
  - Use elements-of-style:writing-clearly-and-concisely skill if available
@@ -228,7 +231,7 @@ index b0d52b2..adb180c 100644
 
  ## Key Principles
 
-@@ -139,6 +249,45 @@ Wait for the user's response. If they request changes, make them and re-run the
+@@ -139,6 +252,45 @@ Wait for the user's response. If they request changes, make them and re-run the
  - **Incremental validation** - Present design, get approval before moving on
  - **Be flexible** - Go back and clarify when something doesn't make sense
 

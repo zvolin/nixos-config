@@ -1,5 +1,5 @@
 diff --git a/skills/writing-plans/SKILL.md b/skills/writing-plans/SKILL.md
-index b1613eb..7fdd56a 100644
+index b1613eb..e3a2501 100644
 --- a/skills/writing-plans/SKILL.md
 +++ b/skills/writing-plans/SKILL.md
 @@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
@@ -11,7 +11,7 @@ index b1613eb..7fdd56a 100644
 
  Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
-@@ -15,9 +15,68 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
+@@ -15,9 +15,90 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
  **Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
 
@@ -23,10 +23,28 @@ index b1613eb..7fdd56a 100644
 +mutation primitive** in validation-only mode. Under its lock/CAS contract,
 +require an existing canonical repository-root-relative regular-file ticket with
 +`type: implementation`, `status: open`, `phase: superpowers:writing-plans`, a
-+current revision, a caller-owned active claim, no active blocker, an existing
-+canonical `spec`, and empty `plan`. Reject absolute, escaping, symlinked,
++current revision, no active blocker, an existing canonical `spec`, and empty
++`plan`. Reject absolute, escaping, symlinked,
 +missing, directory, noncanonical, stale, or mismatched paths without writing;
 +never select or create a successor.
++
++**Ensure-owned entry.** This phase is reached either by a direct chain from the
++previous phase (which released its claim before `/clear`) or by a cold Wayfinder
++dispatch (which pre-claimed). Establish ownership before that validation
++runs, reusing Wayfinder's claim primitives (WAYFINDING-OPS — Claiming,
++Frontier → scan, Selection and claims):
++
++- `claimed-by:` empty, or set but its liveness lock probes free (**stale**) →
++  guarded-claim it: win the flock, then CAS-set `claimed-by:` to this session,
++  then run the validation.
++- `claimed-by:` live and equal to this session's id → adopt it and proceed.
++- `claimed-by:` live and owned by another session → this session cannot resume
++  the ticket, because another live session already holds its claim. State that
++  plainly, and do not scan for other work here; emit the standard Wayfinder
++  frontier handoff so a fresh session re-enters the frontier scheduler, which
++  skips the now-busy ticket and picks the next eligible item: Claude Code
++  `/clear` then `/wayfinder <map-path>`; Codex `/clear` then
++  `$wayfinder <map-path>`.
 +
 +Run plan generation, dissent, self-review, humanization, and the existing user
 +approval gate. After approval, persist the plan as a draft and canonicalize its
@@ -50,7 +68,11 @@ index b1613eb..7fdd56a 100644
 +iterating, and emits no Wayfinder trailer; a failed or interrupted guarded update
 +leaves the plan as a draft and retains the claim for lease-repair recovery. Only
 +Wayfinder's documented lease-repair mutation may change a stale claim. After the
-+successful release, return with `/clear`, then `$wayfinder <map-path>`.
++successful release, hand off directly to executing-plans on the same ticket. Use
++the current runtime's handoff syntax:
++
++- Claude Code: `/clear`, then `/executing-plans <ticket-path>`.
++- Codex: `/clear`, then `$superpowers:executing-plans <ticket-path>`.
 +
  **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
  - (User preferences for plan location override this default)
@@ -80,7 +102,7 @@ index b1613eb..7fdd56a 100644
  ## Scope Check
 
  If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
-@@ -49,7 +108,6 @@ independently testable deliverable.
+@@ -49,7 +130,6 @@ independently testable deliverable.
  - "Run it to make sure it fails" - step
  - "Implement the minimal code to make the test pass" - step
  - "Run the tests and make sure they pass" - step
@@ -88,7 +110,7 @@ index b1613eb..7fdd56a 100644
 
  ## Plan Document Header
 
-@@ -58,7 +116,7 @@ independently testable deliverable.
+@@ -58,7 +138,7 @@ independently testable deliverable.
  ```markdown
  # [Feature Name] Implementation Plan
 
@@ -97,7 +119,7 @@ index b1613eb..7fdd56a 100644
 
  **Goal:** [One sentence describing what this builds]
 
-@@ -66,6 +124,21 @@ independently testable deliverable.
+@@ -66,6 +146,21 @@ independently testable deliverable.
 
  **Tech Stack:** [Key technologies/libraries]
 
@@ -119,7 +141,7 @@ index b1613eb..7fdd56a 100644
  ## Global Constraints
 
  [The spec's project-wide requirements — version floors, dependency limits,
-@@ -76,11 +149,21 @@ include this section.]
+@@ -76,11 +171,21 @@ include this section.]
  ---
  ```
 
@@ -141,7 +163,7 @@ index b1613eb..7fdd56a 100644
  **Files:**
  - Create: `exact/path/to/file.py`
  - Modify: `exact/path/to/existing.py:123-145`
-@@ -92,7 +175,7 @@ include this section.]
+@@ -92,7 +197,7 @@ include this section.]
    and return types. A task's implementer sees only their own task; this
    block is how they learn the names and types neighboring tasks use.]
 
@@ -150,7 +172,7 @@ index b1613eb..7fdd56a 100644
 
  ```python
  def test_specific_behavior():
-@@ -100,29 +183,23 @@ def test_specific_behavior():
+@@ -100,29 +205,23 @@ def test_specific_behavior():
      assert result == expected
  ```
 
@@ -183,7 +205,7 @@ index b1613eb..7fdd56a 100644
  ````
 
  ## No Placeholders
-@@ -135,11 +212,30 @@ Every step must contain the actual content an engineer needs. These are **plan f
+@@ -135,11 +234,30 @@ Every step must contain the actual content an engineer needs. These are **plan f
  - Steps that describe what to do without showing how (code blocks required for code steps)
  - References to types, functions, or methods not defined in any task
 
@@ -216,7 +238,7 @@ index b1613eb..7fdd56a 100644
 
  ## Self-Review
 
-@@ -151,24 +247,25 @@ After writing the complete plan, look at the spec with fresh eyes and check the
+@@ -151,24 +269,25 @@ After writing the complete plan, look at the spec with fresh eyes and check the
 
  **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 

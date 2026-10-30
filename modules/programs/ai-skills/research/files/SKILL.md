@@ -66,10 +66,10 @@ claimed-by:
 
 CAS-advance `phase` to `wayfinder:resolve`, write `findings`, and clear `claimed-by`; retain `map-path`, `blocked-by`, `revision` semantics, unknown frontmatter, and the ticket body. Do not write the ticket directly. A declined facet-plan approval — the user ending the run at §5, not a "none of these framings" steer, which is a re-draft — or an interrupted run leaves the ticket unchanged and claimed in `phase: research`; after the session ends, the stale claim follows Wayfinder recovery. If CAS fails after saving the completed report, keep the report and leave the ticket unchanged. The next claimant reconciles and retries against that intact report instead of repeating research. Report production still has no partial-success state, while report creation and ticket mutation remain separate, idempotent operations.
 
-Only after that successful CAS release, announce the saved report and return path, then emit the `/clear` trailer. Use the current runtime's handoff syntax:
+Only after that successful CAS release, announce the saved report and return path, then hand off directly to Wayfinder's resolve step for this exact ticket. Use the current runtime's handoff syntax:
 
-- Claude Code: `/clear`, then `/wayfinder <map-path>`.
-- Codex: `/clear`, then `$wayfinder <map-path>`.
+- Claude Code: `/clear`, then `/wayfinder <ticket-path>`.
+- Codex: `/clear`, then `$wayfinder <ticket-path>`.
 
 Without a successful ticket update, emit no Wayfinder trailer.
 

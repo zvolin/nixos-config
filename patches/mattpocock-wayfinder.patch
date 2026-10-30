@@ -1,5 +1,5 @@
 diff --git a/skills/engineering/wayfinder/SKILL.md b/skills/engineering/wayfinder/SKILL.md
-index 42e3644..92107a1 100644
+index 42e3644..5914803 100644
 --- a/skills/engineering/wayfinder/SKILL.md
 +++ b/skills/engineering/wayfinder/SKILL.md
 @@ -16,13 +16,38 @@ Wayfinder is **planning** by default: each ticket resolves a decision, and the m
@@ -72,7 +72,7 @@ index 42e3644..92107a1 100644
 
  ## Fog of war
 
-@@ -102,27 +128,113 @@ Ruling something out of scope is a scoping act, not a step on the route. When a
+@@ -102,27 +128,128 @@ Ruling something out of scope is a scoping act, not a step on the route. When a
 
  ## Invocation
 
@@ -89,6 +89,7 @@ index 42e3644..92107a1 100644
 +  - **1 active** → auto-select it, announce it by name, then [Work through the map](#work-through-the-map).
 +  - **≥2 active** → list them (`name · open=N`) and ask the user to pick one or chart a new map.
 +- **Explicit map path or number** → use it directly, then [Work through the map](#work-through-the-map). This is what the [closing handoff](#closing-handoff) trailer passes.
++- **Explicit ticket path** → resolve the map from the ticket's `map-path:` frontmatter (the `map.md` beside the ticket's parent `tickets/` directory), pre-select that ticket, and go to [Work through the map](#work-through-the-map) with it as the named ticket — step 2 claims it. This skips the active-map scan and frontier selection; for a research ticket in `phase: wayfinder:resolve` it lands in the resolution flow. If the ticket's `claimed-by:` is live and owned by another session, this session cannot resume the ticket, because another live session already holds its claim. State that plainly, and do not scan for a frontier here; emit the standard frontier handoff so a fresh session re-enters frontier mode on the resolved map and picks the next eligible ticket: Claude Code `/clear` then `/wayfinder <map-path>`; Codex `/clear` then `$wayfinder <map-path>`. This is the handoff `/research` emits, and it manually resumes one named ticket.
 +- **Natural-language scope** ("add a ticket for X", "work on the notification thing") → load the active maps' **bodies only** (Destination + Decisions so far — the cheap low-res view, never tickets) and semantically match the described scope against them. Exactly one *confident* match → use it (announce by name; the user can override). Zero, multiple, **or a single weak/low-confidence** match → list the plausible candidates and ask; never auto-route on a marginal match.
 +
 +"Add a ticket to an existing map" is a resolved invocation followed by the existing create-then-wire step ([Work through the map](#work-through-the-map), step 5) against the resolved map.
@@ -140,7 +141,8 @@ index 42e3644..92107a1 100644
 +`claimed-by:` — so the next phase-session claims cleanly and release survives
 +compaction (the PID is read from the lock, not from context). If a phase-session
 +ends without releasing, its flock frees and the claim goes stale, so the next
-+Wayfinder run auto-reclaims it without a manual lease-repair step. The selected chunk
++phase-session — whether self-chained from the previous phase or a cold Wayfinder
++resume — auto-reclaims it without a manual lease-repair step. The selected chunk
 +determines the Codex handoff after `/clear`:
 +
 +| Selected chunk | Codex handoff after /clear |
@@ -150,6 +152,19 @@ index 42e3644..92107a1 100644
 +| implementation brainstorming | $superpowers:brainstorming <implementation-ticket-path> |
 +| plan writing | $superpowers:writing-plans <implementation-ticket-path> |
 +| plan execution | $superpowers:executing-plans <implementation-ticket-path> |
++
++Phases self-chain. On the happy path a finishing phase-session hands off
++**directly** to the next phase on the same ticket path — brainstorming →
++`$superpowers:writing-plans <ticket-path>`, writing-plans →
++`$superpowers:executing-plans <ticket-path>`, and research →
++`$wayfinder <ticket-path>` for its resolve step — so Wayfinder is **not** the
++inter-phase dispatcher. Wayfinder is the cold-resume entry, the research
++resolver, and the next-ticket selector: it dispatches the first phase of a fresh
++ticket (brainstorming, or `research`), it resolves a `wayfinder:resolve` research
++ticket, and it picks the next frontier item after a ticket fully closes. The
++table above is what a **cold** `$wayfinder <map-path>` resume emits once it
++re-finds a ticket at its durable `phase:` — identical to the chunk it would have
++dispatched before direct-chaining.
 +
 +Each downstream invocation receives the original ticket path and ID, mutates
 +only that ticket, and never creates or selects a successor. Direct invocations
