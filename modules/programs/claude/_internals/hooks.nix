@@ -32,12 +32,10 @@ let
       *.rs)  format rustfmt ${lib.getExe pkgs.rustfmt} "$file_path" ;;
     esac 2>/dev/null || true
   '';
-  notify = import ../../../services/_notify-push.nix {
-    inherit pkgs;
-    # HM module: the secret is declared in the host NixOS config (osConfig), not HM config.
-    credentialFile = osConfig.sops.secrets."ntfy/publisher-password".path;
-  };
-  notify-push = lib.getExe notify.package;
+  # The unified ntfy-post CLI, built by the host's ntfy-post aspect (osConfig:
+  # this is an HM module). agent-events is fire-and-forget inside the tool.
+  notify-push = lib.getExe osConfig.homelab.ntfy.postPackage;
+  agentTopic = osConfig.homelab.ntfy.topics.agentEvents;
   claude-title = import ../../_notify-title.nix {
     inherit pkgs lib;
     client = "claude";
@@ -78,7 +76,7 @@ in
                   *)                   message="Needs your attention" ;;
                 esac
               fi
-              ${notify-push} "$title" high warning "$message"
+              ${notify-push} ${agentTopic} "$title" high warning "$message"
               notify-send -i ${claude-icon} "$title" "$message" || true
             '';
           }

@@ -23,7 +23,7 @@
         tailscale
         user-headless
         user-sops
-        ntfy-publisher-secret
+        ntfy-post
         user-desktop
       ];
 

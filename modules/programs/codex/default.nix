@@ -99,10 +99,6 @@ in
         name = "codex-check-bash-command";
         softDecision = "deny";
       };
-      notify = import ../../services/_notify-push.nix {
-        inherit pkgs;
-        credentialFile = config.sops.secrets."ntfy/publisher-password".path;
-      };
       notifyTitle = import ../_notify-title.nix {
         inherit pkgs lib;
         client = "codex";
@@ -115,7 +111,7 @@ in
         runtimeInputs = [
           pkgs.jq
           pkgs.libnotify
-          notify.package
+          config.homelab.ntfy.postPackage
         ];
         text = ''
           payload=$(cat)
@@ -136,7 +132,7 @@ in
           esac
           # Push FIRST: this runs under `set -euo pipefail`; a failing local
           # toast (e.g. no dbus target) must not kill the remote push.
-          notify-push "$title" high warning "$body"
+          ntfy-post ${config.homelab.ntfy.topics.agentEvents} "$title" high warning "$body"
           notify-send "$title" "$body" || true
           exit 0
         '';

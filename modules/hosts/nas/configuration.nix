@@ -16,7 +16,6 @@
         user-sops
         nut-server
         ntfy
-        nas-health-notify
         # codex's system arm (/etc/codex config.toml); claude is HM-only.
         codex
         # brightdata-mcp is interpolated by the mcp HM module (via ai-headless);

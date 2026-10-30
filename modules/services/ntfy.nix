@@ -1,5 +1,21 @@
 { inputs, ... }:
 {
+  # Shared ntfy facts, co-located with the server (like flake.lib.nut / lanConfig).
+  # Read as inputs.self.lib.ntfy by the seed below and the ntfy-post builder, so
+  # renaming a topic or user reseeds every consumer at once.
+  flake.lib.ntfy = {
+    port = 2586;
+    host = "nas";
+    topics = {
+      health = "nas-health";
+      agentEvents = "agent-events";
+    };
+    users = {
+      publisher = "publisher";
+      reader = "reader";
+    };
+  };
+
   flake.modules.nixos.ntfy =
     {
       config,
@@ -8,7 +24,7 @@
       ...
     }:
     let
-      ntfy = import ./_ntfy-common.nix;
+      ntfy = inputs.self.lib.ntfy;
       authFile = config.services.ntfy-sh.settings.auth-file;
       # Seed runs ExecStartPost (not Pre) because ntfy's `user`/`access` refuse to
       # run until the server creates the sqlite auth-file; runs as the service's own
@@ -38,23 +54,23 @@
           fi
 
           # Create users if absent (idempotent via --ignore-exists). The reader password is unused (phone uses a minted token), so it needs no change-pass.
-          NTFY_PASSWORD="$password" ntfy user add --ignore-exists --role=user "${ntfy.publisherUser}"
-          NTFY_PASSWORD="$password" ntfy user add --ignore-exists --role=user "${ntfy.readerUser}"
+          NTFY_PASSWORD="$password" ntfy user add --ignore-exists --role=user "${ntfy.users.publisher}"
+          NTFY_PASSWORD="$password" ntfy user add --ignore-exists --role=user "${ntfy.users.reader}"
 
           # Rotation-safe: force the publisher password to the current secret on
           # every start, so a restartUnits reseed after a sops rotation lands.
-          NTFY_PASSWORD="$password" ntfy user change-pass "${ntfy.publisherUser}"
+          NTFY_PASSWORD="$password" ntfy user change-pass "${ntfy.users.publisher}"
 
           # ACL grants are a set, so they converge on re-run.
-          ntfy access "${ntfy.publisherUser}" "${ntfy.healthTopic}" rw
-          ntfy access "${ntfy.publisherUser}" "${ntfy.agentTopic}" rw
-          ntfy access "${ntfy.readerUser}" "${ntfy.healthTopic}" ro
-          ntfy access "${ntfy.readerUser}" "${ntfy.agentTopic}" ro
+          ntfy access "${ntfy.users.publisher}" "${ntfy.topics.health}" rw
+          ntfy access "${ntfy.users.publisher}" "${ntfy.topics.agentEvents}" rw
+          ntfy access "${ntfy.users.reader}" "${ntfy.topics.health}" ro
+          ntfy access "${ntfy.users.reader}" "${ntfy.topics.agentEvents}" ro
         '';
       };
     in
     {
-      imports = [ inputs.self.modules.nixos.ntfy-publisher-secret ];
+      imports = [ inputs.self.modules.nixos.ntfy-post ];
 
       services.ntfy-sh = {
         enable = true;

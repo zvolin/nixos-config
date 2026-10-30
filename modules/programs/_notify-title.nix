@@ -1,8 +1,7 @@
 # Shared AI-client notification title builder. Underscore-prefixed so
 # import-tree skips auto-discovery (this is a plain builder, not a flake
 # module); both the Claude hooks module and the Codex module `import` it
-# directly, mirroring the shared `modules/services/_notify-push.nix`. Neither
-# client reaches into the other's internals.
+# directly. Neither client reaches into the other's internals.
 #
 # Parameterized by client name; the returned script takes the hook payload
 # JSON as $1 (the caller has already consumed stdin) and prints the title with
