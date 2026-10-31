@@ -7,6 +7,9 @@
         system-cli
         nas-disko
         nas-zfs-pool
+        nas-zfs-arc
+        nas-zfs-scrub
+        nas-zfs-snapshots
         ./_host/hardware.nix
         igpu-render
         networking-wired
@@ -16,6 +19,7 @@
         user-sops
         nut-server
         ntfy
+        nas-storage-health
         # codex's system arm (/etc/codex config.toml); claude is HM-only.
         codex
         # brightdata-mcp is interpolated by the mcp HM module (via ai-headless);

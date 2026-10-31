@@ -2,16 +2,7 @@
 let
   poolName = "tank";
 
-  # The four WD80EFPX array members, pinned by stable /dev/disk/by-id/wwn-* paths
-  # (never /dev/sdX, which renumbers across boots). Confirmed 2026-10-26 on nas:
-  # four 7.3 TB WDC WD80EFPX-68C4ZN0 on SATA ports ata5-ata8. The Kingston
-  # SNV3S1000G root SSD (NVMe, serial 50026B7283D9CB73) is deliberately absent.
-  members = {
-    tank0 = "/dev/disk/by-id/wwn-0x50014ee26ca4611a"; # WD-1F0X4VDU
-    tank1 = "/dev/disk/by-id/wwn-0x50014ee2c1fa535a"; # WD-1F0Y6P9U
-    tank2 = "/dev/disk/by-id/wwn-0x50014ee21765830b"; # WD-1F1GB2YU
-    tank3 = "/dev/disk/by-id/wwn-0x50014ee2176b0e0a"; # WD-1F1LEEKU
-  };
+  members = import ./_tank-members.nix;
 
   # Standalone disko spec. NOT a NixOS module and NOT imported into
   # nixosConfigurations.nas, so a nas rebuild/switch can never run a disko
