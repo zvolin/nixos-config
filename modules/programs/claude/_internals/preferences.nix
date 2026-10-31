@@ -1,11 +1,11 @@
 { ... }:
 {
   programs.claude-code.settings = {
-    # Classic renderer keeps the transcript in the terminal's native scrollback.
-    # The alt-screen renderer's incremental repaints desync inside zellij and
-    # garble the pane on wheel-scroll; classic scrolls cleanly like codex and
-    # keeps Alt+e EditScrollback working. Explicit value suppresses the prompt.
-    tui = "default";
+    # Classic renderer streams the transcript into native scrollback, so
+    # zellij Alt-s/Alt-e reach the whole session; "fullscreen" repaints the
+    # alt-screen, leaving only the viewport. >=2.1 dropped "default" (it
+    # silently fell back to fullscreen) for "classic"/"fullscreen".
+    tui = "classic";
 
     # Drop attribution from commits and PRs. Empty strings hide the
     # Co-Authored-By byline (supersedes the old includeCoAuthoredBy setting);

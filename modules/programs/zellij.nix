@@ -218,6 +218,10 @@
           enable = true;
           # Start zellij through `lvim`, not in every terminal.
           settings.default_mode = "locked";
+          # Alt-s (EditScrollback) can only reach what the per-pane buffer still
+          # holds; zellij's 10000-line default drops the top of a long agent
+          # transcript FIFO before you can scroll to it.
+          settings.scroll_buffer_size = 100000;
           # Resurrection replays each pane's live argv; a jailed agent tab's
           # space-containing `--setenv NIX_CFLAGS_COMPILE "…"` bwrap args get split
           # on whitespace, so a resurrected pane dies with `bwrap: Unknown option
