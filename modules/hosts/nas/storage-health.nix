@@ -51,6 +51,12 @@
         mode = "0555";
       };
 
+      # ZED reads its zed.d set only at startup, so a switch must restart it to reload.
+      systemd.services.zfs-zed.restartTriggers = lib.pipe config.environment.etc [
+        (lib.filterAttrs (name: _: lib.hasPrefix "zfs/zed.d/" name))
+        (lib.mapAttrsToList (_: etc: etc.source))
+      ];
+
       systemd.services.zpool-status-backstop = {
         description = "Push an ntfy alarm when tank is not reported healthy";
         after = [ "zfs.target" ];
