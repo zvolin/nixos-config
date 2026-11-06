@@ -14,12 +14,14 @@
         igpu-render
         networking-wired
         lan-hosts
+        provisioning-guard
         headless-host
         user-headless
         user-sops
         nut-server
         ntfy
         nas-storage-health
+        nas-kopia-backup
         # codex's system arm (/etc/codex config.toml); claude is HM-only.
         codex
         # brightdata-mcp is interpolated by the mcp HM module (via ai-headless);

@@ -68,5 +68,12 @@ in
           zfs mount -a
         '';
       };
+
+      # tank is created out-of-band by `create-nas-pool`; warn on a fresh box, don't fail.
+      # zpool isn't on the activation PATH, so use the package's absolute path.
+      homelab.provisioningGuards.tank = {
+        check = "${config.boot.zfs.package}/bin/zpool list tank";
+        runbook = "docs/runbooks/nas-install.md";
+      };
     };
 }
